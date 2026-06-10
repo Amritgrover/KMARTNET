@@ -115,6 +115,31 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [adminOrders, setAdminOrders] = ge.useState([]);
   const [adminTab, setAdminTab] = ge.useState("products");
 
+  // Helper to format order like message preview
+  const getOrderPreviewText = (o) => {
+    const J = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    const custName = o.customer_id && typeof o.customer_id === "object" ? o.customer_id.name : "Unknown Customer";
+    
+    const itemsText = o.items.map(it => {
+      const rate = parseFloat(it.price) || 0;
+      const lineTotal = rate * it.qty;
+      const rateStr = rate % 1 === 0 ? String(rate) : String(rate);
+      const totalStr = lineTotal.toFixed(lineTotal % 1 === 0 ? 0 : 2);
+      const discStr = it.discount ? `  |  Disc: ${it.discount}%` : "";
+      return `• ${it.name} × ${it.qty} @ ₹${rateStr} = ₹${totalStr}${discStr}`;
+    }).join("\n");
+
+    const totalAmount = parseFloat(o.total_amount) || 0;
+    const totalStr = totalAmount.toFixed(totalAmount % 1 === 0 ? 0 : 2);
+
+    return `*📦 ORDER — ${custName}*
+_${J}_
+
+${itemsText}
+
+*TOTAL: ₹${totalStr}*`;
+  };
+
   // Sync URL with view state
   ge.useEffect(() => {
     const path = r === "customer" ? "/" : "/" + r;
@@ -842,8 +867,8 @@ _Contact us to place your order!_`;
               adminOrders.length === 0 ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No orders found." }) :
               adminOrders.map(o => {
                 const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-                const custName = o.customer_id ? o.customer_id.name : "Unknown Customer";
-                const salesmanName = o.salesman_id ? o.salesman_id.name : null;
+                const custName = o.customer_id && typeof o.customer_id === "object" ? o.customer_id.name : "Unknown Customer";
+                const salesmanName = o.salesman_id && typeof o.salesman_id === "object" ? o.salesman_id.name : null;
                 return S.jsxs("div", {
                   style: {
                     background: "#fff",
@@ -861,14 +886,25 @@ _Contact us to place your order!_`;
                         S.jsx("span", { style: { color: C.muted, fontSize: 11 }, children: dateStr })
                       ]
                     }),
-                    S.jsx("div", {
-                      style: { color: C.text, fontWeight: 500, marginBottom: 8, paddingLeft: 4, borderLeft: `2px solid ${C.border}` },
-                      children: o.items.map(it => `${it.name} x ${it.qty}`).join(", ")
+                    S.jsxs("div", {
+                      style: {
+                        background: C.bg,
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                        marginTop: 6
+                      },
+                      children: [
+                        S.jsx("pre", {
+                          style: { fontSize: 12, color: C.text, whiteSpace: "pre-wrap", margin: 0, fontFamily: "'Outfit', sans-serif", lineHeight: 1.6 },
+                          children: getOrderPreviewText(o)
+                        })
+                      ]
                     }),
                     S.jsxs("div", {
                       style: { display: "flex", justifyContent: "space-between", alignItems: "center" },
                       children: [
-                        S.jsxs("span", { style: { fontWeight: 800, color: C.primary }, children: ["Total: ₹", o.total_amount] }),
+                        S.jsx("span", { style: { fontWeight: 500, color: C.muted, fontSize: 12 }, children: "Status & Management" }),
                         S.jsxs("div", {
                           style: { display: "flex", gap: 6 },
                           children: [
@@ -1361,13 +1397,19 @@ _Contact us to place your order!_`;
                         })
                       ]
                     }),
-                    S.jsx("div",{
-                      style:{fontWeight:500,color:C.text,marginBottom:4},
-                      children:o.items.map(it=>`${it.name} x ${it.qty}`).join(", ")
-                    }),
-                    S.jsxs("div",{
-                      style:{fontWeight:700,color:C.primary},
-                      children:["Total: ₹",o.total_amount]
+                    S.jsxs("div", {
+                      style: {
+                        background: C.bg,
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        marginBottom: 6
+                      },
+                      children: [
+                        S.jsx("pre", {
+                          style: { fontSize: 12, color: C.text, whiteSpace: "pre-wrap", margin: 0, fontFamily: "'Outfit', sans-serif", lineHeight: 1.6 },
+                          children: getOrderPreviewText(o)
+                        })
+                      ]
                     })
                   ]
                 },o.id)
@@ -1380,4 +1422,5 @@ _Contact us to place your order!_`;
     ]
   });
 }
+
 Wp.createRoot(document.getElementById("root")).render(S.jsx(ge.StrictMode,{children:S.jsx(l_,{})}));
