@@ -659,7 +659,6 @@ _Contact us to place your order!_`;
                   localStorage.removeItem("kmart_salesman");
                   setSlAuth(!1);
                   setSelectedSalesman(null);
-                  Ci("customer");
                   ye("Salesman locked.");
                 },
                 title:"Logout",
@@ -745,7 +744,7 @@ _Contact us to place your order!_`;
                 ]
               }),
               S.jsxs("button",{
-                onClick:()=>{W(!1),Ci("customer"),ye("Admin locked.")},
+                onClick:()=>{W(!1),ye("Admin locked.")},
                 style:{background:C.redBg,color:C.red,border:"none",borderRadius:10,padding:"9px 13px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",gap:5},
                 children:[ct.lock," Lock"]
               })
