@@ -97,6 +97,13 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [custOrders, setCustOrders] = ge.useState([]);
   const [showCustOrders, setShowCustOrders] = ge.useState(!1);
   const [showCustProfile, setShowCustProfile] = ge.useState(!1);
+  const [customCats, setCustomCats] = ge.useState(() => {
+    const stored = localStorage.getItem("kmart_custom_categories");
+    if (stored) {
+      try { return JSON.parse(stored); } catch(e) {}
+    }
+    return ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
+  });
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
@@ -1252,10 +1259,33 @@ _Contact us to place your order!_`;
               S.jsxs("div",{
                 style:{marginBottom:16},
                 children:[
-                  S.jsx("div",{style:{fontSize:11.5,color:C.muted,marginBottom:7,fontWeight:600},children:"Quick Category Pick:"}),
+                  S.jsxs("div",{
+                    style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7},
+                    children:[
+                      S.jsx("div",{style:{fontSize:11.5,color:C.muted,fontWeight:600},children:"Quick Category Pick:"}),
+                      S.jsx("button",{
+                        onClick:()=>{
+                          const name=prompt("Enter new category name:");
+                          if(name&&name.trim()){
+                            const cleaned=name.trim();
+                            if(!customCats.includes(cleaned)){
+                              const newCats=[...customCats,cleaned];
+                              setCustomCats(newCats);
+                              localStorage.setItem("kmart_custom_categories",JSON.stringify(newCats));
+                              ye(`Category "${cleaned}" added!`);
+                            }else{
+                              ye("Category already exists.");
+                            }
+                          }
+                        },
+                        style:{background:"transparent",border:"none",color:C.primary,fontSize:11.5,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                        children:"+ Add New"
+                      })
+                    ]
+                  }),
                   S.jsx("div",{
                     style:{display:"flex",flexWrap:"wrap",gap:6},
-                    children:["Staples","Edible Oils","Home Care","Dairy","Biscuits","Instant Food","Personal Care","Beverages","Snacks"].map(j=>S.jsxs("button",{
+                    children:customCats.map(j=>S.jsxs("button",{
                       onClick:()=>ae(J=>({...J,cat:j})),
                       style:{padding:"4px 10px",borderRadius:14,border:`1.5px solid ${V.cat===j?C.primary:C.border}`,background:V.cat===j?C.primaryLight:"#fff",color:V.cat===j?C.primary:C.muted,fontSize:11.5,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
                       children:[$r(j)," ",j]
