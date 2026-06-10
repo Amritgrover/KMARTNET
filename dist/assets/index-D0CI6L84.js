@@ -114,6 +114,15 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [adminOrders, setAdminOrders] = ge.useState([]);
   const [adminTab, setAdminTab] = ge.useState("products");
 
+  // Helper to sort products alphabetically by category first, then by name
+  const sortProducts = (list) => {
+    return [...list].sort((a, b) => {
+      const catCompare = a.cat.localeCompare(b.cat);
+      if (catCompare !== 0) return catCompare;
+      return a.name.localeCompare(b.name);
+    });
+  };
+
   // Helper to format order like message preview
   const getOrderPreviewText = (o) => {
     const J = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -234,10 +243,10 @@ ${itemsText}
   const ue=ge.useCallback(async()=>{
     const{data:j,error:J}=await Or.from("products").select("*").order("id");
     if(J){console.error(J),h(!1);return}
-    if(j&&j.length>0)l(j.map(yl));
+    if(j&&j.length>0)l(sortProducts(j.map(yl)));
     else{
       const he=Fb.map(ce=>({name:ce.name,cat:ce.cat,unit:ce.unit,mrp:ce.mrp,tp:ce.tp,notes:ce.desc??""})),{data:me}=await Or.from("products").insert(he).select();
-      me&&l(me.map(yl))
+      me&&l(sortProducts(me.map(yl)))
     }
     h(!1)
   },[]);
@@ -513,15 +522,15 @@ _Contact us to place your order!_`;
     };
     if(ee){
       const{data:J}=await Or.from("products").update(j).eq("id",ee.id).select().single();
-      J&&l(he=>he.map(me=>me.id===ee.id?yl(J):me)),ye("Product updated!")
+      J&&l(he=>sortProducts(he.map(me=>me.id===ee.id?yl(J):me))),ye("Product updated!")
     }else{
       const{data:J}=await Or.from("products").insert(j).select().single();
-      J&&l(he=>[...he,yl(J)]),ye("Product added!")
+      J&&l(he=>sortProducts([...he,yl(J)])),ye("Product added!")
     }
     G(!1)
   },
   Ul=async j=>{
-    await Or.from("products").delete().eq("id",j),l(J=>J.filter(he=>he.id!==j)),E(null),ye("Product deleted.")
+    await Or.from("products").delete().eq("id",j),l(J=>sortProducts(J.filter(he=>he.id!==j))),E(null),ye("Product deleted.")
   },
   Vr=["1","2","3","4","5","6","7","8","9","","0","⌫"],
   Kr=[["Product Name *","name","e.g. Tata Salt","text"],["Category *","cat","e.g. Staples","text"],["Unit / Pack Size *","unit","e.g. 1 kg","text"],["Trade Price ₹ *","tp","Your selling price","number"],["MRP ₹","mrp","Maximum retail price","number"],["Cost Price ₹","cp","Your purchase price","number"],["Case Size","cs","e.g. 24 or 12 units","text"],["Customer Price (Base) ₹","customer_price","Default: MRP","number"],["Tier 2 Min Qty","tier2_min_qty","e.g. 12 (0 to disable)","number"],["Tier 2 Price ₹","tier2_price","Price for tier 2 qty","number"],["Note / Offer","desc","Optional short note","text"]];
@@ -761,7 +770,7 @@ _Contact us to place your order!_`;
           adminTab === "salesmen" && S.jsxs("div", {
             children: [
               S.jsxs("div", {
-                style: { display: "flex", justify: "space-between", alignItems: "center", marginBottom: 14 },
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
                 children: [
                   S.jsxs("div", {
                     children: [
@@ -1422,6 +1431,7 @@ _Contact us to place your order!_`;
     ]
   });
 }
+
 
 
 Wp.createRoot(document.getElementById("root")).render(S.jsx(ge.StrictMode,{children:S.jsx(l_,{})}));
