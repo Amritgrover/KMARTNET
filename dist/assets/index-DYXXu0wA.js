@@ -106,7 +106,6 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   });
   const [salesmanSelId, setSalesmanSelId] = ge.useState("");
   const [beatCustomers, setBeatCustomers] = ge.useState([]);
-  const [salesmanCustId, setSalesmanCustId] = ge.useState("");
 
   // NEW Admin states
   const [adminSalesmen, setAdminSalesmen] = ge.useState([]);
@@ -295,7 +294,6 @@ ${itemsText}
       localStorage.setItem("kmart_customer",JSON.stringify(inserted));
       setCust(inserted);
       H(inserted.name);
-      // Reload beat customers list in case they are salesman
       const{data:cList}=await Or.from("customers").select("*").order("name");
       if(cList)setBeatCustomers(cList);
       ye("Registered successfully! Welcome!")
@@ -377,10 +375,39 @@ _via KMART_`
       ye("Please login first.");
       return;
     }
-    if (r === "salesman" && !salesmanCustId) {
+    if (!z.trim()) {
       setNeErr(!0);
-      ye("Please select a customer.");
+      ye("Please enter customer / shop name.");
       return;
+    }
+
+    let finalCustId = null;
+    if (r === "customer") {
+      finalCustId = cust.id;
+    } else if (r === "salesman") {
+      const name = z.trim();
+      const { data: existing, error: findErr } = await Or.from("customers").select("*").eq("name", name);
+      if (findErr) {
+        ye("Database lookup failed. Try again.");
+        console.error(findErr);
+        return;
+      }
+      if (existing && existing.length > 0) {
+        finalCustId = existing[0].id;
+      } else {
+        const { data: inserted, error: insErr } = await Or.from("customers").insert({
+          name,
+          phone: "salesman-" + Date.now()
+        }).select().single();
+        if (insErr) {
+          ye("Failed to register shop. Try again.");
+          console.error(insErr);
+          return;
+        }
+        finalCustId = inserted.id;
+        const { data: cList } = await Or.from("customers").select("*").order("name");
+        if (cList) setBeatCustomers(cList);
+      }
     }
 
     const orderItems = Object.entries(v).filter(([, qty]) => qty > 0).map(([id, qty]) => {
@@ -409,7 +436,7 @@ _via KMART_`
 
     const orderData = {
       salesman_id: r === "salesman" && selectedSalesman ? selectedSalesman.id : null,
-      customer_id: r === "salesman" ? parseInt(salesmanCustId) : cust.id,
+      customer_id: finalCustId,
       source: r,
       items: orderItems,
       total_amount: tn,
@@ -425,10 +452,8 @@ _via KMART_`
 
     b({});
     x({});
-    if (r === "salesman") {
-      setSalesmanCustId("");
-      H("");
-    }
+    H("");
+    setNeErr(!1);
     $(!1);
     ye("🎉 Order placed successfully!");
 
@@ -561,14 +586,16 @@ _Contact us to place your order!_`;
             style:{background:"#fff",border:`1px solid ${C.border}`,borderRadius:11,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:10,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"},
             children:[
               S.jsx("span",{style:{fontSize:18},children:"🏪"}),
-              S.jsxs("span",{
-                style:{flex:1,fontSize:13.5,fontWeight:600,color:C.text},
-                children:["Salesman: ",selectedSalesman?selectedSalesman.name:"Not Logged In"]
+              S.jsx("input",{
+                value:z,
+                onChange:j=>{H(j.target.value),setNeErr(!1)},
+                placeholder:"Enter customer / shop name…",
+                style:{...pl,border:neErr?`1.5px solid ${C.red}`:"none",background:neErr?C.redBg:"transparent",padding:neErr?"6px 8px":0,borderRadius:neErr?6:0,flex:1,fontSize:13.5,fontWeight:500}
               }),
               S.jsx("button",{
                 onClick:()=>ht(!0),
-                title:"New order — clear cart & customer",
-                style:{flexShrink:0,width:34,height:34,borderRadius:9,border:`1.5px solid ${C.border}`,background:Ot>0||salesmanCustId?C.redBg:C.bg,color:Ot>0||salesmanCustId?C.red:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"},
+                title:"New order — clear cart & customer name",
+                style:{flexShrink:0,width:34,height:34,borderRadius:9,border:`1.5px solid ${C.border}`,background:Ot>0||z?C.redBg:C.bg,color:Ot>0||z?C.red:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"},
                 children:ct.refresh
               }),
               S.jsx("button",{
@@ -734,7 +761,7 @@ _Contact us to place your order!_`;
           adminTab === "salesmen" && S.jsxs("div", {
             children: [
               S.jsxs("div", {
-                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                style: { display: "flex", justify: "space-between", alignItems: "center", marginBottom: 14 },
                 children: [
                   S.jsxs("div", {
                     children: [
@@ -995,39 +1022,15 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
-              r === "salesman" ? S.jsxs("div", {
-                style: { marginBottom: 14 },
-                children: [
-                  S.jsx("div", { style: { fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Select Customer / Shop *" }),
-                  S.jsxs("select", {
-                    value: salesmanCustId,
-                    onChange: e => {
-                      const cId = e.target.value;
-                      setSalesmanCustId(cId);
-                      const selected = beatCustomers.find(c => String(c.id) === cId);
-                      H(selected ? selected.name : "");
-                      setNeErr(!1);
-                    },
-                    style: {
-                      width: "100%",
-                      padding: "10px 12px",
-                      borderRadius: 8,
-                      border: `1.5px solid ${neErr ? C.red : C.border}`,
-                      background: neErr ? C.redBg : "#fff",
-                      fontSize: 14,
-                      fontFamily: "'Outfit', sans-serif"
-                    },
-                    children: [
-                      S.jsx("option", { value: "", children: "-- Select Customer --" }),
-                      beatCustomers.map(c => S.jsx("option", { value: c.id, children: `${c.name} (${c.phone})` }, c.id))
-                    ]
-                  })
-                ]
-              }) : S.jsx("input", {
+              S.jsx("input", {
                 value: z,
-                disabled: true,
-                placeholder: "Your Name / Shop Name *",
-                style: { ...pl, marginBottom: 14, fontWeight: 500, borderColor: C.border, background: C.bg, color: C.text }
+                disabled: r === "customer",
+                onChange: j => {
+                  H(j.target.value);
+                  setNeErr(!1);
+                },
+                placeholder: r === "customer" ? "Your Name / Shop Name *" : "Customer / Shop name *",
+                style: { ...pl, marginBottom: 14, fontWeight: 500, borderColor: neErr ? C.red : C.border, background: neErr ? C.redBg : (r === "customer" ? C.bg : "#fff"), color: C.text }
               }),
               Object.entries(v).filter(([,j])=>j>0).map(([j,J])=>{
                 const he=s.find(me=>me.id===+j);
@@ -1237,9 +1240,6 @@ _Contact us to place your order!_`;
                     onClick:()=>{
                       b({});
                       x({});
-                      if (r === "salesman") {
-                        setSalesmanCustId("");
-                      }
                       H("");
                       setNeErr(!1);
                       y("");
@@ -1422,5 +1422,6 @@ _Contact us to place your order!_`;
     ]
   });
 }
+
 
 Wp.createRoot(document.getElementById("root")).render(S.jsx(ge.StrictMode,{children:S.jsx(l_,{})}));
