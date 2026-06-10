@@ -98,11 +98,17 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [showCustOrders, setShowCustOrders] = ge.useState(!1);
   const [showCustProfile, setShowCustProfile] = ge.useState(!1);
   const [customCats, setCustomCats] = ge.useState(() => {
+    const defaults = ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
     const stored = localStorage.getItem("kmart_custom_categories");
     if (stored) {
-      try { return JSON.parse(stored); } catch(e) {}
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return Array.from(new Set(parsed.map(x => x.trim()).filter(Boolean)));
+        }
+      } catch(e) {}
     }
-    return ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
+    return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
   const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);
@@ -1311,20 +1317,54 @@ _Contact us to place your order!_`;
                   }),
                   S.jsx("div",{
                     style:{display:"flex",flexWrap:"wrap",gap:6},
-                    children:customCats.map(j=>S.jsxs("button",{
-                      onClick:()=>ae(J=>({...J,cat:j})),
-                      style:{padding:"4px 10px",borderRadius:14,border:`1.5px solid ${V.cat===j?C.primary:C.border}`,background:V.cat===j?C.primaryLight:"#fff",color:V.cat===j?C.primary:C.muted,fontSize:11.5,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
-                      children:[$r(j)," ",j]
+                    children:customCats.map(j=>S.jsxs("span",{
+                      style:{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:14,border:`1.5px solid ${V.cat===j?C.primary:C.border}`,background:V.cat===j?C.primaryLight:"#fff",color:V.cat===j?C.primary:C.muted,fontSize:11.5,fontWeight:500},
+                      children:[
+                        S.jsx("span",{
+                          onClick:()=>ae(J=>({...J,cat:j})),
+                          style:{cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                          children:j
+                        }),
+                        S.jsx("button",{
+                          onClick:(e)=>{
+                            e.stopPropagation();
+                            if(confirm(`Remove "${j}" from quick picks?`)){
+                              const newCats=customCats.filter(x=>x!==j);
+                              setCustomCats(newCats);
+                              localStorage.setItem("kmart_custom_categories",JSON.stringify(newCats));
+                            }
+                          },
+                          style:{background:"transparent",border:"none",color:C.red,fontSize:13,fontWeight:800,cursor:"pointer",padding:"0 2px",marginLeft:2},
+                          children:"×"
+                        })
+                      ]
                     },j))
                   })
                 ]
               }),
                   S.jsx("div",{
                     style:{display:"flex",flexWrap:"wrap",gap:6},
-                    children:customCats.map(j=>S.jsxs("button",{
-                      onClick:()=>ae(J=>({...J,cat:j})),
-                      style:{padding:"4px 10px",borderRadius:14,border:`1.5px solid ${V.cat===j?C.primary:C.border}`,background:V.cat===j?C.primaryLight:"#fff",color:V.cat===j?C.primary:C.muted,fontSize:11.5,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
-                      children:[$r(j)," ",j]
+                    children:customCats.map(j=>S.jsxs("span",{
+                      style:{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:14,border:`1.5px solid ${V.cat===j?C.primary:C.border}`,background:V.cat===j?C.primaryLight:"#fff",color:V.cat===j?C.primary:C.muted,fontSize:11.5,fontWeight:500},
+                      children:[
+                        S.jsx("span",{
+                          onClick:()=>ae(J=>({...J,cat:j})),
+                          style:{cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                          children:j
+                        }),
+                        S.jsx("button",{
+                          onClick:(e)=>{
+                            e.stopPropagation();
+                            if(confirm(`Remove "${j}" from quick picks?`)){
+                              const newCats=customCats.filter(x=>x!==j);
+                              setCustomCats(newCats);
+                              localStorage.setItem("kmart_custom_categories",JSON.stringify(newCats));
+                            }
+                          },
+                          style:{background:"transparent",border:"none",color:C.red,fontSize:13,fontWeight:800,cursor:"pointer",padding:"0 2px",marginLeft:2},
+                          children:"×"
+                        })
+                      ]
                     },j))
                   })
                 ]
