@@ -155,7 +155,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
     const itemsText = o.items.map(it => {
       const rate = parseFloat(it.price) || 0;
       const lineTotal = rate * it.qty;
-      const rateStr = rate % 1 === 0 ? String(rate) : String(rate);
+      const rateStr = rate % 1 === 0 ? String(rate) : rate.toFixed(2);
       const totalStr = lineTotal.toFixed(lineTotal % 1 === 0 ? 0 : 2);
       const discStr = it.discount ? `  |  Disc: ${it.discount}%` : "";
       return `• ${it.name} × ${it.qty} @ ₹${rateStr} = ₹${totalStr}${discStr}`;
@@ -487,7 +487,7 @@ _via KMART_`
         id: p.id,
         name: p.name,
         qty,
-        price,
+        price: Math.round(price * 100) / 100,
         discount: r === "salesman" ? (parseFloat(T[p.id]) || 0) : 0
       };
     });
@@ -503,7 +503,7 @@ _via KMART_`
       customer_id: finalCustId,
       source: r,
       items: orderItems,
-      total_amount: tn,
+      total_amount: Math.round(tn * 100) / 100,
       status: "Pending"
     };
 
