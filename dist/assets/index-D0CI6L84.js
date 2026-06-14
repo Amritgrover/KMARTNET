@@ -461,11 +461,22 @@ _via KMART_`
       if (existing && existing.length > 0) {
         finalCustId = existing[0].id;
       } else {
-        const { data: inserted, error: insErr } = await Or.from("customers").insert({
+        let inserted = null, insErr = null;
+        const insertRes = await Or.from("customers").insert({
           name,
           phone: newCustomerPhone.trim() || ("salesman-" + Date.now()),
           beat: selectedBeat
         }).select().single();
+        inserted = insertRes.data;
+        insErr = insertRes.error;
+        if (insErr && (insErr.message && insErr.message.toLowerCase().includes("beat") || insErr.code === "PGRST204")) {
+          const retryRes = await Or.from("customers").insert({
+            name,
+            phone: newCustomerPhone.trim() || ("salesman-" + Date.now())
+          }).select().single();
+          inserted = retryRes.data;
+          insErr = retryRes.error;
+        }
         if (insErr) {
           ye("Failed to register shop. Try again.");
           console.error(insErr);
