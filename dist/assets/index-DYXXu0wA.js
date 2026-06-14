@@ -521,7 +521,7 @@ _via KMART_`
         ye("🎉 Order placed successfully!");
         b({});
         x({});
-        H(r === "customer" && cust ? cust.name : "");
+        H(cust ? cust.name : "");
         setNeErr(!1);
         $(!1);
         setIsSubmittingOrder(!1);
@@ -544,7 +544,7 @@ _via KMART_`
 
     b({});
     x({});
-    H(r === "customer" && cust ? cust.name : "");
+    H(cust ? cust.name : "");
     setNeErr(!1);
     $(!1);
     ye("🎉 Order placed successfully!");
@@ -1530,7 +1530,7 @@ _Contact us to place your order!_`;
                     onClick:()=>{
                       b({});
                       x({});
-                      H(r === "customer" && cust ? cust.name : "");
+                      H(cust ? cust.name : "");
                       setNeErr(!1);
                       y("");
                       m("All");
