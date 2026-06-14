@@ -1030,12 +1030,14 @@ _Contact us to place your order!_`;
                     children: [
                       S.jsx("button", {
                         onClick: async () => {
-                          const { error } = await Or.from("orders").delete().eq("id", orderToDelete.id);
+                          const { data, error } = await Or.from("orders").delete().eq("id", orderToDelete.id).select();
                           if (error) {
-                            ye("Failed to delete order.");
+                            ye("Failed to delete order: " + error.message);
+                          } else if (!data || data.length === 0) {
+                            ye("Failed to delete order (database policy blocked the delete).");
                           } else {
                             setAdminOrders(prev => prev.filter(x => x.id !== orderToDelete.id));
-                            ye("Order deleted.");
+                            ye("Order deleted successfully.");
                           }
                           setOrderToDelete(null);
                         },
