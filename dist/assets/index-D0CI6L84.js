@@ -117,7 +117,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
     return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
-  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");
+  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
@@ -1092,8 +1092,33 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
-              adminOrders.filter(x => adminOrderSubTab === "salesman" ? !!x.salesman_id : !x.salesman_id).length === 0 ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No orders found." }) :
-              adminOrders.filter(x => adminOrderSubTab === "salesman" ? !!x.salesman_id : !x.salesman_id).map(o => {
+              adminOrderSubTab === "salesman" && S.jsxs("div", {
+                style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 12px", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" },
+                children: [
+                  S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted }, children: "Filter by Salesman" }),
+                  S.jsxs("select", {
+                    value: selectedSalesmanFilter,
+                    onChange: e => setSelectedSalesmanFilter(e.target.value),
+                    style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12.5, fontWeight: 700, color: C.primary, outline: "none", fontFamily: "'Outfit', sans-serif", cursor: "pointer" },
+                    children: [
+                      S.jsx("option", { value: "all", children: "All Salesmen" }),
+                      salesmenList.map(s => S.jsx("option", { value: s.name, children: s.name }, s.id))
+                    ]
+                  })
+                ]
+              }),
+              adminOrders.filter(x => {
+                if (adminOrderSubTab === "customer") return !x.salesman_id;
+                if (!x.salesman_id) return false;
+                if (selectedSalesmanFilter === "all") return true;
+                return (x.salesman_id && typeof x.salesman_id === "object" ? x.salesman_id.name : "") === selectedSalesmanFilter;
+              }).length === 0 ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No orders found." }) :
+              adminOrders.filter(x => {
+                if (adminOrderSubTab === "customer") return !x.salesman_id;
+                if (!x.salesman_id) return false;
+                if (selectedSalesmanFilter === "all") return true;
+                return (x.salesman_id && typeof x.salesman_id === "object" ? x.salesman_id.name : "") === selectedSalesmanFilter;
+              }).map(o => {
                 const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
                 const custName = o.customer_id && typeof o.customer_id === "object" ? o.customer_id.name : "Unknown Customer";
                 const salesmanName = o.salesman_id && typeof o.salesman_id === "object" ? o.salesman_id.name : null;
