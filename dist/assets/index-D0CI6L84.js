@@ -53,7 +53,11 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const getInitialView = () => {
     const host = window.location.hostname.toLowerCase();
     const p = window.location.pathname.toLowerCase();
+    const search = window.location.search.toLowerCase();
     const storedSl = localStorage.getItem("kmart_salesman");
+    if (search.includes("view=admin")) return "admin";
+    if (search.includes("view=salesman")) return "salesman";
+    if (search.includes("view=customer")) return "customer";
     if (host.includes("admin")) return "admin";
     if (host.includes("salesman")) return "salesman";
     if (host.includes("customer") || host.includes("order")) return "customer";
