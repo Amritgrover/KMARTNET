@@ -1324,7 +1324,7 @@ _Contact us to place your order!_`;
               }),
               S.jsxs("button",{
                 onClick:handleConfirmOrder,
-                style:{width:"100%",padding:"13px",background:C.primary,color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10,boxShadow:"0 4px 14px rgba(20,83,45,0.35)"},
+                style:{width:"100%",padding:"13px",background:"#22C55E",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10,boxShadow:"0 4px 14px rgba(34,197,94,0.35)"},
                 children:[ct.check," Confirm Order"]
               }),
               r === "customer" && S.jsxs("button",{
