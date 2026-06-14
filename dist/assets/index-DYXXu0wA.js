@@ -76,7 +76,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -235,6 +235,8 @@ ${itemsText}
       }
       const { data: cList } = await Or.from("customers").select("*").order("name");
       if (cList) setBeatCustomers(cList);
+      const { data: bList } = await Or.from("beats").select("*").order("name");
+      if (bList) setDbBeats(bList.map(b => b.name));
     };
     loadInitialData();
 
@@ -1020,7 +1022,77 @@ _Contact us to place your order!_`;
                     children: "Delete"
                   })
                 ]
-              }, s.id))
+              }, s.id)),
+              S.jsx("hr", { style: { border: "none", borderTop: `1px solid ${C.border}`, margin: "24px 0" } }),
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Route Beats" }),
+                      S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: [dbBeats.length, " beats registered"] })
+                    ]
+                  })
+                ]
+              }),
+              S.jsxs("div", {
+                style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 14, marginBottom: 16 },
+                children: [
+                  S.jsx("div", { style: { fontWeight: 700, fontSize: 13.5, color: C.text, marginBottom: 10 }, children: "Add New Beat" }),
+                  S.jsxs("div", {
+                    style: { display: "flex", gap: 8 },
+                    children: [
+                      S.jsx("input", {
+                        value: adminBeatName,
+                        onChange: e => setAdminBeatName(e.target.value),
+                        placeholder: "e.g. Khalra",
+                        style: { ...pl, flex: 1, padding: "8px 10px", fontSize: 13 }
+                      }),
+                      S.jsx("button", {
+                        onClick: async () => {
+                          const name = adminBeatName.trim();
+                          if (!name) {
+                            ye("Please enter a beat name.");
+                            return;
+                          }
+                          if (dbBeats.includes(name)) {
+                            ye("Beat already exists.");
+                            return;
+                          }
+                          const { data, error } = await Or.from("beats").insert({ name }).select().single();
+                          if (error) {
+                            ye("Failed to add beat in database, saved locally.");
+                            console.error(error);
+                          } else {
+                            ye("Beat added successfully!");
+                          }
+                          setDbBeats(prev => Array.from(new Set([...prev, name])));
+                          setAdminBeatName("");
+                        },
+                        style: {
+                          padding: "8px 16px",
+                          background: C.primary,
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          fontFamily: "'Outfit', sans-serif"
+                        },
+                        children: "Add Beat"
+                      })
+                    ]
+                  })
+                ]
+              }),
+              S.jsx("div", {
+                style: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 },
+                children: dbBeats.map(b => S.jsx("span", {
+                  style: { padding: "6px 12px", background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, fontSize: 12.5, color: C.text, fontWeight: 600 },
+                  children: b
+                }, b))
+              })
             ]
           }),
           adminTab === "orders" && S.jsxs("div", {
@@ -1282,7 +1354,7 @@ _Contact us to place your order!_`;
                           H("");
                         },
                         style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
-                        children: ["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"].map(b => S.jsx("option", { value: b, children: b }, b))
+                        children: Array.from(new Set([...dbBeats, ...beatCustomers.map(c => c.beat).filter(Boolean)])).map(b => S.jsx("option", { value: b, children: b }, b))
                       })
                     ]
                   }),
