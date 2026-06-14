@@ -76,7 +76,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -463,7 +463,8 @@ _via KMART_`
       } else {
         const { data: inserted, error: insErr } = await Or.from("customers").insert({
           name,
-          phone: "salesman-" + Date.now()
+          phone: newCustomerPhone.trim() || ("salesman-" + Date.now()),
+          beat: selectedBeat
         }).select().single();
         if (insErr) {
           ye("Failed to register shop. Try again.");
@@ -529,6 +530,9 @@ _via KMART_`
         setNeErr(!1);
         $(!1);
         setIsSubmittingOrder(!1);
+        setSelectedCustomerId("");
+        setNewCustomerName("");
+        setNewCustomerPhone("");
         setCheckoutToken("chk-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9));
         return;
       }
@@ -551,6 +555,9 @@ _via KMART_`
     H(cust ? cust.name : "");
     setNeErr(!1);
     $(!1);
+    setSelectedCustomerId("");
+    setNewCustomerName("");
+    setNewCustomerPhone("");
     ye("🎉 Order placed successfully!");
 
     if (r === "customer" && cust) {
@@ -1241,15 +1248,105 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
-              S.jsx("input", {
+              r === "customer" ? S.jsx("input", {
                 value: z,
-                disabled: r === "customer",
-                onChange: j => {
-                  H(j.target.value);
-                  setNeErr(!1);
-                },
-                placeholder: r === "customer" ? "Your Name / Shop Name *" : "Customer / Shop name *",
-                style: { ...pl, marginBottom: 14, fontWeight: 500, borderColor: neErr ? C.red : C.border, background: neErr ? C.redBg : (r === "customer" ? C.bg : "#fff"), color: C.text }
+                disabled: true,
+                placeholder: "Your Name / Shop Name *",
+                style: { ...pl, marginBottom: 14, fontWeight: 500, borderColor: neErr ? C.red : C.border, background: C.bg, color: C.text }
+              }) : S.jsxs(S.Fragment, {
+                children: [
+                  S.jsxs("div", {
+                    style: { marginBottom: 12 },
+                    children: [
+                      S.jsx("label", {
+                        style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
+                        children: "Select Beat *"
+                      }),
+                      S.jsx("select", {
+                        value: selectedBeat,
+                        onChange: e => {
+                          setSelectedBeat(e.target.value);
+                          setSelectedCustomerId("");
+                          setNewCustomerName("");
+                          H("");
+                        },
+                        style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
+                        children: ["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"].map(b => S.jsx("option", { value: b, children: b }, b))
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    style: { marginBottom: 12 },
+                    children: [
+                      S.jsx("label", {
+                        style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
+                        children: "Select Customer *"
+                      }),
+                      S.jsxs("select", {
+                        value: selectedCustomerId,
+                        onChange: e => {
+                          setSelectedCustomerId(e.target.value);
+                          if (e.target.value !== "new" && e.target.value !== "") {
+                            const match = beatCustomers.find(c => String(c.id) === e.target.value);
+                            if (match) H(match.name);
+                          } else {
+                            H("");
+                          }
+                          setNeErr(!1);
+                        },
+                        style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${neErr && !selectedCustomerId ? C.red : C.border}`, fontSize: 13.5, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
+                        children: [
+                          S.jsx("option", { value: "", children: "-- Select Customer --" }),
+                          beatCustomers.filter(c => {
+                            if (selectedBeat === "Others") {
+                              return c.beat === "Others" || !c.beat;
+                            }
+                            return c.beat === selectedBeat;
+                          }).map(c => S.jsx("option", { value: String(c.id), children: c.name }, c.id)),
+                          S.jsx("option", { value: "new", children: "+ Add New Customer" })
+                        ]
+                      })
+                    ]
+                  }),
+                  selectedCustomerId === "new" && S.jsxs(S.Fragment, {
+                    children: [
+                      S.jsxs("div", {
+                        style: { marginBottom: 12 },
+                        children: [
+                          S.jsx("label", {
+                            style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
+                            children: "New Customer Name *"
+                          }),
+                          S.jsx("input", {
+                            value: newCustomerName,
+                            onChange: e => {
+                              setNewCustomerName(e.target.value);
+                              H(e.target.value);
+                              setNeErr(!1);
+                            },
+                            placeholder: "e.g. Verma Grocery Store",
+                            style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${neErr && !newCustomerName ? C.red : C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
+                          })
+                        ]
+                      }),
+                      S.jsxs("div", {
+                        style: { marginBottom: 14 },
+                        children: [
+                          S.jsx("label", {
+                            style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
+                            children: "New Customer Phone"
+                          }),
+                          S.jsx("input", {
+                            value: newCustomerPhone,
+                            onChange: e => setNewCustomerPhone(e.target.value),
+                            placeholder: "e.g. 9876543210 (Optional)",
+                            style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
+                          })
+                        ]
+                      })
+                    ]
+                  })
+                ]
               }),
               Object.entries(v).filter(([,j])=>j>0).map(([j,J])=>{
                 const he=s.find(me=>me.id===+j);
