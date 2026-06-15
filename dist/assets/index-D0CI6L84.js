@@ -2071,6 +2071,26 @@ _Contact us to place your order!_`;
                     type:me,
                     step:me==="number"?"any":void 0,
                     style:{...pl,borderColor:!V[J]&&J!=="mrp"&&J!=="desc"&&J!=="cp"&&J!=="cs"&&J!=="customer_price"&&J!=="tier2_min_qty"&&J!=="tier2_price"?C.red+"55":C.border}
+                  }),
+                  J === "unit" && S.jsx("div", {
+                    style: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 },
+                    children: ["PCS", "BAG", "BOX", "KGS"].map(u => S.jsx("span", {
+                      onClick: () => ae(yt => ({ ...yt, unit: u })),
+                      style: {
+                        display: "inline-flex",
+                        alignItems: "center",
+                        padding: "4px 10px",
+                        borderRadius: 14,
+                        border: `1.5px solid ${V.unit === u ? C.primary : C.border}`,
+                        background: V.unit === u ? C.primaryLight : "#fff",
+                        color: V.unit === u ? C.primary : C.muted,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        fontFamily: "'Outfit', sans-serif"
+                      },
+                      children: u
+                    }, u))
                   })
                 ]
               },J)),
