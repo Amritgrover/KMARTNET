@@ -1555,6 +1555,27 @@ _Contact us to place your order!_`;
                           : `${adminOrders.filter(x => !!x.salesman_id).length} salesman orders`
                       ] })
                     ]
+                  }),
+                  S.jsx("button", {
+                    onClick: async () => {
+                      const { data, error } = await Or.from("orders").select("*, customer_id(name,phone), salesman_id(name)").order("created_at", { ascending: false });
+                      if (!error) {
+                        setAdminOrders(data || []);
+                        ye("Orders list refreshed!");
+                      }
+                    },
+                    style: {
+                      background: "transparent",
+                      border: `1.5px solid ${C.primary}`,
+                      color: C.primary,
+                      borderRadius: 20,
+                      padding: "4px 12px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      fontFamily: "'Outfit', sans-serif"
+                    },
+                    children: "Refresh 🔄"
                   })
                 ]
               }),
@@ -1695,13 +1716,13 @@ _Contact us to place your order!_`;
                       ]
                     }),
                     S.jsxs("div", {
-                      style: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+                      style: { display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px 12px" },
                       children: [
                         S.jsxs("div", {
-                          style: { display: "flex", flexDirection: "column", gap: 4 },
+                          style: { display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, minWidth: 125 },
                           children: [
                             S.jsx("span", { style: { fontWeight: 500, color: C.muted, fontSize: 12 }, children: "Status & Management" }),
-                            S.jsxs("div", {
+                            o.sync_status && S.jsxs("div", {
                               style: { display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-start" },
                               children: [
                                 S.jsx("span", {
@@ -1725,7 +1746,7 @@ _Contact us to place your order!_`;
                           ]
                         }),
                         S.jsxs("div", {
-                          style: { display: "flex", gap: 6 },
+                          style: { display: "flex", gap: 6, flexShrink: 0 },
                           children: [
                             S.jsx("button", {
                               onClick: async () => {
