@@ -69,6 +69,7 @@ async function insertBillRow(pool, p) {
   const cgstap  = p.taxp / 2;
   const sgsta   = parseFloat((taxable * sgstp / 100).toFixed(2));
   const cgsta   = parseFloat((taxable * cgstap / 100).toFixed(2));
+  const titax   = parseFloat((sgsta + cgsta).toFixed(2));
   const nrbgst  = qty > 0 ? parseFloat((taxable / qty).toFixed(3)) : 0;
   const rcode   = `S${CONFIG.bridge.billSeries}${p.bno}`;
   const dt      = new Date(p.orderDate);
@@ -118,7 +119,7 @@ async function insertBillRow(pool, p) {
   r.input('TOTQTY',    sql.Float,        qty);
   r.input('TAXP',      sql.Float,        p.taxp);
   r.input('TAXAMT',    sql.Float,        0);
-  r.input('TITAX',     sql.Float,        0);
+  r.input('TITAX',     sql.Float,        titax);
   r.input('RATEUNIT',  sql.VarChar(20),  '');
   r.input('QTYUNIT',   sql.NVarChar(20), 'PCS');
   r.input('RMKS',      sql.NVarChar(100),'');
