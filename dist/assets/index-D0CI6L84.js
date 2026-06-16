@@ -1552,7 +1552,7 @@ _Contact us to place your order!_`;
                       S.jsx("input", {
                         value: adminCustPhone,
                         onChange: e => setAdminCustPhone(e.target.value),
-                        placeholder: "Phone (Optional)",
+                        placeholder: "Phone *",
                         style: { ...pl, padding: "9px 12px", fontSize: 13 }
                       }),
                       S.jsx("input", {
@@ -1582,7 +1582,11 @@ _Contact us to place your order!_`;
                         ye("Please enter a customer / shop name.");
                         return;
                       }
-                      const phone = adminCustPhone.trim() || ("admin-" + Date.now());
+                      if (!adminCustPhone.trim()) {
+                        ye("Please enter a phone number.");
+                        return;
+                      }
+                      const phone = adminCustPhone.trim();
                       const beat = adminCustBeat;
                       const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId) || null }).select().single();
                       if (error) {
