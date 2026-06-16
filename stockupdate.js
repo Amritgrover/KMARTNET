@@ -139,11 +139,10 @@ log('🚀 KMART Stock Sync daemon starting...');
 sql.connect(CONFIG.sqlServer).then(pool => {
   log('✅ SQL Server connected successfully.');
 
-  // Run immediately on start
-  syncStock(pool);
-
-  // Poll every 15 minutes
-  setInterval(() => syncStock(pool), CONFIG.syncIntervalMs);
+  // Run once and close the connection
+  syncStock(pool).then(() => {
+    sql.close();
+  });
 }).catch(err => {
   log(`❌ SQL Server connection failed: ${err.message}`);
   process.exit(1);

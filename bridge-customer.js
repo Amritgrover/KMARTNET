@@ -359,8 +359,9 @@ sql.connect(CONFIG.sqlServer).then(pool => {
     }
   }
 
-  syncOrders();
-  setInterval(syncOrders, CONFIG.bridge.pollIntervalMs);
+  syncOrders().then(() => {
+    sql.close();
+  });
 
 }).catch(err => {
   log(`❌ SQL Server connection failed: ${err.message}`);
