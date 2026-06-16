@@ -172,7 +172,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [editingOrder, setEditingOrder] = ge.useState(null);
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -1117,10 +1117,20 @@ _Contact us to place your order!_`;
                           ]
                         }),
                         S.jsxs("div", {
-                          style: { textAlign: "right" },
+                          style: { display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginTop: 10, borderTop: `1px dashed ${C.border}`, paddingTop: 10 },
                           children: [
-                            S.jsx("div", { style: { fontSize: 11, color: C.muted, fontWeight: 500 }, children: "Total Amount" }),
-                            S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.primary }, children: un(o.total_amount) })
+                            o.sync_status !== "synced" ? S.jsx("button", {
+                              onClick: () => setEditingOrder(JSON.parse(JSON.stringify(o))),
+                              style: { background: C.accentLight, color: C.accent, border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                              children: "Edit Order"
+                            }) : S.jsx("div", {}),
+                            S.jsxs("div", {
+                              style: { textAlign: "right" },
+                              children: [
+                                S.jsx("div", { style: { fontSize: 11, color: C.muted, fontWeight: 500 }, children: "Total Amount" }),
+                                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.primary }, children: un(o.total_amount) })
+                              ]
+                            })
                           ]
                         })
                       ]
@@ -1922,6 +1932,21 @@ _Contact us to place your order!_`;
                         S.jsxs("div", {
                           style: { display: "flex", gap: 6, flexShrink: 0 },
                           children: [
+                            o.sync_status !== "synced" && S.jsx("button", {
+                              onClick: () => setEditingOrder(JSON.parse(JSON.stringify(o))),
+                              style: {
+                                background: C.accentLight,
+                                color: C.accent,
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                fontFamily: "'Outfit', sans-serif"
+                              },
+                              children: "Edit"
+                            }),
                             S.jsx("button", {
                               onClick: async () => {
                                 const newStatus = o.status === "Dispatched" ? "Pending" : "Dispatched";
@@ -2710,6 +2735,254 @@ _Contact us to place your order!_`;
                     onClick: () => setDeleteConfirm(null),
                     style: { flex: 1, padding: "10px 0", background: C.bg, color: C.muted, border: "none", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
                     children: "Cancel"
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      editingOrder && S.jsxs("div", {
+        style: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 },
+        children: [
+          S.jsxs("div", {
+            style: { background: "#fff", borderRadius: 16, width: "100%", maxWidth: 480, maxHeight: "90vh", display: "flex", flexDirection: "column", padding: 20, boxShadow: "0 10px 25px rgba(0,0,0,0.15)", fontFamily: "'Outfit', sans-serif" },
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 17, fontWeight: 800, color: C.text }, children: "Edit Order" }),
+                      S.jsx("div", { style: { fontSize: 12, color: C.muted, marginTop: 2 }, children: `Shop: ${editingOrder.customer_id && typeof editingOrder.customer_id === "object" ? editingOrder.customer_id.name : "Unknown"}` })
+                    ]
+                  }),
+                  S.jsx("button", {
+                    onClick: () => setEditingOrder(null),
+                    style: { border: "none", background: C.bg, borderRadius: 8, width: 30, height: 30, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted },
+                    children: ct.close
+                  })
+                ]
+              }),
+              S.jsxs("div", {
+                style: { flex: 1, overflowY: "auto", margin: "10px 0", paddingRight: 4 },
+                children: [
+                  editingOrder.items.length === 0 ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0", fontSize: 13 }, children: "No items in this order." }) :
+                  editingOrder.items.map((item, index) => {
+                    const p = s.find(prod => prod.id === item.id);
+                    let displayPrice = item.price;
+                    if (p) {
+                      if (editingOrder.source === "customer") {
+                        const base = p.customer_price > 0 ? p.customer_price : p.mrp;
+                        displayPrice = (p.tier2_min_qty > 0 && item.qty >= p.tier2_min_qty) ? p.tier2_price : base;
+                      } else {
+                        const disc = parseFloat(item.discount) || 0;
+                        displayPrice = p.tp * (1 - disc / 100);
+                      }
+                    }
+                    displayPrice = Math.round(displayPrice * 100) / 100;
+
+                    return S.jsxs("div", {
+                      style: { padding: "10px 0", borderBottom: `1px solid ${C.border}`, fontSize: 13 },
+                      children: [
+                        S.jsxs("div", {
+                          style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 },
+                          children: [
+                            S.jsx("div", { style: { fontWeight: 600, color: C.text, flex: 1, paddingRight: 8 }, children: item.name }),
+                            S.jsx("button", {
+                              onClick: () => {
+                                setEditingOrder(prev => ({
+                                  ...prev,
+                                  items: prev.items.filter((_, i) => i !== index)
+                                }));
+                              },
+                              style: { border: "none", background: "none", color: C.red, cursor: "pointer", fontSize: 12, fontWeight: 600 },
+                              children: "Remove"
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 12 },
+                              children: [
+                                S.jsxs("label", {
+                                  style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.muted },
+                                  children: [
+                                    "Qty:",
+                                    S.jsx("input", {
+                                      type: "number",
+                                      min: "1",
+                                      value: item.qty,
+                                      onChange: e => {
+                                        const newQty = parseInt(e.target.value) || 1;
+                                        setEditingOrder(prev => {
+                                          const nextItems = [...prev.items];
+                                          nextItems[index] = { ...nextItems[index], qty: newQty };
+                                          return { ...prev, items: nextItems };
+                                        });
+                                      },
+                                      style: { width: 55, padding: "4px 6px", borderRadius: 6, border: `1px solid ${C.border}`, outline: "none", fontSize: 12, textAlign: "center" }
+                                    })
+                                  ]
+                                }),
+                                editingOrder.source === "salesman" && S.jsxs("label", {
+                                  style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.muted },
+                                  children: [
+                                    "Disc %:",
+                                    S.jsx("input", {
+                                      type: "number",
+                                      min: "0",
+                                      max: "100",
+                                      step: "0.5",
+                                      value: item.discount || 0,
+                                      onChange: e => {
+                                        const newDisc = parseFloat(e.target.value) || 0;
+                                        setEditingOrder(prev => {
+                                          const nextItems = [...prev.items];
+                                          nextItems[index] = { ...nextItems[index], discount: newDisc };
+                                          return { ...prev, items: nextItems };
+                                        });
+                                      },
+                                      style: { width: 50, padding: "4px 6px", borderRadius: 6, border: `1px solid ${C.border}`, outline: "none", fontSize: 12, textAlign: "center" }
+                                    })
+                                  ]
+                                })
+                              ]
+                            }),
+                            S.jsx("div", {
+                              style: { fontWeight: 700, color: C.text },
+                              children: un(displayPrice * item.qty)
+                            })
+                          ]
+                        })
+                      ]
+                    }, item.id + "-" + index);
+                  }),
+                  S.jsx("select", {
+                    value: "",
+                    onChange: e => {
+                      if (e.target.value) {
+                        const prodId = parseInt(e.target.value);
+                        const p = s.find(prod => prod.id === prodId);
+                        if (p) {
+                          const isSalesman = editingOrder.source === "salesman";
+                          let basePrice = p.mrp;
+                          if (editingOrder.source === "customer") {
+                            basePrice = p.customer_price > 0 ? p.customer_price : p.mrp;
+                          } else {
+                            basePrice = p.tp;
+                          }
+                          const newItem = {
+                            id: p.id,
+                            name: p.name,
+                            qty: 1,
+                            price: Math.round(basePrice * 100) / 100,
+                            discount: 0
+                          };
+                          setEditingOrder(prev => ({
+                            ...prev,
+                            items: [...prev.items, newItem]
+                          }));
+                        }
+                        e.target.value = "";
+                      }
+                    },
+                    style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", background: "#fff", cursor: "pointer", marginTop: 12 },
+                    children: [
+                      S.jsx("option", { value: "", children: "＋ Add Product to Order" }),
+                      ...s.filter(p => !editingOrder.items.some(it => it.id === p.id)).map(p => S.jsx("option", { value: String(p.id), children: `${p.name} (MRP: ₹${p.mrp})` }, p.id))
+                    ]
+                  })
+                ]
+              }),
+              S.jsxs("div", {
+                style: { borderTop: `1px solid ${C.border}`, paddingTop: 14, marginTop: 6 },
+                children: [
+                  S.jsxs("div", {
+                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                    children: [
+                      S.jsx("span", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "Recalculated Total:" }),
+                      S.jsx("span", {
+                        style: { fontSize: 18, fontWeight: 800, color: C.primary },
+                        children: (() => {
+                          let sum = 0;
+                          editingOrder.items.forEach(item => {
+                            const p = s.find(prod => prod.id === item.id);
+                            let price = item.price;
+                            if (p) {
+                              if (editingOrder.source === "customer") {
+                                const base = p.customer_price > 0 ? p.customer_price : p.mrp;
+                                price = (p.tier2_min_qty > 0 && item.qty >= p.tier2_min_qty) ? p.tier2_price : base;
+                              } else {
+                                const disc = parseFloat(item.discount) || 0;
+                                price = p.tp * (1 - disc / 100);
+                              }
+                            }
+                            price = Math.round(price * 100) / 100;
+                            sum += price * item.qty;
+                          });
+                          return un(sum);
+                        })()
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    style: { display: "flex", gap: 10 },
+                    children: [
+                      S.jsx("button", {
+                        onClick: async () => {
+                          if (editingOrder.items.length === 0) {
+                            ye("Order must contain at least one item.");
+                            return;
+                          }
+                          let finalTotal = 0;
+                          const finalItems = editingOrder.items.map(item => {
+                            const p = s.find(prod => prod.id === item.id);
+                            let price = item.price;
+                            if (p) {
+                              if (editingOrder.source === "customer") {
+                                const base = p.customer_price > 0 ? p.customer_price : p.mrp;
+                                price = (p.tier2_min_qty > 0 && item.qty >= p.tier2_min_qty) ? p.tier2_price : base;
+                              } else {
+                                const disc = parseFloat(item.discount) || 0;
+                                price = p.tp * (1 - disc / 100);
+                              }
+                            }
+                            price = Math.round(price * 100) / 100;
+                            finalTotal += price * item.qty;
+                            return { ...item, price };
+                          });
+                          finalTotal = Math.round(finalTotal * 100) / 100;
+
+                          const { error } = await Or.from("orders").update({
+                            items: finalItems,
+                            total_amount: finalTotal,
+                            sync_status: "pending",
+                            sync_error: null
+                          }).eq("id", editingOrder.id);
+
+                          if (error) {
+                            ye("Failed to save order changes.");
+                            console.error(error);
+                          } else {
+                            const updatedOrder = { ...editingOrder, items: finalItems, total_amount: finalTotal, sync_status: "pending", sync_error: null };
+                            setAdminOrders(prev => prev.map(x => x.id === editingOrder.id ? updatedOrder : x));
+                            setSalesmanOrders(prev => prev.map(x => x.id === editingOrder.id ? updatedOrder : x));
+                            setEditingOrder(null);
+                            ye("Order updated and queued for sync!");
+                          }
+                        },
+                        style: { flex: 1, padding: "10px 0", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                        children: "Save Changes"
+                      }),
+                      S.jsx("button", {
+                        onClick: () => setEditingOrder(null),
+                        style: { flex: 1, padding: "10px 0", background: C.bg, color: C.muted, border: "none", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                        children: "Cancel"
+                      })
+                    ]
                   })
                 ]
               })
