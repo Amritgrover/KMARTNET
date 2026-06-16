@@ -1558,7 +1558,7 @@ _Contact us to place your order!_`;
                       S.jsx("input", {
                         value: adminCustVisionId,
                         onChange: e => setAdminCustVisionId(e.target.value),
-                        placeholder: "Vision Customer ID (Optional)",
+                        placeholder: "Vision Customer ID *",
                         style: { ...pl, padding: "9px 12px", fontSize: 13 }
                       }),
                       S.jsxs("div", {
@@ -1586,9 +1586,13 @@ _Contact us to place your order!_`;
                         ye("Please enter a phone number.");
                         return;
                       }
+                      if (!adminCustVisionId.trim()) {
+                        ye("Please enter a Vision Customer ID.");
+                        return;
+                      }
                       const phone = adminCustPhone.trim();
                       const beat = adminCustBeat;
-                      const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId) || null }).select().single();
+                      const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId) }).select().single();
                       if (error) {
                         ye("Failed to add customer. Phone might already exist.");
                         console.error(error);
