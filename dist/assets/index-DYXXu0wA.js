@@ -230,6 +230,8 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   });
   const [salesmanSelId, setSalesmanSelId] = ge.useState("");
   const [beatCustomers, setBeatCustomers] = ge.useState([]);
+  const [salesmanTab, setSalesmanTab] = ge.useState("catalogue");
+  const [salesmanOrders, setSalesmanOrders] = ge.useState([]);
 
   // NEW Admin states
   const [adminSalesmen, setAdminSalesmen] = ge.useState([]);
@@ -369,6 +371,16 @@ ${itemsText}
       fetchAdminOrders();
     }
   }, [adminTab, se]);
+
+  ge.useEffect(() => {
+    if (r === "salesman" && selectedSalesman && (salesmanTab === "orders" || salesmanOrders.length === 0)) {
+      const fetchSalesmanOrders = async () => {
+        const { data, error } = await Or.from("orders").select("*, customer_id(name,phone)").eq("salesman_id", selectedSalesman.id).order("created_at", { ascending: false });
+        if (!error) setSalesmanOrders(data || []);
+      };
+      fetchSalesmanOrders();
+    }
+  }, [r, selectedSalesman, salesmanTab]);
 
   // Stylesheet and Fonts
   ge.useEffect(()=>{
@@ -673,6 +685,10 @@ _via KMART_`
       const { data: newOrders } = await Or.from("orders").select("*, customer_id(name)").eq("customer_id", cust.id).order("created_at", { ascending: false });
       if (newOrders) setCustOrders(newOrders);
     }
+    if (r === "salesman" && selectedSalesman) {
+      const { data: newOrders } = await Or.from("orders").select("*, customer_id(name,phone)").eq("salesman_id", selectedSalesman.id).order("created_at", { ascending: false });
+      if (newOrders) setSalesmanOrders(newOrders);
+    }
 
     setIsSubmittingOrder(!1);
     setCheckoutToken("chk-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9));
@@ -835,7 +851,46 @@ _Contact us to place your order!_`;
       r!=="admin"&&S.jsxs("div",{
         style:{padding:16},
         children:[
-          r==="salesman"&&S.jsxs("div",{
+          r === "salesman" && S.jsxs("div", {
+            style: { display: "flex", gap: 8, marginBottom: 14, background: C.bg, padding: 4, borderRadius: 10 },
+            children: [
+              S.jsx("button", {
+                onClick: () => setSalesmanTab("catalogue"),
+                style: {
+                  flex: 1,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: salesmanTab === "catalogue" ? "#fff" : "transparent",
+                  color: salesmanTab === "catalogue" ? C.primary : C.muted,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: salesmanTab === "catalogue" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
+                  fontFamily: "'Outfit', sans-serif"
+                },
+                children: "📝 Place Order"
+              }),
+              S.jsx("button", {
+                onClick: () => setSalesmanTab("orders"),
+                style: {
+                  flex: 1,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: salesmanTab === "orders" ? "#fff" : "transparent",
+                  color: salesmanTab === "orders" ? C.primary : C.muted,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: salesmanTab === "orders" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
+                  fontFamily: "'Outfit', sans-serif"
+                },
+                children: `📦 My Orders (${salesmanOrders.length})`
+              })
+            ]
+          }),
+          r==="salesman"&&salesmanTab==="catalogue"&&S.jsxs("div",{
             style:{background:"#fff",border:`1px solid ${C.border}`,borderRadius:11,padding:"12px 14px",marginBottom:14,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"},
             children:[
               S.jsxs("div",{
@@ -917,9 +972,9 @@ _Contact us to place your order!_`;
               })
             ]
           }),
-          S.jsx("div",{style:{marginBottom:13},children:S.jsx(iy,{value:f,onChange:y})}),
-          S.jsx("div",{style:{marginBottom:12},children:S.jsx(i_,{categories:Pe,active:g,onChange:m})}),
-          S.jsxs("div",{
+          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:13},children:S.jsx(iy,{value:f,onChange:y})}),
+          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:12},children:S.jsx(i_,{categories:Pe,active:g,onChange:m})}),
+          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsxs("div",{
             style:{fontSize:12,color:C.muted,marginBottom:12,fontWeight:500},
             children:[
               Ue.length,
@@ -931,7 +986,7 @@ _Contact us to place your order!_`;
               })
             ]
           }),
-          Ue.length===0?S.jsxs("div",{
+          (r!=="salesman"||salesmanTab==="catalogue")&&(Ue.length===0?S.jsxs("div",{
             style:{textAlign:"center",color:C.muted,padding:"56px 0",fontSize:14},
             children:[
               S.jsx("div",{style:{fontSize:40,marginBottom:10},children:"🔍"}),
@@ -941,7 +996,7 @@ _Contact us to place your order!_`;
           }):S.jsx("div",{
             className:"product-grid",style:{gap:12},
             children:Ue.map(j=>r==="customer"?S.jsx(t_,{p:j,qty:v[j.id]||0,onAdd:()=>Nn(j.id,1),onInc:()=>Nn(j.id,1),onDec:()=>Nn(j.id,-1),onSet:J=>Nt(j.id,J)},j.id):S.jsx(n_,{p:j,qty:v[j.id]||0,onAdd:()=>Nn(j.id,1),onInc:()=>Nn(j.id,1),onDec:()=>Nn(j.id,-1),onSet:J=>Nt(j.id,J)},j.id))
-          }),
+          })),
           r==="customer"&&(Ot>0?S.jsxs("button",{
             onClick:()=>$(!0),
             style:{marginTop:22,width:"100%",padding:"14px",background:C.primary,color:"#fff",border:"none",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 14px rgba(20,83,45,0.35)"},
@@ -951,10 +1006,114 @@ _Contact us to place your order!_`;
             style:{marginTop:22,width:"100%",padding:"13px",background:C.wa,color:"#fff",border:"none",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 14px rgba(37,211,102,0.35)"},
             children:[ct.wa," View Past Orders"]
           })),
-          r==="salesman"&&Ot>0&&S.jsxs("button",{
+          r==="salesman"&&salesmanTab==="catalogue"&&Ot>0&&S.jsxs("button",{
             onClick:()=>$(!0),
             style:{marginTop:22,width:"100%",padding:"14px",background:C.primary,color:"#fff",border:"none",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 14px rgba(20,83,45,0.35)"},
             children:[ct.bag," View Order (",Ot," items · ",un(tn),")"]
+          }),
+          r==="salesman" && salesmanTab === "orders" && S.jsxs("div", {
+            children: [
+              S.jsx("div", {
+                style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 },
+                children: "Your Submitted Orders"
+              }),
+              salesmanOrders.length === 0 ? S.jsx("div", {
+                style: { textAlign: "center", color: C.muted, padding: "40px 0", fontSize: 13.5 },
+                children: "No orders found."
+              }) : salesmanOrders.map(o => {
+                const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+                const custName = o.customer_id && typeof o.customer_id === "object" ? o.customer_id.name : "Unknown Customer";
+                return S.jsxs("div", {
+                  style: {
+                    background: "#fff",
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 12,
+                    padding: 14,
+                    marginBottom: 12,
+                    fontSize: 13
+                  },
+                  children: [
+                    S.jsxs("div", {
+                      style: { display: "flex", justifyContent: "space-between", marginBottom: 6 },
+                      children: [
+                        S.jsx("span", { style: { fontWeight: 700, color: C.text }, children: custName }),
+                        S.jsx("span", { style: { color: C.muted, fontSize: 11 }, children: dateStr })
+                      ]
+                    }),
+                    S.jsxs("div", {
+                      style: {
+                        background: C.bg,
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                        marginTop: 6
+                      },
+                      children: [
+                        S.jsx("pre", {
+                          style: { fontSize: 12, color: C.text, whiteSpace: "pre-wrap", margin: 0, fontFamily: "'Outfit', sans-serif", lineHeight: 1.6 },
+                          children: getOrderPreviewText(o)
+                        })
+                      ]
+                    }),
+                    S.jsxs("div", {
+                      style: { display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px 12px" },
+                      children: [
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4, minWidth: 120 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 6 },
+                              children: [
+                                S.jsx("span", { style: { fontSize: 11, color: C.muted, fontWeight: 500 }, children: "Status:" }),
+                                S.jsx("span", {
+                                  style: {
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    color: o.status === "Dispatched" ? C.green : C.accent,
+                                    background: o.status === "Dispatched" ? C.greenBg : o.status === "Cancelled" ? C.redBg : C.accentLight,
+                                    padding: "2px 6px",
+                                    borderRadius: 4
+                                  },
+                                  children: o.status
+                                })
+                              ]
+                            }),
+                            o.sync_status && S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-start", marginTop: 2 },
+                              children: [
+                                S.jsx("span", {
+                                  style: {
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    background: o.sync_status === "synced" ? C.greenBg : o.sync_status === "failed" ? C.redBg : C.accentLight,
+                                    color: o.sync_status === "synced" ? C.green : o.sync_status === "failed" ? C.red : C.accent,
+                                    padding: "2px 6px",
+                                    borderRadius: 4,
+                                    display: "inline-block"
+                                  },
+                                  children: o.sync_status === "synced" ? "Synced ✅" : o.sync_status === "failed" ? "Sync Failed ❌" : "Sync Pending ⏳"
+                                }),
+                                o.sync_status === "failed" && o.sync_error && S.jsx("span", {
+                                  style: { fontSize: 10, color: C.red, fontWeight: 500, marginTop: 2, maxWidth: 180, overflowWrap: "anywhere" },
+                                  children: o.sync_error
+                                })
+                              ]
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          style: { textAlign: "right" },
+                          children: [
+                            S.jsx("div", { style: { fontSize: 11, color: C.muted, fontWeight: 500 }, children: "Total Amount" }),
+                            S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.primary }, children: un(o.total_amount) })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }, o.id)
+              })
+            ]
           })
         ]
       }),
