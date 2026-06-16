@@ -172,7 +172,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [editingOrder, setEditingOrder] = ge.useState(null);
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -365,7 +365,7 @@ ${itemsText}
   ge.useEffect(() => {
     if (adminTab === "orders" && se) {
       const fetchAdminOrders = async () => {
-        const { data, error } = await Or.from("orders").select("*, customer_id(name,phone), salesman_id(name)").order("created_at", { ascending: false });
+        const { data, error } = await Or.from("orders").select("*, customer_id(name,phone,beat), salesman_id(name)").order("created_at", { ascending: false });
         if (!error) setAdminOrders(data || []);
       };
       fetchAdminOrders();
@@ -1852,14 +1852,41 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
+              adminOrderSubTab === "customer" && S.jsxs("div", {
+                style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 12px", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" },
+                children: [
+                  S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted }, children: "Filter by Beat" }),
+                  S.jsxs("select", {
+                    value: adminOrderBeatFilter,
+                    onChange: e => setAdminOrderBeatFilter(e.target.value),
+                    style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12.5, fontWeight: 700, color: C.primary, outline: "none", fontFamily: "'Outfit', sans-serif", cursor: "pointer" },
+                    children: [
+                      S.jsx("option", { value: "all", children: "All Beats" }),
+                      dbBeats.map(b => S.jsx("option", { value: b, children: b }, b))
+                    ]
+                  })
+                ]
+              }),
               adminOrders.filter(x => {
-                if (adminOrderSubTab === "customer") return !x.salesman_id;
+                if (adminOrderSubTab === "customer") {
+                  if (x.salesman_id) return false;
+                  if (adminOrderBeatFilter === "all") return true;
+                  const cb = x.customer_id && typeof x.customer_id === "object" ? x.customer_id.beat : null;
+                  if (adminOrderBeatFilter === "Others") return cb === "Others" || !cb;
+                  return cb === adminOrderBeatFilter;
+                }
                 if (!x.salesman_id) return false;
                 if (selectedSalesmanFilter === "all") return true;
                 return (x.salesman_id && typeof x.salesman_id === "object" ? x.salesman_id.name : "") === selectedSalesmanFilter;
               }).length === 0 ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No orders found." }) :
               adminOrders.filter(x => {
-                if (adminOrderSubTab === "customer") return !x.salesman_id;
+                if (adminOrderSubTab === "customer") {
+                  if (x.salesman_id) return false;
+                  if (adminOrderBeatFilter === "all") return true;
+                  const cb = x.customer_id && typeof x.customer_id === "object" ? x.customer_id.beat : null;
+                  if (adminOrderBeatFilter === "Others") return cb === "Others" || !cb;
+                  return cb === adminOrderBeatFilter;
+                }
                 if (!x.salesman_id) return false;
                 if (selectedSalesmanFilter === "all") return true;
                 return (x.salesman_id && typeof x.salesman_id === "object" ? x.salesman_id.name : "") === selectedSalesmanFilter;
