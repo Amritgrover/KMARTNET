@@ -2290,7 +2290,7 @@ _Contact us to place your order!_`;
             style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:70,padding:"20px 20px 40px",maxHeight:"92vh",overflowY:"auto"},
             children:[
               S.jsx("div",{style:{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
-              S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:18},children:ee?"✏️ Edit Product":"➕ Add New Product"}),
+              S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:18},children:ee?"✏️ Edit Product":"➕ Add New Product"}),ee&&S.jsxs("div",{style:{marginBottom:18,background:C.greenBg,border:`1px solid ${C.green}33`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"},children:[S.jsx("span",{style:{fontSize:13,fontWeight:700,color:C.muted},children:"Current Warehouse Stock"}),S.jsx("span",{style:{fontSize:13.5,fontWeight:800,color:C.green},children:(()=> { const cs=parseInt(ee.cs)||0; const stockVal=typeof ee.stock==="number"?ee.stock:0; return cs>0?`${Math.floor(stockVal/cs)} Cases & ${stockVal%cs} Pcs`:`${stockVal} Pcs` })()})]}),
               Kr.map(([j,J,he,me])=>S.jsxs("div",{
                 style:{marginBottom:13},
                 children:[
