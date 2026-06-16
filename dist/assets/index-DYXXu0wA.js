@@ -660,6 +660,7 @@ _via KMART_`
         setNewCustomerName("");
         setNewCustomerPhone("");
         setCheckoutToken("chk-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9));
+        ue();
         return;
       }
       if (insertErr.code === "42703" || (insertErr.message && insertErr.message.includes("idempotency_key"))) {
@@ -685,6 +686,7 @@ _via KMART_`
     setNewCustomerName("");
     setNewCustomerPhone("");
     ye("🎉 Order placed successfully!");
+    ue();
 
     if (r === "customer" && cust) {
       const { data: newOrders } = await Or.from("orders").select("*, customer_id(name)").eq("customer_id", cust.id).order("created_at", { ascending: false });
