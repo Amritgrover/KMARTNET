@@ -125,6 +125,12 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
             ]
           })
         ]
+      }),S.jsxs("div",{
+        style:{background:C.greenBg,border:`1px solid ${C.green}33`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"},
+        children:[
+          S.jsx("span",{style:{fontSize:12.5,fontWeight:700,color:C.muted},children:"Current Warehouse Stock"}),
+          S.jsx("span",{style:{fontSize:13.5,fontWeight:800,color:C.green},children:(()=> { const cs = parseInt(r.cs) || 0; const stockVal = typeof r.stock === "number" ? r.stock : 0; return cs > 0 ? `${Math.floor(stockVal / cs)} Cases & ${stockVal % cs} Pcs` : `${stockVal} Pcs`; })()})
+        ]
       }),
       (r.customer_price > 0 || (r.tier2_min_qty > 0 && r.tier2_price > 0)) && S.jsxs("div",{
         style:{borderTop:`1px dashed ${C.border}`,paddingTop:10,display:"flex",flexWrap:"wrap",gap:"8px 16px"},
