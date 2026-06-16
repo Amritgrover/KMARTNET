@@ -83,13 +83,13 @@ async function fallbackRowByRowSync(stocksData) {
 async function syncStock(pool) {
   log('Starting stock sync...');
   try {
-    // 1. Fetch stock from Vision database
+    // 1. Fetch stock from Vision database (item table's STOCKBAL column)
     const result = await pool.request().query(`
-      SELECT ITCODE, BALANCE FROM STOCKUPDATE WHERE BALANCE >= 0
+      SELECT ITCODE, STOCKBAL AS BALANCE FROM item WHERE ITCODE > 0
     `);
 
     if (!result.recordset || result.recordset.length === 0) {
-      log('ℹ️ No stock data found in STOCKUPDATE table.');
+      log('ℹ️ No stock data found in item table.');
       return;
     }
 
