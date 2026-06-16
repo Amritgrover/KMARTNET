@@ -2805,12 +2805,12 @@ _Contact us to place your order!_`;
                           style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 },
                           children: [
                             S.jsxs("div", {
-                              style: { display: "flex", alignItems: "center", gap: 12 },
+                              style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" },
                               children: [
                                 S.jsxs("label", {
                                   style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.muted },
                                   children: [
-                                    "Qty:",
+                                    "Qty (PCS):",
                                     S.jsx("input", {
                                       type: "number",
                                       min: "1",
@@ -2827,6 +2827,57 @@ _Contact us to place your order!_`;
                                     })
                                   ]
                                 }),
+                                (() => {
+                                  const cs = p ? (parseInt(p.cs) || 0) : 0;
+                                  return cs > 0 && S.jsxs(S.Fragment, {
+                                    children: [
+                                      S.jsxs("label", {
+                                        style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.muted },
+                                        children: [
+                                          "Cases:",
+                                          S.jsx("input", {
+                                            type: "number",
+                                            min: "0",
+                                            value: Math.floor(item.qty / cs),
+                                            onChange: e => {
+                                              const newCases = parseInt(e.target.value) || 0;
+                                              const loose = item.qty % cs;
+                                              const newQty = (newCases * cs) + loose;
+                                              setEditingOrder(prev => {
+                                                const nextItems = [...prev.items];
+                                                nextItems[index] = { ...nextItems[index], qty: newQty > 0 ? newQty : 1 };
+                                                return { ...prev, items: nextItems };
+                                              });
+                                            },
+                                            style: { width: 45, padding: "4px 6px", borderRadius: 6, border: `1px solid ${C.border}`, outline: "none", fontSize: 12, textAlign: "center" }
+                                          })
+                                        ]
+                                      }),
+                                      S.jsxs("label", {
+                                        style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.muted },
+                                        children: [
+                                          "Loose:",
+                                          S.jsx("input", {
+                                            type: "number",
+                                            min: "0",
+                                            value: item.qty % cs,
+                                            onChange: e => {
+                                              const newLoose = parseInt(e.target.value) || 0;
+                                              const cases = Math.floor(item.qty / cs);
+                                              const newQty = (cases * cs) + newLoose;
+                                              setEditingOrder(prev => {
+                                                const nextItems = [...prev.items];
+                                                nextItems[index] = { ...nextItems[index], qty: newQty > 0 ? newQty : 1 };
+                                                return { ...prev, items: nextItems };
+                                              });
+                                            },
+                                            style: { width: 40, padding: "4px 6px", borderRadius: 6, border: `1px solid ${C.border}`, outline: "none", fontSize: 12, textAlign: "center" }
+                                          })
+                                        ]
+                                      })
+                                    ]
+                                  });
+                                })(),
                                 editingOrder.source === "salesman" && S.jsxs("label", {
                                   style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.muted },
                                   children: [
