@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "mssql": "^12.5.5"
+  }
+}
