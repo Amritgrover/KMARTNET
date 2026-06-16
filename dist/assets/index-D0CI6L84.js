@@ -553,6 +553,11 @@ _via KMART_`
       ye("Please enter customer / shop name.");
       return;
     }
+    if (r === "salesman" && selectedCustomerId === "new" && !newCustomerPhone.trim()) {
+      setNeErr(!0);
+      ye("Please enter new customer phone number.");
+      return;
+    }
 
     setIsSubmittingOrder(!0);
 
@@ -2069,13 +2074,16 @@ _Contact us to place your order!_`;
                         children: [
                           S.jsx("label", {
                             style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
-                            children: "New Customer Phone"
+                            children: "New Customer Phone *"
                           }),
                           S.jsx("input", {
                             value: newCustomerPhone,
-                            onChange: e => setNewCustomerPhone(e.target.value),
-                            placeholder: "e.g. 9876543210 (Optional)",
-                            style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
+                            onChange: e => {
+                              setNewCustomerPhone(e.target.value);
+                              setNeErr(!1);
+                            },
+                            placeholder: "e.g. 9876543210",
+                            style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${neErr && !newCustomerPhone.trim() ? C.red : C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
                           })
                         ]
                       })
