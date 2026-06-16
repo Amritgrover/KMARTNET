@@ -945,11 +945,21 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
-              selectedCustomerId==="new"&&S.jsx("input",{
-                value:z,
-                onChange:j=>{H(j.target.value);setNeErr(!1);},
-                placeholder:"Enter new customer / shop name…",
-                style:{...pl,marginTop:10,border:neErr?`1.5px solid ${C.red}`:`1.5px solid ${C.border}`,background:neErr?C.redBg:"#fff",padding:"8px 12px",borderRadius:8,width:"100%",fontSize:13.5,fontWeight:500,boxSizing:"border-box"}
+              selectedCustomerId==="new"&&S.jsxs(S.Fragment,{
+                children:[
+                  S.jsx("input",{
+                    value:z,
+                    onChange:j=>{H(j.target.value);setNewCustomerName(j.target.value);setNeErr(!1);},
+                    placeholder:"Enter new customer / shop name…",
+                    style:{...pl,marginTop:10,border:neErr && !z.trim()?`1.5px solid ${C.red}`:`1.5px solid ${C.border}`,background:neErr && !z.trim()?C.redBg:"#fff",padding:"8px 12px",borderRadius:8,width:"100%",fontSize:13.5,fontWeight:500,boxSizing:"border-box"}
+                  }),
+                  S.jsx("input",{
+                    value:newCustomerPhone,
+                    onChange:j=>{setNewCustomerPhone(j.target.value);setNeErr(!1);},
+                    placeholder:"Enter new customer phone number…",
+                    style:{...pl,marginTop:8,border:neErr && !newCustomerPhone.trim()?`1.5px solid ${C.red}`:`1.5px solid ${C.border}`,background:neErr && !newCustomerPhone.trim()?C.redBg:"#fff",padding:"8px 12px",borderRadius:8,width:"100%",fontSize:13.5,fontWeight:500,boxSizing:"border-box"}
+                  })
+                ]
               })
             ]
           }),
