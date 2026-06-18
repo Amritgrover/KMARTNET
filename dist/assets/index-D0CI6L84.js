@@ -189,28 +189,149 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   });
 }
 function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h}){
+  const [isOpen,setIsOpen]=ge.useState(false);
   const caseSize=parseInt(r.cs)||0;
   const activeBatches=(r.product_batches||[]).filter(b=>b.stock>0);
   const marginStr=r.mrp>0?((r.mrp-r.tp)/r.mrp*100).toFixed(0):"0";
-  const hasSelectedItems=Object.keys(a).some(k=>k.startsWith(`${r.id}_`) && a[k]>0);
+  const totalQty=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[,q])=>sum+q,0);
+  const totalVal=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[k,q])=>{
+    const bchcode=parseInt(k.split('_')[1])||0;
+    let batchMrp=r.mrp;
+    if(bchcode>0&&r.product_batches){
+      const batch=r.product_batches.find(b=>b.bchcode===bchcode);
+      if(batch)batchMrp=parseFloat(batch.mrp)||r.mrp;
+    }
+    return sum+r.tp*q;
+  },0);
 
-  return S.jsxs("div",{
-    style:{background:C.card,borderRadius:13,padding:14,border:`1.5px solid ${hasSelectedItems?C.green:C.border}`,boxShadow:hasSelectedItems?`0 0 0 3px ${C.greenBg}`:"0 1px 6px rgba(0,0,0,0.06)",transition:"border-color 0.2s, box-shadow 0.2s",display:"flex",flexDirection:"column"},
+  return S.jsxs(S.Fragment,{
     children:[
-      S.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8},children:[S.jsx("div",{style:{width:34,height:34,borderRadius:9,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18},children:$r(r.cat)}),S.jsxs("div",{style:{background:C.accentLight,color:C.accent,fontSize:10,fontWeight:700,padding:"3px 7px",borderRadius:6},children:[marginStr,"% margin"]})]}),
-      S.jsx("div",{style:{fontSize:13,fontWeight:700,color:C.text,lineHeight:1.35,marginBottom:2},children:r.name}),
-      !(r.unit&&["pcs","pcs.","piece","pieces"].includes(r.unit.trim().toLowerCase()))&&S.jsx("div",{style:{fontSize:11.5,color:C.muted,marginBottom:r.desc?5:8},children:r.unit}),
-      r.desc&&S.jsxs("div",{style:{fontSize:11,color:C.accent,fontWeight:500,background:C.accentLight,borderRadius:6,padding:"3px 8px",marginBottom:8,lineHeight:1.45},children:["📝 ",r.desc]}),
-      S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.primary,marginBottom:8},children:un(r.tp)}),
-
-      activeBatches.length > 0 ? S.jsx("div",{
-        style:{display:"flex",flexDirection:"column",gap:10,width:"100%"},
-        children: activeBatches.map(b => {
-          const bKey=`${r.id}_${b.bchcode}`;
-          const bQty=a[bKey]||0;
-          return S.jsx(b_,{p:r,b:b,bKey:bKey,qty:bQty,onInc:s,onDec:l,onSet:h},b.bchcode);
-        })
-      }) : S.jsx(b_,{p:r,b:{batch:"Default",mrp:r.mrp,stock:r.stock},bKey:`${r.id}_0`,qty:a[`${r.id}_0`]||a[r.id]||0,onInc:s,onDec:l,onSet:h})
+      S.jsxs("div",{
+        onClick:()=>setIsOpen(true),
+        style:{background:C.card,borderRadius:13,padding:14,border:`1.5px solid ${totalQty>0?C.green:C.border}`,boxShadow:totalQty>0?`0 0 0 3px ${C.greenBg}`:"0 1px 6px rgba(0,0,0,0.06)",transition:"border-color 0.2s, box-shadow 0.2s",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",width:"100%"},
+        children:[
+          S.jsxs("div",{
+            style:{display:"flex",alignItems:"center",gap:12,flex:1,minWidth:0},
+            children:[
+              S.jsx("div",{
+                style:{width:36,height:36,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0},
+                children:$r(r.cat)
+              }),
+              S.jsxs("div",{
+                style:{display:"flex",flexDirection:"column",minWidth:0},
+                children:[
+                  S.jsx("div",{style:{fontSize:13.5,fontWeight:700,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"},children:r.name}),
+                  S.jsxs("div",{
+                    style:{display:"flex",alignItems:"center",gap:8,marginTop:2},
+                    children:[
+                      S.jsx("span",{style:{fontSize:11.5,color:C.muted},children:r.unit}),
+                      r.desc&&S.jsx("span",{style:{fontSize:11,color:C.accent,fontWeight:500,background:C.accentLight,borderRadius:4,padding:"1px 6px"},children:r.desc})
+                    ]
+                  })
+                ]
+              })
+            ]
+          }),
+          S.jsxs("div",{
+            style:{display:"flex",alignItems:"center",gap:16,flexShrink:0},
+            children:[
+              S.jsxs("div",{
+                style:{display:"flex",flexDirection:"column",alignItems:"flex-end"},
+                children:[
+                  S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.primary},children:un(r.tp)}),
+                  S.jsxs("div",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,marginTop:2},children:[marginStr,"% margin"]})
+                ]
+              }),
+              totalQty>0?S.jsxs("div",{
+                style:{background:C.greenBg,border:`1.5px solid ${C.green}`,borderRadius:8,padding:"6px 12px",display:"flex",alignItems:"center",gap:6},
+                children:[
+                  S.jsx("span",{style:{fontSize:12,fontWeight:800,color:C.green},children:`${totalQty} Pcs`}),
+                  S.jsx("span",{style:{fontSize:10,color:C.green},children:"✏️"})
+                ]
+              }):S.jsxs("div",{
+                style:{background:C.primary,borderRadius:8,padding:"6px 12px",display:"flex",alignItems:"center",justifyContent:"center"},
+                children:[
+                  S.jsx("span",{style:{fontSize:12,fontWeight:700,color:"#fff"},children:"+ Add"})
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      isOpen&&S.jsxs("div",{
+        style:{position:"fixed",top:0,left:0,width:"100vw",height:"100vh",background:"rgba(0,0,0,0.6)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:99999,padding:16,backdropFilter:"blur(4px)"},
+        onClick:()=>setIsOpen(false),
+        children:[
+          S.jsxs("div",{
+            style:{background:"#fff",borderRadius:16,width:"100%",maxWidth:480,maxHeight:"85vh",display:"flex",flexDirection:"column",boxShadow:"0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04)",overflow:"hidden"},
+            onClick:e=>e.stopPropagation(),
+            children:[
+              S.jsxs("div",{
+                style:{padding:"16px 20px",borderBottom:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.primaryLight},
+                children:[
+                  S.jsxs("div",{
+                    style:{display:"flex",alignItems:"center",gap:12},
+                    children:[
+                      S.jsx("div",{
+                        style:{width:36,height:36,borderRadius:10,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20},
+                        children:$r(r.cat)
+                      }),
+                      S.jsxs("div",{
+                        children:[
+                          S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.text},children:r.name}),
+                          S.jsx("div",{style:{fontSize:12,color:C.muted},children:r.unit})
+                        ]
+                      })
+                    ]
+                  }),
+                  S.jsx("button",{
+                    onClick:()=>setIsOpen(false),
+                    style:{border:"none",background:"transparent",fontSize:22,cursor:"pointer",color:C.muted},
+                    children:"×"
+                  })
+                ]
+              }),
+              S.jsx("div",{
+                style:{padding:20,overflowY:"auto",display:"flex",flexDirection:"column",gap:16},
+                children:activeBatches.length>0?activeBatches.map(b=>{
+                  const bKey=`${r.id}_${b.bchcode}`;
+                  const bQty=a[bKey]||0;
+                  return S.jsxs("div",{
+                    style:{background:"#f8fafc",borderRadius:12,padding:12,border:`1.5px solid ${bQty>0?C.green:C.border}`},
+                    children:[
+                      S.jsx(b_,{p:r,b:b,bKey:bKey,qty:bQty,onInc:s,onDec:l,onSet:h},b.bchcode)
+                    ]
+                  },b.bchcode);
+                }):S.jsx("div",{
+                  style:{background:"#f8fafc",borderRadius:12,padding:12,border:`1.5px solid ${C.border}`},
+                  children:[
+                    S.jsx(b_,{p:r,b:{batch:"Default",mrp:r.mrp,stock:r.stock},bKey:`${r.id}_0`,qty:a[`${r.id}_0`]||a[r.id]||0,onInc:s,onDec:l,onSet:h})
+                  ]
+                })
+              }),
+              S.jsxs("div",{
+                style:{padding:"16px 20px",borderTop:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#f8fafc"},
+                children:[
+                  S.jsxs("div",{
+                    children:[
+                      S.jsx("div",{style:{fontSize:11,color:C.muted,fontWeight:600},children:"TOTAL SELECTED"}),
+                      S.jsxs("div",{
+                        style:{fontSize:16,fontWeight:800,color:C.primary},
+                        children:[totalQty," Pcs (",un(totalVal),")"]
+                      })
+                    ]
+                  }),
+                  S.jsx("button",{
+                    onClick:()=>setIsOpen(false),
+                    style:{padding:"8px 20px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:13.5,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                    children:"Done"
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      })
     ]
   });
 }function a_({p:r,onEdit:a,onDelete:s}){
@@ -1217,7 +1338,8 @@ _Contact us to place your order!_`;
               S.jsx("div",{style:{fontSize:12,marginTop:6},children:"Try a different search or category"})
             ]
           }):S.jsx("div",{
-            className:"product-grid",style:{gap:12},
+            className:r==="customer"?"product-grid":"",
+            style:r==="customer"?{gap:12}:{display:"flex",flexDirection:"column",gap:12,width:"100%"},
             children:Ue.map(j=>r==="customer"?S.jsx(t_,{p:j,qty:v[j.id]||0,onAdd:()=>Nn(j.id,1),onInc:()=>Nn(j.id,1),onDec:()=>Nn(j.id,-1),onSet:J=>Nt(j.id,J)},j.id):S.jsx(n_,{p:j,cart:v,onInc:Nn,onDec:Nn,onSet:Nt},j.id))
           })),
           r==="customer"&&(Ot>0?S.jsxs("button",{
