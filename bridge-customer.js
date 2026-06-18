@@ -332,11 +332,37 @@ sql.connect(CONFIG.sqlServer).then(pool => {
             const vItem = await getVisionItem(pool, prodInfo.vision_product_id);
             if (!vItem) throw new Error(`ITCODE ${prodInfo.vision_product_id} not found in Vision`);
 
-            const batchInfo = await getVisionBatch(pool, prodInfo.vision_product_id);
-            const bchcode = batchInfo ? batchInfo.BCHCODE : 0;
-            const batch = batchInfo ? batchInfo.BATCH : '';
-            const bexpiry = (batchInfo && batchInfo.EXPIRYDATE) ? new Date(batchInfo.EXPIRYDATE).toLocaleDateString('en-IN') : '';
-            const mrp = batchInfo ? batchInfo.MRP : (vItem.MRP || prodInfo.mrp || 0);
+            let bchcode = item.bchcode || 0;
+            let mrp = item.mrp || (vItem.MRP || prodInfo.mrp || 0);
+            let batch = '';
+            let bexpiry = '';
+
+            if (bchcode > 0) {
+              const bResult = await pool.request()
+                .input('itcode', sql.Int, prodInfo.vision_product_id)
+                .input('bchcode', sql.Int, bchcode)
+                .query(`
+                  SELECT BATCH, EXPIRYDATE, MRP
+                  FROM Batch_master
+                  WHERE ITCODE = @itcode AND BCHCODE = @bchcode
+                `);
+              if (bResult.recordset.length > 0) {
+                const bInfo = bResult.recordset[0];
+                batch = bInfo.BATCH || '';
+                bexpiry = ''; // Defaulting BEXPIRY to ''
+                mrp = bInfo.MRP || mrp;
+              } else {
+                bchcode = 0;
+              }
+            }
+
+            if (bchcode === 0) {
+              const batchInfo = await getVisionBatch(pool, prodInfo.vision_product_id);
+              bchcode = batchInfo ? batchInfo.BCHCODE : 0;
+              batch = batchInfo ? batchInfo.BATCH : '';
+              bexpiry = ''; // Defaulting BEXPIRY to ''
+              mrp = batchInfo ? batchInfo.MRP : (vItem.MRP || prodInfo.mrp || 0);
+            }
 
             const caseSize = vItem.PACK1 || 1;
             const gstRate  = (vItem.SGST || 0) + (vItem.CGST || 0);

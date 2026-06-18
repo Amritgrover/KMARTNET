@@ -83,51 +83,119 @@ async function fallbackRowByRowSync(stocksData) {
 async function syncStock(pool) {
   log('Starting stock sync...');
   try {
-    // 1. Fetch stock from Vision database (item table's STOCKBAL column)
+    // 1. Fetch products from Supabase
+    const { data: dbProducts, error: prodErr } = await supabase
+      .from('products')
+      .select('id, vision_product_id');
+
+    if (prodErr) throw prodErr;
+
+    const prodMap = new Map();
+    const productStockMap = new Map();
+    dbProducts.forEach(p => {
+      if (p.vision_product_id) {
+        prodMap.set(p.vision_product_id, p.id);
+      }
+      productStockMap.set(p.id, 0); // Initialize stock to 0
+    });
+
+    // 2. Fetch stock and batch details from Vision database (Batch_master table)
     const result = await pool.request().query(`
-      SELECT ITCODE, STOCKBAL AS BALANCE FROM item WHERE ITCODE > 0
+      SELECT ITCODE, BCHCODE, BATCH, STOCKBAL, MRP FROM Batch_master WHERE ITCODE > 0
     `);
 
     if (!result.recordset || result.recordset.length === 0) {
-      log('ℹ️ No stock data found in item table.');
+      log('ℹ️ No stock/batch data found in Batch_master table.');
       return;
     }
 
-    // 2. Format database rows
-    const stocksData = result.recordset.map(row => ({
-      vision_product_id: row.ITCODE,
-      stock: Math.max(0, Math.floor(row.BALANCE)) // Ensure non-negative integers
-    }));
+    // 3. Format database rows for product_batches and determine main product properties
+    const batchesData = [];
+    const productMrpMap = new Map();
 
-    log(`Retrieved ${stocksData.length} records from Vision. Syncing to Supabase...`);
+    dbProducts.forEach(p => {
+      productMrpMap.set(p.id, null);
+    });
 
-    // 3. Attempt RPC Bulk Update
-    const { error: rpcError } = await supabase.rpc('update_product_stocks', { p_stocks: stocksData });
-
-    if (rpcError) {
-      // Check if function does not exist (PGRST202 or similar status/message)
-      const fnNotExist = rpcError.code === 'PGRST202' || 
-                         rpcError.message.includes('does not exist') ||
-                         rpcError.message.includes('function');
-      
-      if (fnNotExist) {
-        log(`💡 Info: Custom function 'update_product_stocks' not found in Supabase.`);
-        log(`   For 50x faster syncing, run the bulk update SQL in your Supabase SQL Editor.`);
-        
-        // Run fallback row-by-row sync
-        const success = await fallbackRowByRowSync(stocksData);
-        if (success) {
-          log(`✅ Stock sync completed successfully using fallback mode.`);
+    // Group batches by product id
+    const batchesByProduct = new Map();
+    result.recordset.forEach(row => {
+      const productId = prodMap.get(row.ITCODE);
+      if (productId) {
+        if (!batchesByProduct.has(productId)) {
+          batchesByProduct.set(productId, []);
         }
-      } else if (rpcError.message.includes('stock') || rpcError.code === 'PGRST204') {
-        log(`🛑 Database Error: The 'stock' column is missing from your 'products' table in Supabase.`);
-        log(`   Please run this in your Supabase SQL Editor: ALTER TABLE products ADD COLUMN stock INTEGER DEFAULT 0;`);
-      } else {
-        throw rpcError;
+        batchesByProduct.get(productId).push(row);
       }
-    } else {
-      log(`📦 Stock synced successfully! — ${stocksData.length} items updated (Bulk RPC mode).`);
+    });
+
+    for (const [productId, rows] of batchesByProduct.entries()) {
+      // Sort rows to select active batch MRP:
+      // Prioritize rows with stock > 0, then by BCHCODE descending (latest batch)
+      const sortedRows = [...rows].sort((a, b) => {
+        const aStock = a.STOCKBAL > 0 ? 1 : 0;
+        const bStock = b.STOCKBAL > 0 ? 1 : 0;
+        if (aStock !== bStock) return bStock - aStock; // Positive stock first
+        return b.BCHCODE - a.BCHCODE; // Higher BCHCODE first
+      });
+
+      const activeRow = sortedRows[0];
+      if (activeRow) {
+        productMrpMap.set(productId, parseFloat(activeRow.MRP) || 0);
+      }
+
+      rows.forEach(row => {
+        const stock = Math.max(0, Math.floor(row.STOCKBAL));
+        batchesData.push({
+          product_id: productId,
+          bchcode: row.BCHCODE,
+          batch: row.BATCH || '',
+          mrp: parseFloat(row.MRP) || 0,
+          stock: stock
+        });
+        productStockMap.set(productId, productStockMap.get(productId) + stock);
+      });
     }
+
+    log(`Retrieved ${batchesData.length} active batch records from Vision.`);
+
+    // 4. Upsert product_batches in Supabase
+    const { error: upsertErr } = await supabase
+      .from('product_batches')
+      .upsert(batchesData, { onConflict: 'product_id,bchcode' });
+
+    if (upsertErr) throw upsertErr;
+    log('✅ Synchronized product batches to Supabase.');
+
+    // 5. Update main product stock and MRP in Supabase (chunked updates to avoid identity column constraints)
+    const productsUpdateData = Array.from(productStockMap.entries()).map(([id, stock]) => {
+      const mrp = productMrpMap.get(id);
+      const updateObj = { id, stock };
+      if (mrp !== null && mrp !== undefined) {
+        updateObj.mrp = mrp;
+      }
+      return updateObj;
+    });
+
+    log(`Syncing ${productsUpdateData.length} product stocks and MRPs to Supabase...`);
+    const chunkSize = 20;
+    for (let i = 0; i < productsUpdateData.length; i += chunkSize) {
+      const chunk = productsUpdateData.slice(i, i + chunkSize);
+      await Promise.all(chunk.map(async (item) => {
+        const updatePayload = { stock: item.stock };
+        if (item.mrp !== undefined) {
+          updatePayload.mrp = item.mrp;
+        }
+        const { error } = await supabase
+          .from('products')
+          .update(updatePayload)
+          .eq('id', item.id);
+        if (error) {
+          log(`❌ Failed to update product ID ${item.id}: ${error.message}`);
+        }
+      }));
+    }
+    log(`✅ Synchronized main product stocks and MRPs to Supabase.`);
 
   } catch (err) {
     log(`❌ Error during stock sync: ${err.message}`);
