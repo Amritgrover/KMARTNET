@@ -178,7 +178,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -1034,16 +1034,55 @@ _Contact us to place your order!_`;
             style:{marginTop:22,width:"100%",padding:"14px",background:C.primary,color:"#fff",border:"none",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 14px rgba(20,83,45,0.35)"},
             children:[ct.bag," View Order (",Ot," items · ",un(tn),")"]
           }),
-          r==="salesman" && salesmanTab === "orders" && S.jsxs("div", {
-            children: [
-              S.jsx("div", {
-                style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 },
-                children: "Your Submitted Orders"
-              }),
-              salesmanOrders.length === 0 ? S.jsx("div", {
-                style: { textAlign: "center", color: C.muted, padding: "40px 0", fontSize: 13.5 },
-                children: "No orders found."
-              }) : salesmanOrders.map(o => {
+          r==="salesman" && salesmanTab === "orders" && (() => {
+            const filteredOrders = salesmanOrders.filter(x => {
+              if (salesmanOrderDateFilter) {
+                const d = new Date(x.created_at);
+                const yyyymmdd = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+                return yyyymmdd === salesmanOrderDateFilter;
+              }
+              return true;
+            });
+            const totalSales = filteredOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
+            return S.jsxs("div", {
+              children: [
+                S.jsxs("div", {
+                  style: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 12 },
+                  children: [
+                    S.jsx("div", {
+                      style: { fontSize: 15, fontWeight: 800, color: C.text },
+                      children: "Your Submitted Orders"
+                    }),
+                    S.jsxs("div", {
+                      style: { display: "flex", alignItems: "center", gap: 6 },
+                      children: [
+                        S.jsx("span", { style: { fontSize: 12, fontWeight: 700, color: C.muted }, children: "Date:" }),
+                        S.jsx("input", {
+                          type: "date",
+                          value: salesmanOrderDateFilter,
+                          onChange: e => setSalesmanOrderDateFilter(e.target.value),
+                          style: { padding: "3px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12.5, fontWeight: 700, color: C.primary, outline: "none", fontFamily: "'Outfit', sans-serif", cursor: "pointer" }
+                        }),
+                        salesmanOrderDateFilter && S.jsx("button", {
+                          onClick: () => setSalesmanOrderDateFilter(""),
+                          style: { background: "none", border: "none", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", padding: "4px 6px" },
+                          children: "Clear"
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                S.jsxs("div", {
+                  style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: C.greenBg, border: `1px solid ${C.green}30`, borderRadius: 10, padding: "10px 14px", marginBottom: 12 },
+                  children: [
+                    S.jsx("span", { style: { fontSize: 13, fontWeight: 700, color: C.green }, children: salesmanOrderDateFilter ? "Total Sale for Selected Day:" : "Total Sale (All Days):" }),
+                    S.jsx("span", { style: { fontSize: 15, fontWeight: 800, color: C.green }, children: un(totalSales) })
+                  ]
+                }),
+                filteredOrders.length === 0 ? S.jsx("div", {
+                  style: { textAlign: "center", color: C.muted, padding: "40px 0", fontSize: 13.5 },
+                  children: "No orders found."
+                }) : filteredOrders.map(o => {
                 const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
                 const custName = o.customer_id && typeof o.customer_id === "object" ? o.customer_id.name : "Unknown Customer";
                 return S.jsxs("div", {
@@ -1147,7 +1186,7 @@ _Contact us to place your order!_`;
                 }, o.id)
               })
             ]
-          })
+          }) })()
         ]
       }),
       r==="admin"&&se&&S.jsxs("div",{
