@@ -218,9 +218,9 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const caseSize=parseInt(r.cs)||0;
   const activeBatches=(r.product_batches||[]).filter(b=>b.stock>0);
   const marginStr=r.mrp>0?((r.mrp-r.tp)/r.mrp*100).toFixed(0):"0";
-  const totalQty=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[,q])=>sum+q,0);
+  const totalQty=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[,q])=>sum+q,0);
   const disc=parseFloat(T[r.id])||0;
-  const totalVal=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[,q])=>sum+r.tp*q*(1-disc/100),0);
+  const totalVal=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[,q])=>sum+r.tp*q*(1-disc/100),0);
 
   return S.jsxs(S.Fragment,{
     children:[
