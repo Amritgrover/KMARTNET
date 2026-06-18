@@ -73,7 +73,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
         style:{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,fontWeight:700},
         children:[
           S.jsxs("span",{style:{color:C.text},children:[b.batch==="Default"?"Default Batch":`Batch: ${b.batch}`]}),
-          S.jsxs("span",{style:{color:C.primary},children:["MRP: ₹",b.mrp," | TP: ₹",r.tp]})
+          S.jsxs("span",{style:{color:C.primary},children:["MRP: ₹",b.mrp," | TP: ",un(r.tp*(1-(T&&T[r.id]?parseFloat(T[r.id])||0:0)/100))]})
         ]
       }),
       S.jsxs("div",{
@@ -256,7 +256,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
               S.jsxs("div",{
                 style:{display:"flex",flexDirection:"column",alignItems:"flex-end"},
                 children:[
-                  S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.primary},children:un(r.tp)}),
+                  S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.primary},children:un(r.tp*(1-disc/100))}),
                   S.jsxs("div",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,marginTop:2},children:[marginStr,"% margin"]})
                 ]
               }),
