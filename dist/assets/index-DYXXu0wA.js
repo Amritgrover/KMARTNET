@@ -73,7 +73,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
         style:{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,fontWeight:700},
         children:[
           S.jsxs("span",{style:{color:C.text},children:[b.batch==="Default"?"Default Batch":`Batch: ${b.batch}`]}),
-          S.jsxs("span",{style:{color:C.primary},children:["MRP: ₹",b.mrp]})
+          S.jsxs("span",{style:{color:C.primary},children:["MRP: ₹",b.mrp," | TP: ₹",r.tp]})
         ]
       }),
       S.jsxs("div",{
@@ -219,15 +219,8 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const activeBatches=(r.product_batches||[]).filter(b=>b.stock>0);
   const marginStr=r.mrp>0?((r.mrp-r.tp)/r.mrp*100).toFixed(0):"0";
   const totalQty=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[,q])=>sum+q,0);
-  const totalVal=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[k,q])=>{
-    const bchcode=parseInt(k.split('_')[1])||0;
-    let batchMrp=r.mrp;
-    if(bchcode>0&&r.product_batches){
-      const batch=r.product_batches.find(b=>b.bchcode===bchcode);
-      if(batch)batchMrp=parseFloat(batch.mrp)||r.mrp;
-    }
-    return sum+r.tp*q;
-  },0);
+  const disc=parseFloat(T[r.id])||0;
+  const totalVal=Object.entries(a).filter(([k,q])=>k.startsWith(`${r.id}_`)&&q>0).reduce((sum,[,q])=>sum+r.tp*q*(1-disc/100),0);
 
   return S.jsxs(S.Fragment,{
     children:[
