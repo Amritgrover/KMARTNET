@@ -216,7 +216,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
 function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [isOpen,setIsOpen]=ge.useState(false);
   const caseSize=parseInt(r.cs)||0;
-  const activeBatches=(r.product_batches||[]).filter(b=>b.stock>0);
+  const activeBatches=(r.product_batches||[]).filter(b=>b.stock>0&&b.bchcode>0);
   const marginStr=r.mrp>0?((r.mrp-r.tp)/r.mrp*100).toFixed(0):"0";
   const totalQty=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[,q])=>sum+q,0);
   const disc=parseFloat(T[r.id])||0;
