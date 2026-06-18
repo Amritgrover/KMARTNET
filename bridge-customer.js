@@ -50,6 +50,18 @@ async function getVisionItem(pool, itcode) {
   return result.recordset[0] || null;
 }
 
+async function getVisionBatch(pool, itcode) {
+  const result = await pool.request()
+    .input('itcode', sql.Int, itcode)
+    .query(`
+      SELECT BCHCODE, BATCH, EXPIRYDATE, MRP
+      FROM Batch_master
+      WHERE ITCODE = @itcode
+      ORDER BY CASE WHEN STOCKBAL > 0 THEN 0 ELSE 1 END, EXPIRYDATE ASC, BCHCODE DESC
+    `);
+  return result.recordset[0] || null;
+}
+
 async function insertBillRow(pool, p) {
   const qty     = (p.pkg * p.nugs) + p.looseqty;
   const amt     = parseFloat((p.rate * qty).toFixed(2));
@@ -73,9 +85,9 @@ async function insertBillRow(pool, p) {
   r.input('CCR',       sql.Float,        0);
   r.input('ITCODE',    sql.Int,          p.itcode);
   r.input('BARCODE',   sql.NVarChar(50), String(p.itcode));
-  r.input('BCHCODE',   sql.Int,          0);
-  r.input('BATCH',     sql.NVarChar(50), '');
-  r.input('BEXPIRY',   sql.NVarChar(50), '');
+  r.input('BCHCODE',   sql.Int,          p.bchcode || 0);
+  r.input('BATCH',     sql.NVarChar(50), p.batch || '');
+  r.input('BEXPIRY',   sql.NVarChar(50), p.bexpiry || '');
   r.input('MRP',       sql.Float,        p.mrp || 0);
   r.input('CLRCODE',   sql.Int,          0);
   r.input('CLRNAME',   sql.NVarChar(50), '');
@@ -320,6 +332,12 @@ sql.connect(CONFIG.sqlServer).then(pool => {
             const vItem = await getVisionItem(pool, prodInfo.vision_product_id);
             if (!vItem) throw new Error(`ITCODE ${prodInfo.vision_product_id} not found in Vision`);
 
+            const batchInfo = await getVisionBatch(pool, prodInfo.vision_product_id);
+            const bchcode = batchInfo ? batchInfo.BCHCODE : 0;
+            const batch = batchInfo ? batchInfo.BATCH : '';
+            const bexpiry = (batchInfo && batchInfo.EXPIRYDATE) ? new Date(batchInfo.EXPIRYDATE).toLocaleDateString('en-IN') : '';
+            const mrp = batchInfo ? batchInfo.MRP : (vItem.MRP || prodInfo.mrp || 0);
+
             const caseSize = vItem.PACK1 || 1;
             const gstRate  = (vItem.SGST || 0) + (vItem.CGST || 0);
             const pkg      = Math.floor(item.qty / caseSize);
@@ -332,7 +350,7 @@ sql.connect(CONFIG.sqlServer).then(pool => {
               orderDate: order.created_at, des: vItem.ITNAME,
               pkg, nugs: caseSize, looseqty, rate: item.price,
               taxp: gstRate, salecode: vItem.SALECODE || 0,
-              mrp: vItem.MRP || prodInfo.mrp || 0,
+              mrp, bchcode, batch, bexpiry,
             });
           }
 
