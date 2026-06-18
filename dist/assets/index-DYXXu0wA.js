@@ -428,13 +428,45 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
             ]
           })
         ]
-      }),S.jsxs("div",{
-        style:{background:C.greenBg,border:`1px solid ${C.green}33`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"},
-        children:[
-          S.jsx("span",{style:{fontSize:12.5,fontWeight:700,color:C.muted},children:"Current Warehouse Stock"}),
-          S.jsx("span",{style:{fontSize:13.5,fontWeight:800,color:C.green},children:(()=> { const cs = parseInt(r.cs) || 0; const stockVal = typeof r.stock === "number" ? r.stock : 0; return cs > 0 ? `${Math.floor(stockVal / cs)} Cases & ${stockVal % cs} Pcs` : `${stockVal} Pcs`; })()})
-        ]
-      }),
+      }),(()=> {
+        const cs = parseInt(r.cs) || 0;
+        const activeBatches = (r.product_batches || []).filter(b => b.stock > 0 && b.bchcode > 0);
+        const formatStock = (stockVal) => {
+          return cs > 0 ? `${Math.floor(stockVal / cs)} Cs & ${stockVal % cs} Pcs` : `${stockVal} Pcs`;
+        };
+        if (activeBatches.length > 0) {
+          return S.jsxs("div", {
+            style: { background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 6 },
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.2px solid ${C.green}22`, paddingBottom: 4, marginBottom: 2 },
+                children: [
+                  S.jsx("span", { style: { fontSize: 12, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock" }),
+                  S.jsx("span", { style: { fontSize: 13, fontWeight: 800, color: C.green }, children: formatStock(r.stock) })
+                ]
+              }),
+              activeBatches.map(b => (
+                S.jsxs("div", {
+                  key: b.id || b.bchcode,
+                  style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5 },
+                  children: [
+                    S.jsxs("span", { style: { color: C.text, fontWeight: 600 }, children: [b.batch ? `Batch: ${b.batch}` : "Default Batch", b.mrp > 0 ? ` (MRP: ₹${b.mrp})` : ""] }),
+                    S.jsx("span", { style: { color: C.green, fontWeight: 700 }, children: formatStock(b.stock) })
+                  ]
+                })
+              ))
+            ]
+          });
+        }
+        const stockVal = typeof r.stock === "number" ? r.stock : 0;
+        return S.jsxs("div", {
+          style: { background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+          children: [
+            S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock" }),
+            S.jsx("span", { style: { fontSize: 13.5, fontWeight: 800, color: C.green }, children: cs > 0 ? `${Math.floor(stockVal / cs)} Cases & ${stockVal % cs} Pcs` : `${stockVal} Pcs` })
+          ]
+        });
+      })(),
       (r.customer_price > 0 || (r.tier2_min_qty > 0 && r.tier2_price > 0)) && S.jsxs("div",{
         style:{borderTop:`1px dashed ${C.border}`,paddingTop:10,display:"flex",flexWrap:"wrap",gap:"8px 16px"},
         children:[
@@ -2755,7 +2787,45 @@ _Contact us to place your order!_`;
             style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:70,padding:"20px 20px 40px",maxHeight:"92vh",overflowY:"auto"},
             children:[
               S.jsx("div",{style:{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
-              S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:18},children:ee?"✏️ Edit Product":"➕ Add New Product"}),ee&&S.jsxs("div",{style:{marginBottom:18,background:C.greenBg,border:`1px solid ${C.green}33`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"},children:[S.jsx("span",{style:{fontSize:13,fontWeight:700,color:C.muted},children:"Current Warehouse Stock"}),S.jsx("span",{style:{fontSize:13.5,fontWeight:800,color:C.green},children:(()=> { const cs=parseInt(ee.cs)||0; const stockVal=typeof ee.stock==="number"?ee.stock:0; return cs>0?`${Math.floor(stockVal/cs)} Cases & ${stockVal%cs} Pcs`:`${stockVal} Pcs` })()})]}),
+              S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:18},children:ee?"✏️ Edit Product":"➕ Add New Product"}),ee&&(() => {
+  const cs = parseInt(ee.cs) || 0;
+  const activeBatches = (ee.product_batches || []).filter(b => b.stock > 0 && b.bchcode > 0);
+  const formatStock = (stockVal) => {
+    return cs > 0 ? `${Math.floor(stockVal / cs)} Cs & ${stockVal % cs} Pcs` : `${stockVal} Pcs`;
+  };
+  if (activeBatches.length > 0) {
+    return S.jsxs("div", {
+      style: { marginBottom: 18, background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 6 },
+      children: [
+        S.jsxs("div", {
+          style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.2px solid ${C.green}22`, paddingBottom: 4, marginBottom: 2 },
+          children: [
+            S.jsx("span", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock" }),
+            S.jsx("span", { style: { fontSize: 13, fontWeight: 800, color: C.green }, children: formatStock(ee.stock) })
+          ]
+        }),
+        activeBatches.map(b => (
+          S.jsxs("div", {
+            key: b.id || b.bchcode,
+            style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5 },
+            children: [
+              S.jsxs("span", { style: { color: C.text, fontWeight: 600 }, children: [b.batch ? `Batch: ${b.batch}` : "Default Batch", b.mrp > 0 ? ` (MRP: ₹${b.mrp})` : ""] }),
+              S.jsx("span", { style: { color: C.green, fontWeight: 700 }, children: formatStock(b.stock) })
+            ]
+          })
+        ))
+      ]
+    });
+  }
+  const stockVal = typeof ee.stock === "number" ? ee.stock : 0;
+  return S.jsxs("div", {
+    style: { marginBottom: 18, background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+    children: [
+      S.jsx("span", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock" }),
+      S.jsx("span", { style: { fontSize: 13.5, fontWeight: 800, color: C.green }, children: cs > 0 ? `${Math.floor(stockVal / cs)} Cases & ${stockVal % cs} Pcs` : `${stockVal} Pcs` })
+    ]
+  });
+})(),
               Kr.map(([j,J,he,me])=>S.jsxs("div",{
                 style:{marginBottom:13},
                 children:[
