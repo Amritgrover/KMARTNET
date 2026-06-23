@@ -1656,44 +1656,96 @@ _Contact us to place your order!_`;
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:13},children:S.jsx(iy,{value:f,onChange:y})}),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:12},children:S.jsx(i_,{categories:Pe,active:g,onChange:l=>{m(l),setSelectedBrand("All")}})}),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsxs("div", {
-            style: { marginTop: 10, marginBottom: 12 },
+            style: { marginTop: 10, marginBottom: 16 },
             children: [
               S.jsx("div", {
-                style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 },
+                style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 },
                 children: "SHOP BY BRAND"
               }),
               S.jsx("div", {
-                style: { display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" },
-                children: dbBrands.map(b => S.jsx("button", {
+                style: { display: "flex", gap: 14, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" },
+                children: dbBrands.map(b => S.jsxs("div", {
                   onClick: () => {
                     setSelectedBrand(b.name);
                     m("All");
                   },
                   style: {
-                    padding: "6px 14px",
-                    borderRadius: 20,
-                    border: `1.5px solid 	ext{selectedBrand === b.name ? C.primary : C.border}`,
-                    background: selectedBrand === b.name ? C.primary : "#fff",
-                    color: selectedBrand === b.name ? "#fff" : C.muted,
-                    fontSize: 12,
-                    fontWeight: selectedBrand === b.name ? 700 : 500,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
                     cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    fontFamily: "'Outfit', sans-serif",
-                    transition: "all 0.15s",
-                    flexShrink: 0
+                    flexShrink: 0,
+                    width: 72,
+                    textAlign: "center",
+                    userSelect: "none"
                   },
-                  children: S.jsxs("span", {
-                    style: { display: "flex", alignItems: "center", gap: 6 },
-                    children: [
-                      b.image_url && S.jsx("img", {
-                        src: b.image_url,
-                        alt: b.name,
-                        style: { width: 18, height: 18, borderRadius: "50%", objectFit: "cover" }
-                      }),
-                      S.jsx("span", { children: b.name })
-                    ]
-                  })
+                  children: [
+                    S.jsx("div", {
+                      style: {
+                        width: 54,
+                        height: 54,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: `2px solid ${selectedBrand === b.name ? C.primary : C.border}`,
+                        boxShadow: selectedBrand === b.name ? `0 0 0 2px ${C.primaryLight}` : "none",
+                        background: "#fff",
+                        padding: 2,
+                        transition: "all 0.15s ease-in-out"
+                      },
+                      children: b.name === "All"
+                        ? S.jsx("div", {
+                            style: {
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: "50%",
+                              background: selectedBrand === "All" ? C.primary : C.bg,
+                              color: selectedBrand === "All" ? "#fff" : C.muted,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 13,
+                              fontWeight: 800
+                            },
+                            children: "ALL"
+                          })
+                        : b.image_url 
+                          ? S.jsx("img", {
+                              src: b.image_url,
+                              alt: b.name,
+                              style: { width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }
+                            })
+                          : S.jsx("div", {
+                              style: {
+                                width: "100%",
+                                height: "100%",
+                                borderRadius: "50%",
+                                background: C.primaryLight,
+                                color: C.primary,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 16,
+                                fontWeight: 800
+                              },
+                              children: b.name.charAt(0).toUpperCase()
+                            })
+                    }),
+                    S.jsx("div", {
+                      style: {
+                        fontSize: 11,
+                        fontWeight: selectedBrand === b.name ? 700 : 500,
+                        color: selectedBrand === b.name ? C.primary : C.muted,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        width: "100%"
+                      },
+                      children: b.name
+                    })
+                  ]
                 }, b.name))
               })
             ]
