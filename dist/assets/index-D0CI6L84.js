@@ -791,7 +791,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [adminCustLat, setAdminCustLat] = ge.useState("");const [adminCustLng, setAdminCustLng] = ge.useState("");const [editCustLat, setEditCustLat] = ge.useState("");const [editCustLng, setEditCustLng] = ge.useState("");const [gpsConfirm, setGpsConfirm] = ge.useState(null);const [adminCustSearch, setAdminCustSearch] = ge.useState("");const parseGPS = hex => { if (!hex || hex.length !== 50) return null; const hToD = h => { const b = new Uint8Array(8); for (let i = 0; i < 8; i++) b[i] = parseInt(h.substring(i * 2, i * 2 + 2), 16); return new DataView(b.buffer).getFloat64(0, true); }; return { lat: hToD(hex.substring(34, 50)), lng: hToD(hex.substring(18, 34)) }; };const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [adminCustLat, setAdminCustLat] = ge.useState("");const [adminCustLng, setAdminCustLng] = ge.useState("");const [editCustLat, setEditCustLat] = ge.useState("");const [editCustLng, setEditCustLng] = ge.useState("");const [gpsConfirm, setGpsConfirm] = ge.useState(null);const [adminCustSearch, setAdminCustSearch] = ge.useState("");const [addCustExpanded, setAddCustExpanded] = ge.useState(false);const parseGPS = hex => { if (!hex || hex.length !== 50) return null; const hToD = h => { const b = new Uint8Array(8); for (let i = 0; i < 8; i++) b[i] = parseInt(h.substring(i * 2, i * 2 + 2), 16); return new DataView(b.buffer).getFloat64(0, true); }; return { lat: hToD(hex.substring(34, 50)), lng: hToD(hex.substring(18, 34)) }; };const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -2511,106 +2511,126 @@ _Contact us to place your order!_`;
               S.jsxs("div", {
                 style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 14, marginBottom: 16 },
                 children: [
-                  S.jsx("div", { style: { fontWeight: 700, fontSize: 13.5, color: C.text, marginBottom: 10 }, children: "Add New Customer" }),
                   S.jsxs("div", {
-                    style: { display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 },
+                    onClick: () => setAddCustExpanded(!addCustExpanded),
+                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontWeight: 700, fontSize: 13.5, color: C.text, userSelect: "none" },
                     children: [
-                      S.jsx("input", {
-                        value: adminCustName,
-                        onChange: e => setAdminCustName(e.target.value),
-                        placeholder: "Shop Name *",
-                        style: { ...pl, padding: "9px 12px", fontSize: 13 }
-                      }),
-                      S.jsx("input", {
-                        value: adminCustPhone,
-                        onChange: e => setAdminCustPhone(e.target.value),
-                        placeholder: "Phone *",
-                        style: { ...pl, padding: "9px 12px", fontSize: 13 }
-                      }),
-                      S.jsx("input", {
-                        value: adminCustVisionId,
-                        onChange: e => setAdminCustVisionId(e.target.value),
-                        placeholder: "Vision Customer ID *",
-                        style: { ...pl, padding: "9px 12px", fontSize: 13 }
-                      }),
-                      S.jsxs("div", {
-                        style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+                      S.jsxs("span", {
+                        style: { display: "flex", alignItems: "center", gap: 6 },
                         children: [
-                          S.jsx("input", {
-                            value: adminCustLat,
-                            onChange: e => setAdminCustLat(e.target.value),
-                            placeholder: "Latitude (Optional)",
-                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
-                          }),
-                          S.jsx("input", {
-                            value: adminCustLng,
-                            onChange: e => setAdminCustLng(e.target.value),
-                            placeholder: "Longitude (Optional)",
-                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
-                          })
+                          S.jsx("span", { children: "➕" }),
+                          "Add New Customer"
                         ]
                       }),
-                      S.jsxs("div", {
-                        style: { display: "flex", alignItems: "center", gap: 8 },
-                        children: [
-                          S.jsx("span", { style: { fontSize: 12, fontWeight: 600, color: C.muted, minWidth: 80 }, children: "Select Beat:" }),
-                          S.jsx("select", {
-                            value: adminCustBeat,
-                            onChange: e => setAdminCustBeat(e.target.value),
-                            style: { flex: 1, padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
-                            children: dbBeats.map(b => S.jsx("option", { value: b, children: b }, b))
-                          })
-                        ]
+                      S.jsx("span", {
+                        style: { fontSize: 11, transition: "transform 0.2s", transform: addCustExpanded ? "rotate(180deg)" : "rotate(0deg)" },
+                        children: "▼"
                       })
                     ]
                   }),
-                  S.jsx("button", {
-                    onClick: async () => {
-                      const name = adminCustName.trim();
-                      if (!name) {
-                        ye("Please enter a customer / shop name.");
-                        return;
-                      }
-                      if (!adminCustPhone.trim()) {
-                        ye("Please enter a phone number.");
-                        return;
-                      }
-                      if (!adminCustVisionId.trim()) {
-                        ye("Please enter a Vision Customer ID.");
-                        return;
-                      }
-                      const phone = adminCustPhone.trim();
-                      const beat = adminCustBeat;
-                      const latNum = parseFloat(adminCustLat);
-                      const lngNum = parseFloat(adminCustLng);
-                      const location = (!isNaN(latNum) && !isNaN(lngNum)) ? `POINT(${lngNum} ${latNum})` : null;
-                      const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId), location }).select().single();
-                      if (error) {
-                        ye("Failed to add customer. Phone might already exist.");
-                        console.error(error);
-                      } else {
-                        setBeatCustomers(prev => [...prev, data]);
-                        setAdminCustName("");
-                        setAdminCustPhone("");
-                        setAdminCustVisionId("");
-                        setAdminCustLat("");
-                        setAdminCustLng("");
-                        ye("Customer added successfully!");
-                      }
-                    },
-                    style: {
-                      width: "100%",
-                      padding: "9px",
-                      background: C.primary,
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 8,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "'Outfit', sans-serif"
-                    },
-                    children: "Add Customer"
+                  addCustExpanded && S.jsxs(S.Fragment, {
+                    children: [
+                      S.jsxs("div", {
+                        style: { display: "flex", flexDirection: "column", gap: 10, marginTop: 12, marginBottom: 12 },
+                        children: [
+                          S.jsx("input", {
+                            value: adminCustName,
+                            onChange: e => setAdminCustName(e.target.value),
+                            placeholder: "Shop Name *",
+                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                          }),
+                          S.jsx("input", {
+                            value: adminCustPhone,
+                            onChange: e => setAdminCustPhone(e.target.value),
+                            placeholder: "Phone *",
+                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                          }),
+                          S.jsx("input", {
+                            value: adminCustVisionId,
+                            onChange: e => setAdminCustVisionId(e.target.value),
+                            placeholder: "Vision Customer ID *",
+                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+                            children: [
+                              S.jsx("input", {
+                                value: adminCustLat,
+                                onChange: e => setAdminCustLat(e.target.value),
+                                placeholder: "Latitude (Optional)",
+                                style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                              }),
+                              S.jsx("input", {
+                                value: adminCustLng,
+                                onChange: e => setAdminCustLng(e.target.value),
+                                placeholder: "Longitude (Optional)",
+                                style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                              })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "flex", alignItems: "center", gap: 8 },
+                            children: [
+                              S.jsx("span", { style: { fontSize: 12, fontWeight: 600, color: C.muted, minWidth: 80 }, children: "Select Beat:" }),
+                              S.jsx("select", {
+                                value: adminCustBeat,
+                                onChange: e => setAdminCustBeat(e.target.value),
+                                style: { flex: 1, padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
+                                children: dbBeats.map(b => S.jsx("option", { value: b, children: b }, b))
+                              })
+                            ]
+                          })
+                        ]
+                      }),
+                      S.jsx("button", {
+                        onClick: async () => {
+                          const name = adminCustName.trim();
+                          if (!name) {
+                            ye("Please enter a customer / shop name.");
+                            return;
+                          }
+                          if (!adminCustPhone.trim()) {
+                            ye("Please enter a phone number.");
+                            return;
+                          }
+                          if (!adminCustVisionId.trim()) {
+                            ye("Please enter a Vision Customer ID.");
+                            return;
+                          }
+                          const phone = adminCustPhone.trim();
+                          const beat = adminCustBeat;
+                          const latNum = parseFloat(adminCustLat);
+                          const lngNum = parseFloat(adminCustLng);
+                          const location = (!isNaN(latNum) && !isNaN(lngNum)) ? `POINT(${lngNum} ${latNum})` : null;
+                          const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId), location }).select().single();
+                          if (error) {
+                            ye("Failed to add customer. Phone might already exist.");
+                            console.error(error);
+                          } else {
+                            setBeatCustomers(prev => [...prev, data]);
+                            setAdminCustName("");
+                            setAdminCustPhone("");
+                            setAdminCustVisionId("");
+                            setAdminCustLat("");
+                            setAdminCustLng("");
+                            ye("Customer added successfully!");
+                          }
+                        },
+                        style: {
+                          width: "100%",
+                          padding: "9px",
+                          background: C.primary,
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          fontFamily: "'Outfit', sans-serif"
+                        },
+                        children: "Add Customer"
+                      })
+                    ]
                   })
                 ]
               }),
