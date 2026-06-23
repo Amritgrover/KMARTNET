@@ -99,7 +99,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
           borderBottomLeftRadius: "16px",
           textTransform: "uppercase",
           letterSpacing: "0.03em",
-          zIndex: 10
+          zIndex: 1
         },
         children: [`${marginStr}% Margin`]
       }),
@@ -1468,7 +1468,7 @@ _Contact us to place your order!_`;
     style:{fontFamily:"'Outfit', sans-serif",background:C.bg,minHeight:"100vh",width:"100%",maxWidth:480,margin:"0 auto",position:"relative",paddingBottom:80},
     children:[
       S.jsx("div",{
-        style:{background:C.primary,color:"#fff",padding:"16px",position:"sticky",top:0,zIndex:10,boxShadow:"0 2px 12px rgba(20,83,45,0.18)"},
+        style:{background:C.primary,color:"#fff",padding:"16px",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(20,83,45,0.18)"},
         children:S.jsxs("div",{
           style:{display:"flex",justifyContent:"space-between",alignItems:"center"},
           children:[
