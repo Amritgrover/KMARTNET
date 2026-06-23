@@ -1722,6 +1722,70 @@ _Contact us to place your order!_`;
               })
             ]
           }),
+          r==="customer"&&cust&&(() => {
+            const coords = parseGPS(cust.location);
+            return S.jsxs("div", {
+              style: { background: "#f8fafc", border: `1px solid ${C.border}`, borderRadius: 11, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", fontFamily: "'Outfit', sans-serif" },
+              children: [
+                S.jsxs("div", {
+                  style: { display: "flex", flexDirection: "column", gap: 3 },
+                  children: [
+                    S.jsxs("div", {
+                      style: { display: "flex", alignItems: "center", gap: 6 },
+                      children: [
+                        S.jsx("span", { style: { fontSize: 13, fontWeight: 700, color: C.text }, children: "📍 Geo Location" }),
+                        coords && S.jsx("a", {
+                          href: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          style: { fontSize: 11.5, color: C.primary, fontWeight: 700, textDecoration: "underline" },
+                          children: "🗺️ View Map"
+                        })
+                      ]
+                    }),
+                    S.jsx("span", {
+                      style: { fontSize: 11.5, color: C.muted, fontWeight: 500 },
+                      children: coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "Not Tagged"
+                    })
+                  ]
+                }),
+                S.jsx("button", {
+                  onClick: () => {
+                    setGpsConfirm({
+                      isUpdate: !!coords,
+                      onConfirm: () => {
+                        if (!navigator.geolocation) {
+                          ye("Geolocation is not supported by your browser.");
+                          return;
+                        }
+                        navigator.geolocation.getCurrentPosition(
+                          async (position) => {
+                            const { latitude, longitude } = position.coords;
+                            const payload = { location: `POINT(${longitude} ${latitude})` };
+                            const { data, error } = await Or.from("customers").update(payload).eq("id", cust.id).select().single();
+                            if (error) {
+                              ye("Failed to update GPS location.");
+                              console.error(error);
+                            } else {
+                              setCust(data);
+                              localStorage.setItem("kmart_customer", JSON.stringify(data));
+                              ye("GPS location tagged successfully!");
+                            }
+                          },
+                          (err) => {
+                            ye("Failed to retrieve GPS location. Please check browser permissions.");
+                            console.error(err);
+                          }
+                        );
+                      }
+                    });
+                  },
+                  style: { padding: "6px 12px", background: coords ? C.bg : C.primary, color: coords ? C.text : "#fff", border: coords ? `1px solid ${C.border}` : "none", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 },
+                  children: coords ? "🔄 Update" : "📍 Tag GPS"
+                })
+              ]
+            });
+          })(),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:13},children:S.jsx(iy,{value:f,onChange:y})}),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:12},children:S.jsx(i_,{categories:Pe,active:g,onChange:l=>{m(l),setSelectedBrand("All")}})}),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsxs("div", {
