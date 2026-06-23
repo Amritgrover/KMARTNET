@@ -158,7 +158,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
 
               // Tiered pricing text
               hasTiers && S.jsx("div", {
-                style: { fontSize: "10.5px", color: "#825500", fontWeight: "700", marginBottom: "6px", lineHeight: "1.2" },
+                style: { fontSize: "13px", color: "#825500", fontWeight: "700", marginBottom: "6px", lineHeight: "1.35", background: "#fff9db", border: "1px solid #ffe066", padding: "4px 8px", borderRadius: "6px", display: "inline-block", marginTop: "4px" },
                 children: `1–${r.tier2_min_qty-1} ${r.unit||"pcs"}: ₹${basePrice} | ${r.tier2_min_qty}+ ${r.unit||"pcs"}: ₹${r.tier2_price}`
               }),
 
