@@ -67,7 +67,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const basePrice = r.customer_price > 0 ? r.customer_price : r.mrp;
   const activePrice = (r.tier2_min_qty > 0 && a >= r.tier2_min_qty) ? r.tier2_price : basePrice;
   const hasTiers = r.tier2_min_qty > 0;
-  const marginVal = activePrice > 0 && r.cp > 0 ? ((activePrice - r.cp) / activePrice * 100).toFixed(0) : null;
+  const marginVal = r.mrp > 0 && r.cp > 0 ? ((r.mrp - r.cp) / r.mrp * 100).toFixed(0) : null;
 
   return S.jsxs("div", {
     style: {
