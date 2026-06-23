@@ -803,7 +803,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [ee, we] = ge.useState(null);
   const [Ee, E] = ge.useState(null);
   const [B, Y] = ge.useState("");
-  const [V, ae] = ge.useState({name:"",cat:"",unit:"",mrp:"",tp:"",cp:"",cs:"",customer_price:"",tier2_min_qty:"",tier2_price:"",desc:""});
+  const [V, ae] = ge.useState({name:"",cat:"",brand:"",unit:"",mrp:"",tp:"",cp:"",cs:"",customer_price:"",tier2_min_qty:"",tier2_price:"",desc:""});
 
   // NEW Customer states
   const [cust, setCust] = ge.useState(() => {
@@ -832,7 +832,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
-  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");
+  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
@@ -1018,8 +1018,7 @@ ${itemsText}
   ge.useEffect(()=>{ue()},[ue]);
 
   const ye=ge.useCallback(j=>{ke(j),setTimeout(()=>ke(""),2400)},[]),
-  Pe=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.cat)))],[s]),
-  Ue=ge.useMemo(()=>s.filter(j=>(g==="All"||j.cat===g)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[s,f,g]),
+  Pe=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.cat)))],[s]),dbBrands=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.brand).filter(Boolean)))],[s]),Ue=ge.useMemo(()=>s.filter(j=>(g==="All"||j.cat===g)&&(selectedBrand==="All"||j.brand===selectedBrand)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[s,f,g,selectedBrand]),
   Dn=ge.useMemo(()=>s.filter(j=>(adminCatFilter==="All"||j.cat===adminCatFilter)&&(j.name.toLowerCase().includes(B.toLowerCase())||j.cat.toLowerCase().includes(B.toLowerCase()))), [s,B,adminCatFilter]),
   tn=ge.useMemo(()=>Object.entries(v).reduce((j,[J,he])=>{
     const [prodIdStr,bchcodeStr]=J.split('_');
@@ -1386,10 +1385,10 @@ _Contact us to place your order!_`;
   },
   [imageFile,setImageFile]=ge.useState(null),
   kl=()=>{
-    we(null),ae({name:"",cat:"",unit:"",mrp:"",tp:"",cp:"",cs:"",customer_price:"",tier2_min_qty:"",tier2_price:"",desc:"",vision_product_id:""}),setImageFile(null),G(!0)
+    we(null),ae({name:"",cat:"",brand:"",unit:"",mrp:"",tp:"",cp:"",cs:"",customer_price:"",tier2_min_qty:"",tier2_price:"",desc:"",vision_product_id:""}),setImageFile(null),G(!0)
   },
   jl=j=>{
-    we(j),ae({name:j.name,cat:j.cat,unit:j.unit,mrp:String(j.mrp),tp:String(j.tp),cp:String(j.cp??""),cs:String(j.cs??""),customer_price:String(j.customer_price??""),tier2_min_qty:String(j.tier2_min_qty??""),tier2_price:String(j.tier2_price??""),desc:j.desc??"",vision_product_id:String(j.vision_product_id??"")}),setImageFile(null),G(!0)
+    we(j),ae({name:j.name,cat:j.cat,brand:j.brand??"",unit:j.unit,mrp:String(j.mrp),tp:String(j.tp),cp:String(j.cp??""),cs:String(j.cs??""),customer_price:String(j.customer_price??""),tier2_min_qty:String(j.tier2_min_qty??""),tier2_price:String(j.tier2_price??""),desc:j.desc??"",vision_product_id:String(j.vision_product_id??"")}),setImageFile(null),G(!0)
   },
   gt=async()=>{
     if(!V.name.trim()||!V.cat.trim()||!V.unit.trim()||!V.tp)return;
@@ -1403,6 +1402,7 @@ _Contact us to place your order!_`;
       uploadedImageUrl=urlData.publicUrl;
     }
     const j={name:V.name,cat:(()=>{const c=V.cat.trim();const d={Staples:"🌾","Edible Oils":"🫙","Home Care":"🧹",Dairy:"🧈",Biscuits:"🍪","Instant Food":"🍜","Personal Care":"🧴",Beverages:"🧃",Snacks:"🍿"};if(d[c])return c;const e=$r(c);if(e&&!c.startsWith(e))return e+" "+c;return c})(),
+      brand:V.brand?V.brand.trim():"",
       unit:V.unit,
       mrp:+V.mrp,
       tp:+V.tp,
@@ -1422,7 +1422,7 @@ _Contact us to place your order!_`;
     await Or.from("products").delete().eq("id",j),l(J=>sortProducts(J.filter(he=>he.id!==j))),E(null),ye("Product deleted.")
   },
   Vr=["1","2","3","4","5","6","7","8","9","","0","⌫"],
-  Kr=[["Product Name *","name","e.g. Tata Salt","text"],["Category *","cat","e.g. Staples","text"],["Unit / Pack Size *","unit","e.g. 1 kg","text"],["Trade Price ₹ *","tp","Your selling price","number"],["MRP ₹","mrp","Maximum retail price","number"],["Cost Price ₹","cp","Your purchase price","number"],["Case Size","cs","e.g. 24 or 12 units","text"],["Customer Price (Base) ₹","customer_price","Default: MRP","number"],["Tier 2 Min Qty","tier2_min_qty","e.g. 12 (0 to disable)","number"],["Tier 2 Price ₹","tier2_price","Price for tier 2 qty","number"],["Note / Offer","desc","Optional short note","text"],["Vision Product ID","vision_product_id","e.g. 1045","number"]];
+  Kr=[["Product Name *","name","e.g. Tata Salt","text"],["Category *","cat","e.g. Staples","text"],["Brand","brand","e.g. Marico","text"],["Unit / Pack Size *","unit","e.g. 1 kg","text"],["Trade Price ₹ *","tp","Your selling price","number"],["MRP ₹","mrp","Maximum retail price","number"],["Cost Price ₹","cp","Your purchase price","number"],["Case Size","cs","e.g. 24 or 12 units","text"],["Customer Price (Base) ₹","customer_price","Default: MRP","number"],["Tier 2 Min Qty","tier2_min_qty","e.g. 12 (0 to disable)","number"],["Tier 2 Price ₹","tier2_price","Price for tier 2 qty","number"],["Note / Offer","desc","Optional short note","text"],["Vision Product ID","vision_product_id","e.g. 1045","number"]];
 
   // Open appropriate login modal if pathname doesn't match login status
   ge.useEffect(() => {
@@ -1652,7 +1652,40 @@ _Contact us to place your order!_`;
             ]
           }),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:13},children:S.jsx(iy,{value:f,onChange:y})}),
-          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:12},children:S.jsx(i_,{categories:Pe,active:g,onChange:m})}),
+          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsx("div",{style:{marginBottom:12},children:S.jsx(i_,{categories:Pe,active:g,onChange:l=>{m(l),setSelectedBrand("All")}})}),
+          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsxs("div", {
+            style: { marginTop: 10, marginBottom: 12 },
+            children: [
+              S.jsx("div", {
+                style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 },
+                children: "SHOP BY BRAND"
+              }),
+              S.jsx("div", {
+                style: { display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" },
+                children: dbBrands.map(b => S.jsx("button", {
+                  onClick: () => {
+                    setSelectedBrand(b);
+                    m("All");
+                  },
+                  style: {
+                    padding: "6px 14px",
+                    borderRadius: 20,
+                    border: `1.5px solid ${selectedBrand === b ? C.primary : C.border}`,
+                    background: selectedBrand === b ? C.primary : "#fff",
+                    color: selectedBrand === b ? "#fff" : C.muted,
+                    fontSize: 12,
+                    fontWeight: selectedBrand === b ? 700 : 500,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    fontFamily: "'Outfit', sans-serif",
+                    transition: "all 0.15s",
+                    flexShrink: 0
+                  },
+                  children: b
+                }, b))
+              })
+            ]
+          }),
           (r!=="salesman"||salesmanTab==="catalogue")&&S.jsxs("div",{
             style:{fontSize:12,color:C.muted,marginBottom:12,fontWeight:500},
             children:[
@@ -3252,6 +3285,110 @@ _Contact us to place your order!_`;
                           onClick:(e)=>{
                             e.stopPropagation();
                             setCatToDelete(j);
+                          },
+                          style:{background:"transparent",border:"none",color:C.red,fontSize:13,fontWeight:800,cursor:"pointer",padding:"0 2px",marginLeft:2},
+                          children:"×"
+                        })
+                      ]
+                    },j))
+                  })
+                ]
+              }),
+              S.jsxs("div",{
+                style:{marginBottom:16},
+                children:[
+                  brandToDelete&&S.jsxs("div",{
+                    style:{background:"#FEF2F2",border:`1px solid ${C.red}33`,borderRadius:10,padding:"10px 12px",marginBottom:12},
+                    children:[
+                      S.jsx("div",{
+                        style:{fontSize:12,fontWeight:600,color:C.red,marginBottom:8},
+                        children:`Remove "${brandToDelete}" from quick picks?`
+                      }),
+                      S.jsxs("div",{
+                        style:{display:"flex",gap:10},
+                        children:[
+                          S.jsx("button",{
+                            onClick:()=>{
+                              const newBrands=customBrands.filter(x=>x!==brandToDelete);
+                              setCustomBrands(newBrands);
+                              localStorage.setItem("kmart_custom_brands",JSON.stringify(newBrands));
+                              setBrandToDelete(null);
+                              ye(`Removed "${brandToDelete}"!`);
+                            },
+                            style:{background:C.red,color:"#fff",border:"none",borderRadius:6,padding:"5px 12px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                            children:"Yes, Remove"
+                          }),
+                          S.jsx("button",{
+                            onClick:()=>setBrandToDelete(null),
+                            style:{background:"transparent",border:"none",color:C.muted,fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                            children:"Cancel"
+                          })
+                        ]
+                      })
+                    ]
+                  }),
+                  !showNewBrandInput?S.jsxs("div",{
+                    style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7},
+                    children:[
+                      S.jsx("div",{
+                        style:{fontSize:11.5,color:C.muted,fontWeight:600},
+                        children:"Quick Brand Pick:"
+                      }),
+                      S.jsx("button",{
+                        onClick:()=>setShowNewBrandInput(!0),
+                        style:{background:"transparent",border:"none",color:C.primary,fontSize:11.5,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                        children:"+ Add New"
+                      })
+                    ]
+                  }):S.jsxs("div",{
+                    style:{display:"flex",gap:8,alignItems:"center",marginBottom:7},
+                    children:[
+                      S.jsx("input",{
+                        value:newBrandName,
+                        onChange:e=>setNewBrandName(e.target.value),
+                        placeholder:"Brand name...",
+                        style:{...pl,flex:1,padding:"6px 10px",fontSize:12.5},
+                        autoFocus:!0
+                      }),
+                      S.jsx("button",{
+                        onClick:()=>{
+                          if(newBrandName.trim()){
+                            const cleaned=newBrandName.trim();
+                            if(!customBrands.includes(cleaned)){
+                              const newBrands=[...customBrands,cleaned];
+                              setCustomBrands(newBrands);
+                              localStorage.setItem("kmart_custom_brands",JSON.stringify(newBrands));
+                              ye(`Brand "${cleaned}" added!`);
+                            }else{
+                              ye("Brand already exists.");
+                            }
+                          }
+                          setNewBrandName(""),setShowNewBrandInput(!1)
+                        },
+                        style:{background:C.primary,color:"#fff",border:"none",borderRadius:6,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                        children:"Add"
+                      }),
+                      S.jsx("button",{
+                        onClick:()=>(setNewBrandName(""),setShowNewBrandInput(!1)),
+                        style:{background:"transparent",border:"none",color:C.muted,fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                        children:"Cancel"
+                      })
+                    ]
+                  }),
+                  S.jsx("div",{
+                    style:{display:"flex",flexWrap:"wrap",gap:6},
+                    children:customBrands.map(j=>S.jsxs("span",{
+                      style:{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:14,border:`1.5px solid ${V.brand===j?C.primary:C.border}`,background:V.brand===j?C.primaryLight:"#fff",color:V.brand===j?C.primary:C.muted,fontSize:11.5,fontWeight:500},
+                      children:[
+                        S.jsx("span",{
+                          onClick:()=>ae(J=>({...J,brand:j})),
+                          style:{cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                          children:j
+                        }),
+                        S.jsx("button",{
+                          onClick:(e)=>{
+                            e.stopPropagation();
+                            setBrandToDelete(j);
                           },
                           style:{background:"transparent",border:"none",color:C.red,fontSize:13,fontWeight:800,cursor:"pointer",padding:"0 2px",marginLeft:2},
                           children:"×"
