@@ -365,7 +365,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
           S.jsxs("div",{
             style:{display:"flex",alignItems:"center",gap:12,minWidth:0},
             children:[
-              S.jsx("div",{style:{fontSize:28,background:C.bg,borderRadius:10,width:48,height:48,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:$r(r.cat)}),
+              S.jsx("div",{style:{fontSize:28,background:C.bg,borderRadius:10,width:48,height:48,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:r.image_url?S.jsx("img",{src:r.image_url,alt:r.name,style:{width:"100%",height:"100%",objectFit:"cover",borderRadius:10}}):$r(r.cat)}),
               S.jsxs("div",{
                 style:{minWidth:0},
                 children:[
