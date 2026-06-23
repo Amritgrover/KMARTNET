@@ -791,7 +791,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [adminCustLat, setAdminCustLat] = ge.useState("");const [adminCustLng, setAdminCustLng] = ge.useState("");const [editCustLat, setEditCustLat] = ge.useState("");const [editCustLng, setEditCustLng] = ge.useState("");const [gpsConfirm, setGpsConfirm] = ge.useState(null);const [adminCustSearch, setAdminCustSearch] = ge.useState("");const parseGPS = hex => { if (!hex || hex.length !== 50) return null; const hToD = h => { const b = new Uint8Array(8); for (let i = 0; i < 8; i++) b[i] = parseInt(h.substring(i * 2, i * 2 + 2), 16); return new DataView(b.buffer).getFloat64(0, true); }; return { lat: hToD(hex.substring(34, 50)), lng: hToD(hex.substring(18, 34)) }; };const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
   const [neErr, setNeErr] = ge.useState(!1);
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
@@ -1618,6 +1618,68 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
+              selectedCustomerId && selectedCustomerId !== "new" && (() => {
+                const c = beatCustomers.find(c2 => String(c2.id) === selectedCustomerId);
+                if (!c) return null;
+                const coords = parseGPS(c.location);
+                return S.jsxs("div", {
+                  style: { marginTop: 10, background: "#f8fafc", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8 },
+                  children: [
+                    S.jsxs("div", {
+                      style: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+                      children: [
+                        S.jsxs("span", {
+                          style: { fontSize: 12, color: C.text, fontWeight: 600 },
+                          children: [
+                            "📍 GPS: ",
+                            coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "Not Tagged"
+                          ]
+                        }),
+                        coords && S.jsx("a", {
+                          href: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          style: { fontSize: 11.5, color: C.primary, fontWeight: 700, textDecoration: "underline" },
+                          children: "🗺️ View on Map"
+                        })
+                      ]
+                    }),
+                    S.jsx("button", {
+                      onClick: () => {
+                        setGpsConfirm({
+                          isUpdate: !!coords,
+                          onConfirm: () => {
+                            if (!navigator.geolocation) {
+                              ye("Geolocation is not supported by your browser.");
+                              return;
+                            }
+                            navigator.geolocation.getCurrentPosition(
+                              async (position) => {
+                                const { latitude, longitude } = position.coords;
+                                const payload = { location: `POINT(${longitude} ${latitude})` };
+                                const { data, error } = await Or.from("customers").update(payload).eq("id", c.id).select().single();
+                                if (error) {
+                                  ye("Failed to update GPS location.");
+                                  console.error(error);
+                                } else {
+                                  setBeatCustomers(prev => prev.map(x => x.id === c.id ? data : x));
+                                  ye("GPS location tagged successfully!");
+                                }
+                              },
+                              (err) => {
+                                ye("Failed to retrieve GPS location. Please check browser permissions.");
+                                console.error(err);
+                              }
+                            );
+                          }
+                        });
+                      },
+                      style: { padding: "6px 12px", background: coords ? C.bg : C.primary, color: coords ? C.text : "#fff", border: coords ? `1px solid ${C.border}` : "none", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyItems: "center", gap: 4 },
+                      children: coords ? "🔄 Update GPS Location" : "📍 Tag GPS Location"
+                    })
+                  ]
+                });
+              })(),
               selectedCustomerId==="new"&&S.jsxs(S.Fragment,{
                 children:[
                   S.jsx("input",{
@@ -2353,6 +2415,23 @@ _Contact us to place your order!_`;
                 ]
               }),
               S.jsxs("div", {
+                style: { display: "flex", alignItems: "center", gap: 10, background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "10px 14px", marginBottom: 12 },
+                children: [
+                  S.jsx("span", { style: { fontSize: 16 }, children: "🔍" }),
+                  S.jsx("input", {
+                    value: adminCustSearch,
+                    onChange: e => setAdminCustSearch(e.target.value),
+                    placeholder: "Search customers by name or phone...",
+                    style: { flex: 1, border: "none", outline: "none", fontSize: 13.5, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif", background: "transparent" }
+                  }),
+                  adminCustSearch && S.jsx("button", {
+                    onClick: () => setAdminCustSearch(""),
+                    style: { background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 700, cursor: "pointer" },
+                    children: "Clear"
+                  })
+                ]
+              }),
+              S.jsxs("div", {
                 style: { display: "flex", alignItems: "center", gap: 10, background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "10px 14px", marginBottom: 16 },
                 children: [
                   S.jsx("span", { style: { fontSize: 16 }, children: "📍" }),
@@ -2391,6 +2470,23 @@ _Contact us to place your order!_`;
                         style: { ...pl, padding: "9px 12px", fontSize: 13 }
                       }),
                       S.jsxs("div", {
+                        style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+                        children: [
+                          S.jsx("input", {
+                            value: adminCustLat,
+                            onChange: e => setAdminCustLat(e.target.value),
+                            placeholder: "Latitude (Optional)",
+                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                          }),
+                          S.jsx("input", {
+                            value: adminCustLng,
+                            onChange: e => setAdminCustLng(e.target.value),
+                            placeholder: "Longitude (Optional)",
+                            style: { ...pl, padding: "9px 12px", fontSize: 13 }
+                          })
+                        ]
+                      }),
+                      S.jsxs("div", {
                         style: { display: "flex", alignItems: "center", gap: 8 },
                         children: [
                           S.jsx("span", { style: { fontSize: 12, fontWeight: 600, color: C.muted, minWidth: 80 }, children: "Select Beat:" }),
@@ -2421,7 +2517,10 @@ _Contact us to place your order!_`;
                       }
                       const phone = adminCustPhone.trim();
                       const beat = adminCustBeat;
-                      const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId) }).select().single();
+                      const latNum = parseFloat(adminCustLat);
+                      const lngNum = parseFloat(adminCustLng);
+                      const location = (!isNaN(latNum) && !isNaN(lngNum)) ? `POINT(${lngNum} ${latNum})` : null;
+                      const { data, error } = await Or.from("customers").insert({ name, phone, beat, vision_customer_id: parseInt(adminCustVisionId), location }).select().single();
                       if (error) {
                         ye("Failed to add customer. Phone might already exist.");
                         console.error(error);
@@ -2430,6 +2529,8 @@ _Contact us to place your order!_`;
                         setAdminCustName("");
                         setAdminCustPhone("");
                         setAdminCustVisionId("");
+                        setAdminCustLat("");
+                        setAdminCustLng("");
                         ye("Customer added successfully!");
                       }
                     },
@@ -2449,9 +2550,9 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
-              beatCustomers.filter(c => adminBeatFilter === "All" ? true : (adminBeatFilter === "Others" ? (c.beat === "Others" || !c.beat) : c.beat === adminBeatFilter)).length === 0 
-                ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No customers found in this beat." }) 
-                : beatCustomers.filter(c => adminBeatFilter === "All" ? true : (adminBeatFilter === "Others" ? (c.beat === "Others" || !c.beat) : c.beat === adminBeatFilter)).map(c => 
+              beatCustomers.filter(c => (adminBeatFilter === "All" ? true : (adminBeatFilter === "Others" ? (c.beat === "Others" || !c.beat) : c.beat === adminBeatFilter)) && (c.name.toLowerCase().includes(adminCustSearch.toLowerCase()) || (c.phone || "").toLowerCase().includes(adminCustSearch.toLowerCase()))).length === 0 
+                ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No customers found." }) 
+                : beatCustomers.filter(c => (adminBeatFilter === "All" ? true : (adminBeatFilter === "Others" ? (c.beat === "Others" || !c.beat) : c.beat === adminBeatFilter)) && (c.name.toLowerCase().includes(adminCustSearch.toLowerCase()) || (c.phone || "").toLowerCase().includes(adminCustSearch.toLowerCase()))).map(c => 
                     editingCustomer && editingCustomer.id === c.id 
                       ? S.jsxs("div", {
                           style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 12, marginBottom: 8, display: "flex", flexDirection: "column", gap: 8 },
@@ -2476,6 +2577,23 @@ _Contact us to place your order!_`;
                               style: { ...pl, padding: "6px 8px", fontSize: 13 }
                             }),
                             S.jsxs("div", {
+                              style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+                              children: [
+                                S.jsx("input", {
+                                  value: editCustLat,
+                                  onChange: e => setEditCustLat(e.target.value),
+                                  placeholder: "Latitude",
+                                  style: { ...pl, padding: "6px 8px", fontSize: 13 }
+                                }),
+                                S.jsx("input", {
+                                  value: editCustLng,
+                                  onChange: e => setEditCustLng(e.target.value),
+                                  placeholder: "Longitude",
+                                  style: { ...pl, padding: "6px 8px", fontSize: 13 }
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
                               style: { display: "flex", alignItems: "center", gap: 8 },
                               children: [
                                 S.jsx("span", { style: { fontSize: 12, fontWeight: 600, color: C.muted }, children: "Beat:" }),
@@ -2497,13 +2615,18 @@ _Contact us to place your order!_`;
                                       ye("Name cannot be empty.");
                                       return;
                                     }
-                                    const { data, error } = await Or.from("customers").update({ name, phone: editCustPhone.trim(), beat: editCustBeat, vision_customer_id: parseInt(editCustVisionId) || null }).eq("id", c.id).select().single();
+                                    const latNum = parseFloat(editCustLat);
+                                    const lngNum = parseFloat(editCustLng);
+                                    const location = (!isNaN(latNum) && !isNaN(lngNum)) ? `POINT(${lngNum} ${latNum})` : null;
+                                    const { data, error } = await Or.from("customers").update({ name, phone: editCustPhone.trim(), beat: editCustBeat, vision_customer_id: parseInt(editCustVisionId) || null, location }).eq("id", c.id).select().single();
                                     if (error) {
                                       ye("Failed to update customer.");
                                       console.error(error);
                                     } else {
                                       setBeatCustomers(prev => prev.map(x => x.id === c.id ? data : x));
                                       setEditingCustomer(null);
+                                      setEditCustLat("");
+                                      setEditCustLng("");
                                       ye("Customer updated!");
                                     }
                                   },
@@ -2526,7 +2649,26 @@ _Contact us to place your order!_`;
                               style: { minWidth: 0, flex: 1 },
                               children: [
                                 S.jsx("div", { style: { fontWeight: 600, fontSize: 13.5, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }, children: c.name }),
-                                S.jsxs("div", { style: { fontSize: 11, color: C.muted }, children: [c.phone && !c.phone.startsWith("admin-") && !c.phone.startsWith("salesman-") ? `📞 ${c.phone} · ` : "", "📍 ", c.beat || "Others", c.vision_customer_id ? ` · 💻 Vision ID: ${c.vision_customer_id}` : ""] })
+                                S.jsxs("div", { style: { fontSize: 11, color: C.muted }, children: [
+                                  c.phone && !c.phone.startsWith("admin-") && !c.phone.startsWith("salesman-") ? `📞 ${c.phone} · ` : "",
+                                  "📍 ", c.beat || "Others",
+                                  c.vision_customer_id ? ` · 💻 Vision ID: ${c.vision_customer_id}` : "",
+                                  (() => {
+                                    const coords = parseGPS(c.location);
+                                    return coords ? S.jsxs(S.Fragment, {
+                                      children: [
+                                        " · 🗺️ ",
+                                        S.jsx("a", {
+                                          href: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                                          target: "_blank",
+                                          rel: "noopener noreferrer",
+                                          style: { color: C.primary, textDecoration: "underline", fontWeight: "700" },
+                                          children: `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`
+                                        })
+                                      ]
+                                    }) : " · 📍 GPS: Not Tagged";
+                                  })()
+                                ] })
                               ]
                             }),
                             S.jsxs("div", {
@@ -2539,6 +2681,9 @@ _Contact us to place your order!_`;
                                     setEditCustPhone(c.phone && !c.phone.startsWith("admin-") && !c.phone.startsWith("salesman-") ? c.phone : "");
                                     setEditCustBeat(c.beat || "Others");
                                     setEditCustVisionId(c.vision_customer_id ? String(c.vision_customer_id) : "");
+                                    const coords = parseGPS(c.location);
+                                    setEditCustLat(coords ? String(coords.lat) : "");
+                                    setEditCustLng(coords ? String(coords.lng) : "");
                                   },
                                   style: { background: C.greenBg, color: C.green, border: "none", borderRadius: 6, padding: "5px 8px", fontSize: 11.5, fontWeight: 700, cursor: "pointer" },
                                   children: "Edit"
@@ -3944,6 +4089,40 @@ _Contact us to place your order!_`;
         ]
       }),
       ie&&S.jsx(s_,{msg:ie}),
+      gpsConfirm && S.jsxs("div", {
+        style: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 },
+        children: [
+          S.jsxs("div", {
+            style: { background: "#fff", borderRadius: 16, width: "100%", maxWidth: 360, padding: 20, boxShadow: "0 10px 25px rgba(0,0,0,0.15)", textAlign: "center", fontFamily: "'Outfit', sans-serif" },
+            children: [
+              S.jsx("div", { style: { fontSize: 40, marginBottom: 12 }, children: "📍" }),
+              S.jsx("div", { style: { fontSize: 17, fontWeight: 800, color: C.text, marginBottom: 8 }, children: gpsConfirm.isUpdate ? "Update GPS Location" : "Tag GPS Location" }),
+              S.jsx("div", { 
+                style: { fontSize: 13.5, color: C.muted, marginBottom: 20, lineHeight: 1.5 }, 
+                children: gpsConfirm.isUpdate ? "Are you sure you want to update this customer's GPS location?" : "Are you sure you want to tag this customer's GPS location?"
+              }),
+              S.jsxs("div", {
+                style: { display: "flex", gap: 10 },
+                children: [
+                  S.jsx("button", {
+                    onClick: () => {
+                      gpsConfirm.onConfirm();
+                      setGpsConfirm(null);
+                    },
+                    style: { flex: 1, padding: "10px 0", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                    children: "Confirm"
+                  }),
+                  S.jsx("button", {
+                    onClick: () => setGpsConfirm(null),
+                    style: { flex: 1, padding: "10px 0", background: C.bg, color: C.muted, border: "none", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                    children: "Cancel"
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      }),
       deleteConfirm && S.jsxs("div", {
         style: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 },
         children: [
