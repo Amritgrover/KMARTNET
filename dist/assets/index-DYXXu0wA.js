@@ -2940,7 +2940,7 @@ _Contact us to place your order!_`;
                                   if (e.target.files && e.target.files[0]) {
                                     const file = e.target.files[0];
                                     const ext = file.name.split(".").pop();
-                                    const fileName = `brand_	ext{Date.now()}.	ext{ext}`;
+                                    const fileName = `brand_${Date.now()}.${ext}`;
                                     const { data: upData, error: upErr } = await Or.storage.from("product-images").upload(fileName, file, { cacheControl: "3600", upsert: false });
                                     if (upErr) { ye("Upload failed: " + upErr.message); return; }
                                     const { data: urlData } = Or.storage.from("product-images").getPublicUrl(fileName);
