@@ -1110,26 +1110,37 @@ ${J.join(`
 _Contact us to place your order!_`;
     window.open(`https://wa.me/919877570829?text=${encodeURIComponent(me)}`,"_blank")
   },
+  [imageFile,setImageFile]=ge.useState(null),
   kl=()=>{
-    we(null),ae({name:"",cat:"",unit:"",mrp:"",tp:"",cp:"",cs:"",customer_price:"",tier2_min_qty:"",tier2_price:"",desc:"",vision_product_id:""}),G(!0)
+    we(null),ae({name:"",cat:"",unit:"",mrp:"",tp:"",cp:"",cs:"",customer_price:"",tier2_min_qty:"",tier2_price:"",desc:"",vision_product_id:""}),setImageFile(null),G(!0)
   },
   jl=j=>{
-    we(j),ae({name:j.name,cat:j.cat,unit:j.unit,mrp:String(j.mrp),tp:String(j.tp),cp:String(j.cp??""),cs:String(j.cs??""),customer_price:String(j.customer_price??""),tier2_min_qty:String(j.tier2_min_qty??""),tier2_price:String(j.tier2_price??""),desc:j.desc??"",vision_product_id:String(j.vision_product_id??"")}),G(!0)
+    we(j),ae({name:j.name,cat:j.cat,unit:j.unit,mrp:String(j.mrp),tp:String(j.tp),cp:String(j.cp??""),cs:String(j.cs??""),customer_price:String(j.customer_price??""),tier2_min_qty:String(j.tier2_min_qty??""),tier2_price:String(j.tier2_price??""),desc:j.desc??"",vision_product_id:String(j.vision_product_id??"")}),setImageFile(null),G(!0)
   },
   gt=async()=>{
     if(!V.name.trim()||!V.cat.trim()||!V.unit.trim()||!V.tp)return;
+    let uploadedImageUrl=null;
+    if(imageFile){
+      const ext=imageFile.name.split(".").pop();
+      const fileName=`product_${Date.now()}.${ext}`;
+      const{data:upData,error:upErr}=await Or.storage.from("product-images").upload(fileName,imageFile,{cacheControl:"3600",upsert:false});
+      if(upErr){ye("Image upload failed: "+upErr.message);return}
+      const{data:urlData}=Or.storage.from("product-images").getPublicUrl(fileName);
+      uploadedImageUrl=urlData.publicUrl;
+    }
     const j={name:V.name,cat:(()=>{const c=V.cat.trim();const d={Staples:"🌾","Edible Oils":"🫙","Home Care":"🧹",Dairy:"🧈",Biscuits:"🍪","Instant Food":"🍜","Personal Care":"🧴",Beverages:"🧃",Snacks:"🍿"};if(d[c])return c;const e=$r(c);if(e&&!c.startsWith(e))return e+" "+c;return c})(),
       unit:V.unit,
       mrp:+V.mrp,
       tp:+V.tp,
       cp:parseFloat(V.cp)||0,cs:parseInt(V.cs)||0,customer_price:parseFloat(V.customer_price)||0,tier2_min_qty:parseInt(V.tier2_min_qty)||0,tier2_price:parseFloat(V.tier2_price)||0,note:V.desc||"",vision_product_id:parseInt(V.vision_product_id)||null
     };
+    if(uploadedImageUrl)j.image_url=uploadedImageUrl;
     if(ee){
       const{data:J}=await Or.from("products").update(j).eq("id",ee.id).select().single();
-      J&&l(he=>sortProducts(he.map(me=>me.id===ee.id?yl(J):me))),ye("Product updated!")
+      J&&l(he=>sortProducts(he.map(me=>me.id===ee.id?yl(J):me))),setImageFile(null),ye("Product updated!")
     }else{
       const{data:J}=await Or.from("products").insert(j).select().single();
-      J&&l(he=>sortProducts([...he,yl(J)])),ye("Product added!")
+      J&&l(he=>sortProducts([...he,yl(J)])),setImageFile(null),ye("Product added!")
     }
     G(!1)
   },
@@ -2976,6 +2987,7 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
+              S.jsxs("div",{style:{marginBottom:16,padding:14,background:"#f8f9fa",borderRadius:12,border:"1.5px dashed "+C.border},children:[S.jsx("div",{style:{fontSize:12,fontWeight:600,color:C.muted,marginBottom:8},children:"Product Image"}),(ee&&ee.image_url&&!imageFile)?S.jsxs("div",{style:{marginBottom:10,display:"flex",alignItems:"center",gap:12},children:[S.jsx("img",{src:ee.image_url,alt:"Current",style:{width:64,height:64,objectFit:"cover",borderRadius:10,border:"2px solid "+C.border}}),S.jsx("div",{style:{fontSize:11,color:C.muted},children:"Current image"})]}):null,imageFile?S.jsxs("div",{style:{marginBottom:10,display:"flex",alignItems:"center",gap:12},children:[S.jsx("img",{src:URL.createObjectURL(imageFile),alt:"Preview",style:{width:64,height:64,objectFit:"cover",borderRadius:10,border:"2px solid "+C.green}}),S.jsxs("div",{children:[S.jsx("div",{style:{fontSize:11,color:C.green,fontWeight:600},children:"New image selected ✓"}),S.jsx("button",{onClick:()=>setImageFile(null),style:{fontSize:11,color:C.red,background:"none",border:"none",cursor:"pointer",padding:0,marginTop:2},children:"Remove"})]})]}):null,S.jsx("input",{type:"file",accept:"image/*",onChange:ce=>{if(ce.target.files&&ce.target.files[0]){setImageFile(ce.target.files[0])}},style:{fontSize:12,fontFamily:"'Outfit', sans-serif"}})]}),
               S.jsx("button",{
                 onClick:gt,
                 style:{width:"100%",padding:"13px",background:C.primary,color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",marginTop:4},
