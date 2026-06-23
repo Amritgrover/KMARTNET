@@ -67,7 +67,8 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const basePrice = r.customer_price > 0 ? r.customer_price : r.mrp;
   const activePrice = (r.tier2_min_qty > 0 && a >= r.tier2_min_qty) ? r.tier2_price : basePrice;
   const hasTiers = r.tier2_min_qty > 0;
-  const marginVal = r.mrp > 0 && r.cp > 0 ? ((r.mrp - r.cp) / r.mrp * 100).toFixed(0) : null;
+  const marginVal = r.mrp > 0 ? ((r.mrp - activePrice) / r.mrp * 100) : null;
+  const marginStr = marginVal !== null ? (marginVal % 1 === 0 ? marginVal.toFixed(0) : marginVal.toFixed(1)) : null;
 
   return S.jsxs("div", {
     style: {
@@ -84,7 +85,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
     },
     children: [
       // Margin Badge
-      marginVal !== null && S.jsxs("div", {
+      marginStr !== null && S.jsxs("div", {
         style: {
           position: "absolute",
           top: 0,
@@ -100,7 +101,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
           letterSpacing: "0.03em",
           zIndex: 10
         },
-        children: [`${marginVal}% Margin`]
+        children: [`${marginStr}% Margin`]
       }),
 
       // Top Row (Image & Info)
