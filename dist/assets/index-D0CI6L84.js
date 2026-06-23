@@ -832,7 +832,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
-  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);
+  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
@@ -1007,6 +1007,8 @@ ${itemsText}
   const ue=ge.useCallback(async()=>{
     const{data:j,error:J}=await Or.from("products").select("*,product_batches(*)").order("id");
     if(J){console.error(J),h(!1);return}
+    const{data:bImgs}=await Or.from("brand_images").select("*");
+    if(bImgs)setBrandImages(bImgs);
     if(j&&j.length>0)l(sortProducts(j.map(yl)));
     else{
       const he=Fb.map(ce=>({name:ce.name,cat:ce.cat,unit:ce.unit,mrp:ce.mrp,tp:ce.tp,note:ce.desc??""})),{data:me}=await Or.from("products").insert(he).select();
@@ -1018,7 +1020,7 @@ ${itemsText}
   ge.useEffect(()=>{ue()},[ue]);
 
   const ye=ge.useCallback(j=>{ke(j),setTimeout(()=>ke(""),2400)},[]),
-  Pe=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.cat)))],[s]),dbBrands=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.brand).filter(Boolean)))],[s]),Ue=ge.useMemo(()=>s.filter(j=>(g==="All"||j.cat===g)&&(selectedBrand==="All"||j.brand===selectedBrand)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[s,f,g,selectedBrand]),
+  Pe=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.cat)))],[s]),dbBrands=ge.useMemo(()=>{const brandsList=["All",...Array.from(new Set(s.map(j=>j.brand).filter(Boolean)))];return brandsList.map(b=>{const found=brandImages.find(bi=>bi.brand===b);return{name:b,image_url:found?found.image_url:""}})},[s,brandImages]),Ue=ge.useMemo(()=>s.filter(j=>(g==="All"||j.cat===g)&&(selectedBrand==="All"||j.brand===selectedBrand)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[s,f,g,selectedBrand]),
   Dn=ge.useMemo(()=>s.filter(j=>(adminCatFilter==="All"||j.cat===adminCatFilter)&&(j.name.toLowerCase().includes(B.toLowerCase())||j.cat.toLowerCase().includes(B.toLowerCase()))), [s,B,adminCatFilter]),
   tn=ge.useMemo(()=>Object.entries(v).reduce((j,[J,he])=>{
     const [prodIdStr,bchcodeStr]=J.split('_');
@@ -1664,25 +1666,35 @@ _Contact us to place your order!_`;
                 style: { display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" },
                 children: dbBrands.map(b => S.jsx("button", {
                   onClick: () => {
-                    setSelectedBrand(b);
+                    setSelectedBrand(b.name);
                     m("All");
                   },
                   style: {
                     padding: "6px 14px",
                     borderRadius: 20,
-                    border: `1.5px solid ${selectedBrand === b ? C.primary : C.border}`,
-                    background: selectedBrand === b ? C.primary : "#fff",
-                    color: selectedBrand === b ? "#fff" : C.muted,
+                    border: `1.5px solid 	ext{selectedBrand === b.name ? C.primary : C.border}`,
+                    background: selectedBrand === b.name ? C.primary : "#fff",
+                    color: selectedBrand === b.name ? "#fff" : C.muted,
                     fontSize: 12,
-                    fontWeight: selectedBrand === b ? 700 : 500,
+                    fontWeight: selectedBrand === b.name ? 700 : 500,
                     cursor: "pointer",
                     whiteSpace: "nowrap",
                     fontFamily: "'Outfit', sans-serif",
                     transition: "all 0.15s",
                     flexShrink: 0
                   },
-                  children: b
-                }, b))
+                  children: S.jsxs("span", {
+                    style: { display: "flex", alignItems: "center", gap: 6 },
+                    children: [
+                      b.image_url && S.jsx("img", {
+                        src: b.image_url,
+                        alt: b.name,
+                        style: { width: 18, height: 18, borderRadius: "50%", objectFit: "cover" }
+                      }),
+                      S.jsx("span", { children: b.name })
+                    ]
+                  })
+                }, b.name))
               })
             ]
           }),
@@ -1901,7 +1913,7 @@ _Contact us to place your order!_`;
           S.jsxs("div", {
             style: { display: "flex", gap: 6, marginBottom: 16 },
             children: [
-              [["products", "📦 Products"], ["customers", "🏪 Customers"], ["salesmen", "💼 Salesmen"], ["orders", "📋 Orders"]].map(([tabKey, tabLabel]) =>
+              [["products", "📦 Products"], ["customers", "🏪 Customers"], ["salesmen", "💼 Salesmen"], ["orders", "📋 Orders"], ["brands", "🏷️ Brands"]].map(([tabKey, tabLabel]) =>
                 S.jsx("button", {
                   onClick: () => setAdminTab(tabKey),
                   style: {
@@ -2819,6 +2831,154 @@ _Contact us to place your order!_`;
                     })
                   ]
                 }, o.id);
+              })
+            ]
+          }),
+          adminTab === "brands" && S.jsxs("div", {
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Manage Brands" }),
+                      S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: [`${brandImages.length} brands registered`] })
+                    ]
+                  })
+                ]
+              }),
+              S.jsxs("div", {
+                style: { background: "#fff", border: `1px solid 	ext{C.border}`, borderRadius: 12, padding: 14, marginBottom: 16 },
+                children: [
+                  S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Add New Brand" }),
+                  S.jsxs("div", {
+                    style: { display: "flex", flexDirection: "column", gap: 10 },
+                    children: [
+                      S.jsx("input", {
+                        value: newMgmtBrandName,
+                        onChange: e => setNewMgmtBrandName(e.target.value),
+                        placeholder: "Brand name (e.g. Marico)",
+                        style: { ...pl, padding: "8px 12px", fontSize: 13 }
+                      }),
+                      S.jsxs("div", {
+                        style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 },
+                        children: [
+                          S.jsxs("div", {
+                            style: { display: "flex", alignItems: "center", gap: 6 },
+                            children: [
+                              newMgmtBrandFile ? S.jsx("span", { style: { fontSize: 11, color: C.green, fontWeight: 600 }, children: "Image selected ✓" }) : S.jsx("span", { style: { fontSize: 11, color: C.muted }, children: "No image selected" }),
+                              newMgmtBrandFile && S.jsx("button", { onClick: () => setNewMgmtBrandFile(null), style: { fontSize: 11, color: C.red, background: "none", border: "none", cursor: "pointer" }, children: "Remove" })
+                            ]
+                          }),
+                          S.jsx("input", {
+                            type: "file",
+                            accept: "image/*",
+                            onChange: e => { if (e.target.files && e.target.files[0]) setNewMgmtBrandFile(e.target.files[0]) },
+                            style: { fontSize: 11, fontFamily: "'Outfit', sans-serif" }
+                          })
+                        ]
+                      }),
+                      S.jsx("button", {
+                        onClick: async () => {
+                          if (!newMgmtBrandName.trim()) { ye("Please enter a brand name."); return; }
+                          const brandName = newMgmtBrandName.trim();
+                          let logoUrl = "";
+                          if (newMgmtBrandFile) {
+                            const ext = newMgmtBrandFile.name.split(".").pop();
+                            const fileName = `brand_${Date.now()}.${ext}`;
+                            const { data: upData, error: upErr } = await Or.storage.from("product-images").upload(fileName, newMgmtBrandFile, { cacheControl: "3600", upsert: false });
+                            if (upErr) { ye("Image upload failed: " + upErr.message); return; }
+                            const { data: urlData } = Or.storage.from("product-images").getPublicUrl(fileName);
+                            logoUrl = urlData.publicUrl;
+                          }
+                          const { data, error } = await Or.from("brand_images").upsert({ brand: brandName, image_url: logoUrl }).select().single();
+                          if (error) {
+                            ye("Failed to save brand: " + error.message);
+                          } else {
+                            setBrandImages(prev => {
+                              const filtered = prev.filter(x => x.brand !== brandName);
+                              return [...filtered, data];
+                            });
+                            setNewMgmtBrandName("");
+                            setNewMgmtBrandFile(null);
+                            ye("Brand added successfully!");
+                          }
+                        },
+                        style: { padding: "8px", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                        children: "Add Brand"
+                      })
+                    ]
+                  })
+                ]
+              }),
+              S.jsx("div", {
+                children: Array.from(new Set([...s.map(p => p.brand).filter(Boolean), ...brandImages.map(bi => bi.brand)])).map(b => {
+                  const foundLogo = brandImages.find(bi => bi.brand === b);
+                  const logoUrl = foundLogo ? foundLogo.image_url : "";
+                  return S.jsxs("div", {
+                    style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1px solid 	ext{C.border}`, borderRadius: 12, padding: "10px 14px", marginBottom: 10 },
+                    children: [
+                      S.jsxs("div", {
+                        style: { display: "flex", alignItems: "center", gap: 12 },
+                        children: [
+                          logoUrl ? S.jsx("img", { src: logoUrl, style: { width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: `1px solid 	ext{C.border}`} }) 
+                                  : S.jsx("div", { style: { width: 36, height: 36, borderRadius: "50%", background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: C.primary }, children: b.charAt(0).toUpperCase() }),
+                          S.jsx("span", { style: { fontWeight: 700, color: C.text, fontSize: 13.5 }, children: b })
+                        ]
+                      }),
+                      S.jsxs("div", {
+                        style: { display: "flex", alignItems: "center", gap: 10 },
+                        children: [
+                          S.jsxs("label", {
+                            style: { display: "inline-flex", alignItems: "center", gap: 4, background: C.primaryLight, color: C.primary, padding: "5px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                            children: [
+                              S.jsx("span", { children: logoUrl ? "Change Logo" : "Upload Logo" }),
+                              S.jsx("input", {
+                                type: "file",
+                                accept: "image/*",
+                                onChange: async (e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    const file = e.target.files[0];
+                                    const ext = file.name.split(".").pop();
+                                    const fileName = `brand_	ext{Date.now()}.	ext{ext}`;
+                                    const { data: upData, error: upErr } = await Or.storage.from("product-images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+                                    if (upErr) { ye("Upload failed: " + upErr.message); return; }
+                                    const { data: urlData } = Or.storage.from("product-images").getPublicUrl(fileName);
+                                    const newLogoUrl = urlData.publicUrl;
+                                    const { data: updated, error } = await Or.from("brand_images").upsert({ brand: b, image_url: newLogoUrl }).select().single();
+                                    if (error) {
+                                      ye("Failed to update logo: " + error.message);
+                                    } else {
+                                      setBrandImages(prev => {
+                                        const filtered = prev.filter(x => x.brand !== b);
+                                        return [...filtered, updated];
+                                      });
+                                      ye(`Updated logo for "${b}"!`);
+                                    }
+                                  }
+                                },
+                                style: { display: "none" }
+                              })
+                            ]
+                          }),
+                          logoUrl && S.jsx("button", {
+                            onClick: async () => {
+                              const { error } = await Or.from("brand_images").delete().eq("brand", b);
+                              if (error) {
+                                ye("Failed to delete: " + error.message);
+                              } else {
+                                setBrandImages(prev => prev.filter(x => x.brand !== b));
+                                ye(`Deleted logo for "	ext{b}"`);
+                              }
+                            },
+                            style: { background: "none", border: "none", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                            children: "Delete"
+                          })
+                        ]
+                      })
+                    ]
+                  }, b);
+                })
               })
             ]
           })
