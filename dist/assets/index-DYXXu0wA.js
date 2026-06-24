@@ -825,6 +825,82 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [showCustProfile, setShowCustProfile] = ge.useState(!1);
   const [deliveryOrders, setDeliveryOrders] = ge.useState([]);
   const [deliveryTab, setDeliveryTab] = ge.useState("active");
+  const [deliveryBeat, setDeliveryBeat] = ge.useState(null);
+  const [activeStopOrder, setActiveStopOrder] = ge.useState(null);
+  const [userCoords, setUserCoords] = ge.useState(null);
+  const [deliveredQties, setDeliveredQties] = ge.useState({});
+  const [deliveryStatusOption, setDeliveryStatusOption] = ge.useState("Delivered");
+  const [paymentMode, setPaymentMode] = ge.useState("Cash");
+  const [collectedAmount, setCollectedAmount] = ge.useState("");
+  const [chequeNo, setChequeNo] = ge.useState("");
+  const [chequeBank, setChequeBank] = ge.useState("");
+  const [nonDeliveryReason, setNonDeliveryReason] = ge.useState("Shop Closed");
+  const [otherReasonText, setOtherReasonText] = ge.useState("");
+
+  const getDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3;
+    const phi1 = lat1 * Math.PI / 180;
+    const phi2 = lat2 * Math.PI / 180;
+    const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+    const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+              Math.cos(phi1) * Math.cos(phi2) *
+              Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  ge.useEffect(() => {
+    if (r === "delivery" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        (err) => console.error("Error getting location:", err),
+        { enableHighAccuracy: true }
+      );
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        (err) => console.error("Error watching location:", err),
+        { enableHighAccuracy: true }
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    }
+  }, [r]);
+
+  ge.useEffect(() => {
+    if (activeStopOrder) {
+      const initialQties = {};
+      activeStopOrder.items.forEach(item => {
+        initialQties[item.id] = item.qty;
+      });
+      setDeliveredQties(initialQties);
+      setDeliveryStatusOption("Delivered");
+      setPaymentMode("Cash");
+      setCollectedAmount(String(activeStopOrder.total_amount));
+      setChequeNo("");
+      setChequeBank("");
+      setNonDeliveryReason("Shop Closed");
+      setOtherReasonText("");
+    }
+  }, [activeStopOrder]);
+
+  const deliveredSubtotal = activeStopOrder ? activeStopOrder.items.reduce((sum, item) => {
+    const dQty = deliveredQties[item.id] ?? item.qty;
+    const itemPrice = item.price || 0;
+    const itemDiscount = item.discount || 0;
+    return sum + (dQty * itemPrice * (1 - itemDiscount/100));
+  }, 0) : 0;
+
+  ge.useEffect(() => {
+    if (deliveryStatusOption === "Skipped") {
+      setCollectedAmount("0");
+    } else {
+      setCollectedAmount(String(Math.round(deliveredSubtotal)));
+    }
+  }, [deliveredSubtotal, deliveryStatusOption]);
   const [customCats, setCustomCats] = ge.useState(() => {
     const defaults = ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
     const stored = localStorage.getItem("kmart_custom_categories");
@@ -2120,210 +2196,493 @@ _Contact us to place your order!_`;
       r==="delivery"&&S.jsxs("div",{
         style:{padding:16, fontFamily:"'Outfit', sans-serif"},
         children:[
-          S.jsxs("div",{
-            style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16},
-            children:[
-              S.jsxs("div",{
-                children:[
-                  S.jsx("div",{style:{fontSize:16,fontWeight:800,color:C.text},children:"Delivery Portal"}),
-                  S.jsxs("div",{style:{fontSize:12,color:C.muted},children:[
-                    deliveryOrders.filter(x => x.status !== "Delivered" && x.status !== "Cancelled").length,
-                    " active deliveries"
-                  ]})
-                ]
-              }),
-              S.jsx("button", {
-                onClick: async () => {
-                  const { data, error } = await Or.from("orders").select("*, customer_id(id,name,phone,beat,location), salesman_id(name)").order("created_at", { ascending: false });
-                  if (!error) {
-                    setDeliveryOrders(data || []);
-                    ye("Deliveries list refreshed!");
-                  }
-                },
-                style: { background: "transparent", border: `1.5px solid ${C.primary}`, color: C.primary, borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
-                children: "Refresh 🔄"
-              })
-            ]
-          }),
-          S.jsxs("div", {
-            style: { display: "flex", gap: 8, marginBottom: 14, background: C.bg, padding: 4, borderRadius: 10 },
+          // Back button / Navigation header if in sub-views
+          (deliveryBeat || activeStopOrder) && S.jsxs("div", {
+            style: { display: "flex", gap: 10, alignItems: "center", marginBottom: 16 },
             children: [
               S.jsx("button", {
-                onClick: () => setDeliveryTab("active"),
-                style: {
-                  flex: 1,
-                  padding: "6px 12px",
-                  borderRadius: 8,
-                  border: "none",
-                  background: deliveryTab === "active" ? "#fff" : "transparent",
-                  color: deliveryTab === "active" ? C.primary : C.muted,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: deliveryTab === "active" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
-                  fontFamily: "'Outfit', sans-serif"
+                onClick: () => {
+                  if (activeStopOrder) {
+                    setActiveStopOrder(null);
+                  } else if (deliveryBeat) {
+                    setDeliveryBeat(null);
+                  }
                 },
-                children: `🚚 Active (${deliveryOrders.filter(x => x.status !== "Delivered" && x.status !== "Cancelled").length})`
+                style: { background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 5 },
+                children: "← Back"
               }),
-              S.jsx("button", {
-                onClick: () => setDeliveryTab("past"),
-                style: {
-                  flex: 1,
-                  padding: "6px 12px",
-                  borderRadius: 8,
-                  border: "none",
-                  background: deliveryTab === "past" ? "#fff" : "transparent",
-                  color: deliveryTab === "past" ? C.primary : C.muted,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: deliveryTab === "past" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
-                  fontFamily: "'Outfit', sans-serif"
-                },
-                children: `✅ Completed (${deliveryOrders.filter(x => x.status === "Delivered" || x.status === "Cancelled").length})`
+              S.jsx("div", {
+                style: { fontSize: 14, fontWeight: 700, color: C.muted },
+                children: activeStopOrder ? "Delivery Details" : `Beat: ${deliveryBeat}`
               })
             ]
           }),
-          (() => {
-            const filtered = deliveryOrders.filter(o => {
-              const isPast = o.status === "Delivered" || o.status === "Cancelled";
-              return deliveryTab === "past" ? isPast : !isPast;
+
+          // VIEW A: Beat Selection View (default)
+          !deliveryBeat && !activeStopOrder && (() => {
+            const todayStr = new Date().toLocaleDateString("en-CA");
+            const cashToday = deliveryOrders.reduce((sum, o) => {
+              if ((o.delivery_status === "Delivered" || o.delivery_status === "Partial") && o.payment_mode === "Cash" && o.delivered_at) {
+                const dDate = new Date(o.delivered_at).toLocaleDateString("en-CA");
+                if (dDate === todayStr) {
+                  return sum + (o.collected_amount || 0);
+                }
+              }
+              return sum;
+            }, 0);
+
+            const activeOrders = deliveryOrders.filter(o => {
+              return (o.delivery_status || "Pending") === "Pending" && o.status !== "Delivered" && o.status !== "Cancelled";
             });
-            if (filtered.length === 0) {
-              return S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "40px 0" }, children: "No delivery orders found." });
-            }
-            return filtered.map(o => {
-              const custInfo = o.customer_id || {};
-              const coords = parseGPS(custInfo.location);
-              const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-              return S.jsxs("div", {
-                style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
-                children: [
-                  S.jsxs("div", {
-                    style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 },
+
+            const beatGroups = {};
+            activeOrders.forEach(o => {
+              const bName = o.customer_id?.beat || "Others";
+              if (!beatGroups[bName]) {
+                beatGroups[bName] = { name: bName, customerIds: new Set(), totalVal: 0 };
+              }
+              beatGroups[bName].customerIds.add(o.customer_id?.id);
+              beatGroups[bName].totalVal += o.total_amount || 0;
+            });
+
+            const beatsList = Object.values(beatGroups);
+
+            return S.jsxs("div", {
+              children: [
+                S.jsxs("div", {
+                  style: { background: C.greenBg, border: `1.5px solid ${C.green}40`, borderRadius: 14, padding: 14, marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "center" },
+                  children: [
+                    S.jsxs("div", {
+                      children: [
+                        S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 0.5 }, children: "💵 Running Cash In Hand" }),
+                        S.jsx("div", { style: { fontSize: 22, fontWeight: 800, color: C.primary, marginTop: 2 }, children: un(cashToday) })
+                      ]
+                    }),
+                    S.jsx("button", {
+                      onClick: async () => {
+                        const { data, error } = await Or.from("orders").select("*, customer_id(id,name,phone,beat,location), salesman_id(name)").order("created_at", { ascending: false });
+                        if (!error) {
+                          setDeliveryOrders(data || []);
+                          ye("Deliveries list refreshed!");
+                        }
+                      },
+                      style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 },
+                      children: "Refresh 🔄"
+                    })
+                  ]
+                }),
+
+                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 }, children: "Select Delivery Route / Beat" }),
+
+                beatsList.length === 0 ? S.jsx("div", {
+                  style: { textAlign: "center", color: C.muted, padding: "40px 0" },
+                  children: "No active delivery beats."
+                }) : S.jsx("div", {
+                  style: { display: "flex", flexDirection: "column", gap: 10 },
+                  children: beatsList.map(b => S.jsxs("div", {
+                    onClick: () => setDeliveryBeat(b.name),
+                    style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" },
                     children: [
                       S.jsxs("div", {
                         children: [
-                          S.jsx("div", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: custInfo.name || "Unknown Shop" }),
-                          S.jsxs("div", { style: { fontSize: 11.5, color: C.muted, marginTop: 2 }, children: [`Beat: ${custInfo.beat || "N/A"}`] })
+                          S.jsx("div", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: b.name }),
+                          S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 3 }, children: [`${b.customerIds.size} customer(s)`] })
                         ]
                       }),
-                      S.jsx("span", {
-                        style: {
-                          fontSize: 10.5,
-                          fontWeight: 700,
-                          background: o.status === "Delivered" ? C.greenBg : o.status === "Cancelled" ? C.redBg : o.status === "Out for Delivery" ? "#FEF3C7" : C.accentLight,
-                          color: o.status === "Delivered" ? C.green : o.status === "Cancelled" ? C.red : o.status === "Out for Delivery" ? "#D97706" : C.accent,
-                          padding: "3px 8px",
-                          borderRadius: 6
-                        },
-                        children: o.status
-                      })
-                    ]
-                  }),
-                  custInfo.phone && S.jsxs("div", {
-                    style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 12.5 },
-                    children: [
-                      S.jsx("span", { children: "📞" }),
-                      S.jsx("a", {
-                        href: `tel:${custInfo.phone}`,
-                        style: { color: C.primary, fontWeight: 700, textDecoration: "underline" },
-                        children: custInfo.phone
-                      })
-                    ]
-                  }),
-                  S.jsxs("div", {
-                    style: { background: "#f8fafc", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" },
-                    children: [
-                      S.jsxs("div", {
-                        style: { display: "flex", flexDirection: "column", gap: 2 },
-                        children: [
-                          S.jsxs("div", {
-                            style: { display: "flex", alignItems: "center", gap: 6 },
-                            children: [
-                              S.jsx("span", { style: { fontSize: 12, fontWeight: 700, color: C.text }, children: "📍 GPS Status" }),
-                              coords && S.jsx("a", {
-                                href: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
-                                target: "_blank",
-                                rel: "noopener noreferrer",
-                                style: { fontSize: 11, color: C.primary, fontWeight: 700, textDecoration: "underline" },
-                                children: "🗺️ Navigate"
-                              })
-                            ]
-                          }),
-                          S.jsx("span", {
-                            style: { fontSize: 11, color: C.muted },
-                            children: coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "Not Tagged"
-                          })
-                        ]
-                      })
-                    ]
-                  }),
-                  S.jsx("div", {
-                    style: { background: C.bg, borderRadius: 8, padding: "8px 10px", marginBottom: 12 },
-                    children: S.jsx("pre", {
-                      style: { fontSize: 11.5, color: C.text, whiteSpace: "pre-wrap", margin: 0, fontFamily: "'Outfit', sans-serif", lineHeight: 1.5 },
-                      children: getOrderPreviewText(o)
-                    })
-                  }),
-                  S.jsxs("div", {
-                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
-                    children: [
-                      S.jsx("span", { style: { fontSize: 11.5, color: C.muted }, children: dateStr }),
                       S.jsxs("div", {
                         style: { textAlign: "right" },
                         children: [
-                          S.jsx("div", { style: { fontSize: 10, color: C.muted, fontWeight: 500 }, children: "Total Amount" }),
-                          S.jsx("div", { style: { fontSize: 14, fontWeight: 800, color: C.primary }, children: un(o.total_amount) })
+                          S.jsx("div", { style: { fontSize: 10, color: C.muted, fontWeight: 500 }, children: "Total Value" }),
+                          S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(b.totalVal) })
                         ]
                       })
                     ]
-                  }),
-                  o.status !== "Delivered" && o.status !== "Cancelled" && S.jsxs("div", {
-                    style: { display: "flex", gap: 8, marginTop: 12, borderTop: `1px dashed ${C.border}`, paddingTop: 12 },
-                    children: [
-                      o.status !== "Out for Delivery" && S.jsx("button", {
-                        onClick: async () => {
-                          const { error } = await Or.from("orders").update({ status: "Out for Delivery" }).eq("id", o.id);
-                          if (error) ye("Failed to update status.");
-                          else {
-                            setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: "Out for Delivery" } : x));
-                            ye("Order is now Out for Delivery!");
-                          }
-                        },
-                        style: { flex: 1.5, padding: "8px 0", background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
-                        children: "🚚 Out for Delivery"
-                      }),
-                      S.jsx("button", {
-                        onClick: async () => {
-                          const { error } = await Or.from("orders").update({ status: "Delivered" }).eq("id", o.id);
-                          if (error) ye("Failed to update status.");
-                          else {
-                            setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: "Delivered" } : x));
-                            ye("Order delivered successfully!");
-                          }
-                        },
-                        style: { flex: 2, padding: "8px 0", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
-                        children: "✅ Mark Delivered"
-                      }),
-                      S.jsx("button", {
-                        onClick: async () => {
-                          if (window.confirm("Cancel this delivery?")) {
-                            const { error } = await Or.from("orders").update({ status: "Cancelled" }).eq("id", o.id);
-                            if (error) ye("Failed to update status.");
-                            else {
-                              setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: "Cancelled" } : x));
-                              ye("Delivery cancelled.");
-                            }
-                          }
-                        },
-                        style: { flex: 1, padding: "8px 0", background: C.redBg, color: C.red, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
-                        children: "❌ Cancel"
-                      })
-                    ]
+                  }, b.name))
+                })
+              ]
+            });
+          })(),
+
+          // VIEW B: Stop List (Beat View)
+          deliveryBeat && !activeStopOrder && (() => {
+            const todayStr = new Date().toLocaleDateString("en-CA");
+            const beatOrders = deliveryOrders.filter(o => {
+              const bName = o.customer_id?.beat || "Others";
+              if (bName !== deliveryBeat) return false;
+
+              const isPending = (o.delivery_status || "Pending") === "Pending" && o.status !== "Delivered" && o.status !== "Cancelled";
+              if (isPending) return true;
+
+              if (o.delivered_at) {
+                return new Date(o.delivered_at).toLocaleDateString("en-CA") === todayStr;
+              }
+              return false;
+            });
+
+            const stops = beatOrders.map(o => {
+              const custInfo = o.customer_id || {};
+              const coords = parseGPS(custInfo.location);
+              let distance = null;
+              if (userCoords && coords) {
+                distance = getDistance(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
+              }
+              return { order: o, custInfo, coords, distance };
+            });
+
+            stops.sort((a, b) => {
+              if (a.distance === null && b.distance === null) return 0;
+              if (a.distance === null) return 1;
+              if (b.distance === null) return -1;
+              return a.distance - b.distance;
+            });
+
+            return S.jsxs("div", {
+              children: [
+                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 }, children: `Stops in ${deliveryBeat}` }),
+
+                stops.length === 0 ? S.jsx("div", {
+                  style: { textAlign: "center", color: C.muted, padding: "40px 0" },
+                  children: "No stops found."
+                }) : S.jsx("div", {
+                  style: { display: "flex", flexDirection: "column", gap: 10 },
+                  children: stops.map(stop => {
+                    const o = stop.order;
+                    const c = stop.custInfo;
+                    const d = stop.distance;
+                    const status = o.delivery_status || "Pending";
+
+                    let statusColor = C.muted;
+                    let statusBg = C.bg;
+                    if (status === "Delivered") { statusColor = C.green; statusBg = C.greenBg; }
+                    else if (status === "Partial") { statusColor = C.accent; statusBg = C.accentLight; }
+                    else if (status === "Skipped") { statusColor = C.red; statusBg = C.redBg; }
+
+                    const payMode = o.payment_mode ? ` | ${o.payment_mode}` : "";
+
+                    return S.jsxs("div", {
+                      onClick: () => {
+                        setActiveStopOrder(o);
+                      },
+                      style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" },
+                      children: [
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 3, flex: 1, paddingRight: 10 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 6 },
+                              children: [
+                                S.jsx("span", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: c.name || "Unknown Shop" }),
+                                S.jsx("span", {
+                                  style: { fontSize: 10, fontWeight: 700, color: statusColor, background: statusBg, padding: "2px 6px", borderRadius: 4 },
+                                  children: status
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { fontSize: 11.5, color: C.muted },
+                              children: [
+                                `Beat: ${c.beat || "N/A"}`,
+                                stop.coords ? ` (${stop.coords.lat.toFixed(5)}, ${stop.coords.lng.toFixed(5)})` : " (No GPS)"
+                              ]
+                            }),
+                            d !== null && S.jsxs("div", {
+                              style: { fontSize: 11, fontWeight: 600, color: C.primary, marginTop: 2 },
+                              children: [
+                                "📍 ",
+                                d < 1000 ? `${d.toFixed(0)}m away` : `${(d/1000).toFixed(1)}km away`
+                              ]
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          style: { textAlign: "right", flexShrink: 0 },
+                          children: [
+                            S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(o.total_amount) }),
+                            S.jsx("div", { style: { fontSize: 10, color: C.muted, marginTop: 2 }, children: `Unpaid${payMode}` })
+                          ]
+                        })
+                      ]
+                    }, o.id);
                   })
-                ]
-              });
+                })
+              ]
+            });
+          })(),
+
+          // VIEW C: Per-Customer Delivery Screen
+          activeStopOrder && (() => {
+            const o = activeStopOrder;
+            const c = o.customer_id || {};
+            const coords = parseGPS(c.location);
+            
+            let distance = null;
+            if (userCoords && coords) {
+              distance = getDistance(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
+            }
+
+            return S.jsxs("div", {
+              children: [
+                S.jsxs("div", {
+                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                  children: [
+                    S.jsx("div", { style: { fontWeight: 800, fontSize: 16, color: C.text }, children: c.name || "Unknown Shop" }),
+                    S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 4 }, children: [`Beat: ${c.beat || "N/A"}`] }),
+                    c.phone && S.jsxs("div", {
+                      style: { display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 12.5 },
+                      children: [
+                        S.jsx("span", { children: "📞" }),
+                        S.jsx("a", {
+                          href: `tel:${c.phone}`,
+                          style: { color: C.primary, fontWeight: 700, textDecoration: "underline" },
+                          children: c.phone
+                        })
+                      ]
+                    })
+                  ]
+                }),
+
+                S.jsxs("div", {
+                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 12, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 },
+                  children: [
+                    S.jsx("span", { style: { fontSize: 14 }, children: "📍" }),
+                    S.jsxs("div", {
+                      children: [
+                        S.jsx("div", { style: { fontSize: 12, fontWeight: 700, color: C.text }, children: "GPS Proximity Check" }),
+                        S.jsx("div", {
+                          style: { fontSize: 11.5, fontWeight: 600, color: distance !== null && distance < 100 ? C.green : C.accent, marginTop: 2 },
+                          children: coords ? (distance !== null ? (distance < 100 ? `✓ On Location (${distance.toFixed(0)}m)` : `⚠️ ${distance < 1000 ? distance.toFixed(0) + "m" : (distance/1000).toFixed(1) + "km"} away from shop`) : "Calculating distance...") : "Coordinates not tagged"
+                        })
+                      ]
+                    })
+                  ]
+                }),
+
+                S.jsxs("div", {
+                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                  children: [
+                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Mark Delivery Outcome" }),
+                    S.jsxs("div", {
+                      style: { display: "flex", gap: 8 },
+                      children: [
+                        S.jsx("button", {
+                          onClick: () => {
+                            setDeliveryStatusOption("Delivered");
+                            const q = {};
+                            o.items.forEach(item => { q[item.id] = item.qty; });
+                            setDeliveredQties(q);
+                          },
+                          style: { flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: deliveryStatusOption === "Delivered" ? C.green : C.bg, color: deliveryStatusOption === "Delivered" ? "#fff" : C.text },
+                          children: "Full Delivery"
+                        }),
+                        S.jsx("button", {
+                          onClick: () => {
+                            setDeliveryStatusOption("Partial");
+                          },
+                          style: { flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: deliveryStatusOption === "Partial" ? C.accent : C.bg, color: deliveryStatusOption === "Partial" ? "#fff" : C.text },
+                          children: "Partial Delivery"
+                        }),
+                        S.jsx("button", {
+                          onClick: () => {
+                            setDeliveryStatusOption("Skipped");
+                            const q = {};
+                            o.items.forEach(item => { q[item.id] = 0; });
+                            setDeliveredQties(q);
+                          },
+                          style: { flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: deliveryStatusOption === "Skipped" ? C.red : C.bg, color: deliveryStatusOption === "Skipped" ? "#fff" : C.text },
+                          children: "Could Not Deliver"
+                        })
+                      ]
+                    }),
+                    deliveryStatusOption === "Skipped" && S.jsxs("div", {
+                      style: { marginTop: 12 },
+                      children: [
+                        S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Reason for Non-Delivery" }),
+                        S.jsxs("select", {
+                          value: nonDeliveryReason,
+                          onChange: (e) => setNonDeliveryReason(e.target.value),
+                          style: { ...pl, padding: "8px 10px", fontSize: 13 },
+                          children: [
+                            S.jsx("option", { value: "Shop Closed", children: "Shop Closed" }),
+                            S.jsx("option", { value: "Owner Not Available", children: "Owner Not Available" }),
+                            S.jsx("option", { value: "Refused Delivery", children: "Refused Delivery" }),
+                            S.jsx("option", { value: "Payment Issues", children: "Payment Issues" }),
+                            S.jsx("option", { value: "Wrong Address", children: "Wrong Address" }),
+                            S.jsx("option", { value: "Other", children: "Other" })
+                          ]
+                        }),
+                        nonDeliveryReason === "Other" && S.jsx("input", {
+                          type: "text",
+                          value: otherReasonText,
+                          onChange: (e) => setOtherReasonText(e.target.value),
+                          placeholder: "Type custom reason...",
+                          style: { ...pl, marginTop: 8, padding: "8px 10px", fontSize: 13 }
+                        })
+                      ]
+                    })
+                  ]
+                }),
+
+                S.jsxs("div", {
+                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                  children: [
+                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Order Items" }),
+                    S.jsx("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 12 },
+                      children: o.items.map(item => {
+                        const dQty = deliveredQties[item.id] ?? item.qty;
+                        const isEditable = deliveryStatusOption === "Partial";
+
+                        return S.jsxs("div", {
+                          style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}50`, paddingBottom: 8 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { flex: 1, paddingRight: 10 },
+                              children: [
+                                S.jsx("div", { style: { fontSize: 13, fontWeight: 600, color: C.text }, children: item.name }),
+                                S.jsxs("div", { style: { fontSize: 11, color: C.muted, marginTop: 2 }, children: [`Price: ${un(item.price)} | Ordered: ${item.qty}`] })
+                              ]
+                            }),
+                            isEditable ? S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 6 },
+                              children: [
+                                S.jsx("button", {
+                                  onClick: () => {
+                                    setDeliveredQties(prev => ({ ...prev, [item.id]: Math.max(0, dQty - 1) }));
+                                  },
+                                  style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
+                                  children: "-"
+                                }),
+                                S.jsx("span", { style: { fontSize: 13.5, fontWeight: 700, minWidth: 24, textAlign: "center" }, children: dQty }),
+                                S.jsx("button", {
+                                  onClick: () => {
+                                    setDeliveredQties(prev => ({ ...prev, [item.id]: Math.min(item.qty, dQty + 1) }));
+                                  },
+                                  style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
+                                  children: "+"
+                                })
+                              ]
+                            }) : S.jsx("span", {
+                              style: { fontSize: 13.5, fontWeight: 700, color: C.text },
+                              children: `Delivered: ${dQty}`
+                            })
+                          ]
+                        }, item.id);
+                      })
+                    }),
+                    S.jsxs("div", {
+                      style: { display: "flex", justifyContent: "space-between", marginTop: 14, fontWeight: 800, fontSize: 14, color: C.primary },
+                      children: [
+                        S.jsx("span", { children: "Delivered Value:" }),
+                        S.jsx("span", { children: un(deliveredSubtotal) })
+                      ]
+                    })
+                  ]
+                }),
+
+                deliveryStatusOption !== "Skipped" && S.jsxs("div", {
+                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                  children: [
+                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Payment Collection" }),
+                    S.jsxs("div", {
+                      style: { display: "flex", gap: 8, marginBottom: 12 },
+                      children: [
+                        S.jsx("button", {
+                          onClick: () => setPaymentMode("Cash"),
+                          style: { flex: 1, padding: "8px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: paymentMode === "Cash" ? C.primary : C.bg, color: paymentMode === "Cash" ? "#fff" : C.text },
+                          children: "💵 Cash"
+                        }),
+                        S.jsx("button", {
+                          onClick: () => setPaymentMode("Cheque"),
+                          style: { flex: 1, padding: "8px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: paymentMode === "Cheque" ? C.primary : C.bg, color: paymentMode === "Cheque" ? "#fff" : C.text },
+                          children: "✍️ Cheque"
+                        }),
+                        S.jsx("button", {
+                          onClick: () => setPaymentMode("Credit"),
+                          style: { flex: 1, padding: "8px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: paymentMode === "Credit" ? C.primary : C.bg, color: paymentMode === "Credit" ? "#fff" : C.text },
+                          children: "💳 Credit"
+                        })
+                      ]
+                    }),
+                    S.jsxs("div", {
+                      style: { marginBottom: 10 },
+                      children: [
+                        S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Amount Collected" }),
+                        S.jsx("input", {
+                          type: "number",
+                          value: collectedAmount,
+                          onChange: (e) => setCollectedAmount(e.target.value),
+                          placeholder: "Enter collected amount...",
+                          style: { ...pl, padding: "8px 10px", fontSize: 13 }
+                        })
+                      ]
+                    }),
+                    paymentMode === "Cheque" && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 8, marginTop: 10 },
+                      children: [
+                        S.jsxs("div", {
+                          children: [
+                            S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Cheque Number (Optional)" }),
+                            S.jsx("input", {
+                              type: "text",
+                              value: chequeNo,
+                              onChange: (e) => setChequeNo(e.target.value),
+                              placeholder: "Cheque Number",
+                              style: { ...pl, padding: "8px 10px", fontSize: 13 }
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          children: [
+                            S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Bank Name (Optional)" }),
+                            S.jsx("input", {
+                              type: "text",
+                              value: chequeBank,
+                              onChange: (e) => setChequeBank(e.target.value),
+                              placeholder: "Bank Name",
+                              style: { ...pl, padding: "8px 10px", fontSize: 13 }
+                            })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+
+                S.jsx("button", {
+                  onClick: async () => {
+                    const amt = Number(collectedAmount) || 0;
+                    const finalStatus = deliveryStatusOption;
+                    const finalReason = finalStatus === "Skipped" ? (nonDeliveryReason === "Other" ? otherReasonText : nonDeliveryReason) : "";
+                    
+                    const payload = {
+                      delivery_status: finalStatus,
+                      delivered_items: o.items.map(item => ({
+                        ...item,
+                        delivered_qty: deliveredQties[item.id] ?? item.qty
+                      })),
+                      payment_mode: finalStatus !== "Skipped" ? paymentMode : null,
+                      collected_amount: finalStatus !== "Skipped" ? amt : 0,
+                      cheque_no: finalStatus !== "Skipped" && paymentMode === "Cheque" ? chequeNo : null,
+                      cheque_bank: finalStatus !== "Skipped" && paymentMode === "Cheque" ? chequeBank : null,
+                      non_delivery_reason: finalReason,
+                      delivered_at: new Date().toISOString(),
+                      status: finalStatus === "Skipped" ? "Cancelled" : "Delivered"
+                    };
+
+                    const { error } = await Or.from("orders").update(payload).eq("id", o.id);
+                    if (error) {
+                      ye("Failed to save delivery. Please try again.");
+                      console.error(error);
+                    } else {
+                      setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, ...payload } : x));
+                      setActiveStopOrder(null);
+                      ye("Delivery processed successfully!");
+                    }
+                  },
+                  style: { width: "100%", padding: "12px 0", border: "none", borderRadius: 10, background: C.primary, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 10px rgba(20,83,45,0.2)" },
+                  children: "💾 Confirm & Submit Delivery"
+                })
+              ]
             });
           })()
         ]
