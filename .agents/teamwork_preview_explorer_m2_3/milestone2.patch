@@ -1,0 +1,40 @@
+diff --git a/dist/assets/index-DYXXu0wA.js b/dist/assets/index-DYXXu0wA.js
+--- a/dist/assets/index-DYXXu0wA.js
++++ b/dist/assets/index-DYXXu0wA.js
+@@ -52,5 +52,5 @@
+-yl=r=>({id:r.id,name:r.name,cat:r.cat,unit:r.unit,mrp:r.mrp,tp:r.tp,cp:r.cp??0,cs:r.cs??"",customer_price:r.customer_price??0,tier2_min_qty:r.tier2_min_qty??0,tier2_price:r.tier2_price??0,desc:r.note??"",vision_product_id:r.vision_product_id,stock:r.stock??0,product_batches:r.product_batches??[],brand:r.brand??""})
++yl=r=>({id:r.id,name:r.name,cat:r.cat,unit:r.unit,mrp:r.mrp,tp:r.tp,cp:r.cp??0,cs:r.cs??"",customer_price:r.customer_price??0,tier2_min_qty:r.tier2_min_qty??0,tier2_price:r.tier2_price??0,desc:r.note??"",vision_product_id:r.vision_product_id,stock:r.stock??0,product_batches:r.product_batches??[],brand:r.brand??"",image_url:r.image_url??""})
+ 
+-function t_({p:r,qty:a,onAdd:s,onInc:l,onDec:c,onSet:h}){const caseSize=parseInt(r.cs)||0,cases=caseSize>0?Math.floor(a/caseSize):0,pcs=caseSize>0?a%caseSize:a,[cInput,setCInput]=ge.useState(cases===0?"":String(cases)),[pInput,setPInput]=ge.useState(pcs===0?"":String(pcs)),[f,y]=ge.useState(a===0?"":String(a));ge.useEffect(()=>{setCInput(cases===0?"":String(cases));setPInput(pcs===0?"":String(pcs));y(a===0?"":String(a))},[a,caseSize]);return S.jsxs("div",{style:{background:C.card,borderRadius:13,padding:14,border:`1.5px solid ${a>0?C.green:C.border}`,boxShadow:a>0?`0 0 0 3px ${C.greenBg}`:"0 1px 6px rgba(0,0,0,0.06)",transition:"border-color 0.2s, box-shadow 0.2s",display:"flex",flexDirection:"column",gap:0},children:[S.jsx("div",{style:{width:38,height:38,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:10,flexShrink:0},children:$r(r.cat)}),
++function t_({p:r,qty:a,onAdd:s,onInc:l,onDec:c,onSet:h}){const imgUrl=r.image_url||{Staples:"https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=120&q=80",Biscuits:"https://images.unsplash.com/photo-1558961312-50a49c93b3af?auto=format&fit=crop&w=120&q=80",Beverages:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=120&q=80",Snacks:"https://images.unsplash.com/photo-1599490659213-e2b9527bc087?auto=format&fit=crop&w=120&q=80"}[getCleanCat(r.cat).trim()];const [showTiers,setShowTiers]=ge.useState(false);const caseSize=parseInt(r.cs)||0,cases=caseSize>0?Math.floor(a/caseSize):0,pcs=caseSize>0?a%caseSize:a,[cInput,setCInput]=ge.useState(cases===0?"":String(cases)),[pInput,setPInput]=ge.useState(pcs===0?"":String(pcs)),[f,y]=ge.useState(a===0?"":String(a));ge.useEffect(()=>{setCInput(cases===0?"":String(cases));setPInput(pcs===0?"":String(pcs));y(a===0?"":String(a))},[a,caseSize]);return S.jsxs("div",{style:{background:C.card,borderRadius:13,padding:18,border:`1.5px solid ${a>0?C.green:C.border}`,boxShadow:a>0?`0 0 0 3px ${C.greenBg}`:"0 1px 6px rgba(0,0,0,0.06)",transition:"border-color 0.2s, box-shadow 0.2s",display:"flex",flexDirection:"column",gap:0},children:[imgUrl?S.jsx("img",{src:imgUrl,style:{width:38,height:38,borderRadius:10,objectFit:"cover",marginBottom:10,flexShrink:0}}):S.jsx("div",{style:{width:38,height:38,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:10,flexShrink:0},children:$r(r.cat)}),
+ 
+-hasTiers&&S.jsx("div",{style:{fontSize:11,color:C.accent,fontWeight:700,marginTop:2,marginBottom:4},children:`1–${r.tier2_min_qty-1} ${r.unit||"pcs"}: ₹${basePrice} | ${r.tier2_min_qty}+ ${r.unit||"pcs"}: ₹${r.tier2_price}`}),
++hasTiers&&S.jsxs("div",{style:{marginTop:4,marginBottom:6},children:[S.jsxs("button",{onClick:()=>setShowTiers(!showTiers),style:{background:"none",border:"none",color:C.accent,fontSize:11,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0,fontFamily:"'Outfit', sans-serif"},children:["Bulk Pricing Info",S.jsx("span",{style:{display:"inline-block",transform:showTiers?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s"},children:"▼"})]}),showTiers&&S.jsx("div",{style:{fontSize:10.5,color:C.accent,background:C.accentLight,padding:"6px 10px",borderRadius:6,marginTop:4,border:`1px solid ${C.border}`},children:`1–${r.tier2_min_qty-1} ${r.unit||"pcs"}: ₹${basePrice} | ${r.tier2_min_qty}+ ${r.unit||"pcs"}: ₹${r.tier2_price}`})]})
+ 
+-function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
++function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){const imgUrl=r.image_url||{Staples:"https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=120&q=80",Biscuits:"https://images.unsplash.com/photo-1558961312-50a49c93b3af?auto=format&fit=crop&w=120&q=80",Beverages:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=120&q=80",Snacks:"https://images.unsplash.com/photo-1599490659213-e2b9527bc087?auto=format&fit=crop&w=120&q=80"}[getCleanCat(r.cat).trim()];
+ 
+-S.jsx("div",{style:{width:36,height:36,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0},children:$r(r.cat)})
++imgUrl?S.jsx("img",{src:imgUrl,style:{width:36,height:36,borderRadius:10,objectFit:"cover",flexShrink:0}}):S.jsx("div",{style:{width:36,height:36,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0},children:$r(r.cat)})
+ 
+-S.jsx("div",{style:{width:36,height:36,borderRadius:10,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20},children:$r(r.cat)})
++imgUrl?S.jsx("img",{src:imgUrl,style:{width:36,height:36,borderRadius:10,objectFit:"cover"}}):S.jsx("div",{style:{width:36,height:36,borderRadius:10,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20},children:$r(r.cat)})
+ 
+-function a_({p:r,onEdit:a,onDelete:s}){
++function a_({p:r,onEdit:a,onDelete:s}){const imgUrl=r.image_url||{Staples:"https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=120&q=80",Biscuits:"https://images.unsplash.com/photo-1558961312-50a49c93b3af?auto=format&fit=crop&w=120&q=80",Beverages:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=120&q=80",Snacks:"https://images.unsplash.com/photo-1599490659213-e2b9527bc087?auto=format&fit=crop&w=120&q=80"}[getCleanCat(r.cat).trim()];
+ 
+-S.jsx("div",{style:{fontSize:28,background:C.bg,borderRadius:10,width:48,height:48,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:$r(r.cat)})
++imgUrl?S.jsx("img",{src:imgUrl,style:{width:48,height:48,borderRadius:10,objectFit:"cover",flexShrink:0}}):S.jsx("div",{style:{fontSize:28,background:C.bg,borderRadius:10,width:48,height:48,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:$r(r.cat)})
+ 
+-style:r==="customer"?{gap:12}:{display:"flex",flexDirection:"column",gap:12,width:"100%"},
++style:r==="customer"?{gap:16}:{display:"flex",flexDirection:"column",gap:16,width:"100%"},
+ 
+diff --git a/dist/assets/index-BiACt3m9.css b/dist/assets/index-BiACt3m9.css
+--- a/dist/assets/index-BiACt3m9.css
++++ b/dist/assets/index-BiACt3m9.css
+@@ -21,3 +21,7 @@
++
++/* Card & Image Updates (Milestone 2) */
++.product-grid {
++  gap: 16px !important; /* Increase card margins/gap */
++}

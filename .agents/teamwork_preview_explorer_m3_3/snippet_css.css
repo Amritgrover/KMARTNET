@@ -1,0 +1,26 @@
+
+/* Custom Mobile Bottom Navigation styling & transitions */
+.mobile-bottom-nav button {
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.mobile-bottom-nav button:active {
+  transform: scale(0.92);
+}
+
+@media (min-width: 768px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .desktop-only-btn {
+    display: none !important;
+  }
+  
+  /* Add padding bottom to main container on mobile to prevent bottom nav overlap */
+  #root > div {
+    padding-bottom: 96px !important;
+  }
+}

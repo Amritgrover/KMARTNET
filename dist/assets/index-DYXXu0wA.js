@@ -792,11 +792,79 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [g, m] = ge.useState("All");
   const [v, b] = ge.useState({});
   const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [adminCustLat, setAdminCustLat] = ge.useState("");const [adminCustLng, setAdminCustLng] = ge.useState("");const [editCustLat, setEditCustLat] = ge.useState("");const [editCustLng, setEditCustLng] = ge.useState("");const [gpsConfirm, setGpsConfirm] = ge.useState(null);const [adminCustSearch, setAdminCustSearch] = ge.useState("");const [addCustExpanded, setAddCustExpanded] = ge.useState(false);const parseGPS = hex => { if (!hex || hex.length !== 50) return null; const hToD = h => { const b = new Uint8Array(8); for (let i = 0; i < 8; i++) b[i] = parseInt(h.substring(i * 2, i * 2 + 2), 16); return new DataView(b.buffer).getFloat64(0, true); }; return { lat: hToD(hex.substring(34, 50)), lng: hToD(hex.substring(18, 34)) }; };const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
+  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);
+  const [expandedTripId, setExpandedTripId] = ge.useState(null);
+  const [expandedTripStops, setExpandedTripStops] = ge.useState([]);
+  const [loadingTripStops, setLoadingTripStops] = ge.useState(false);
+  const [editTripDeliveryPerson, setEditTripDeliveryPerson] = ge.useState("");
+  const [editTripVehicleNo, setEditTripVehicleNo] = ge.useState("");
+  const [isUpdatingTrip, setIsUpdatingTrip] = ge.useState(false);
+  const [editTripName, setEditTripName] = ge.useState("");
+  const [addOrderTripId, setAddOrderTripId] = ge.useState("");
+  const [adminViewStopDetails, setAdminViewStopDetails] = ge.useState(null);
+  const [tripsRefreshTrigger, setTripsRefreshTrigger] = ge.useState(0);
+  const [tripBuilderDate, setTripBuilderDate] = ge.useState("");const [editCustName, setEditCustName] = ge.useState("");const [editCustPhone, setEditCustPhone] = ge.useState("");const [editCustBeat, setEditCustBeat] = ge.useState("");const [adminCustVisionId, setAdminCustVisionId] = ge.useState("");const [editCustVisionId, setEditCustVisionId] = ge.useState("");const [adminCustLat, setAdminCustLat] = ge.useState("");const [adminCustLng, setAdminCustLng] = ge.useState("");const [editCustLat, setEditCustLat] = ge.useState("");const [editCustLng, setEditCustLng] = ge.useState("");const [gpsConfirm, setGpsConfirm] = ge.useState(null);const [adminCustSearch, setAdminCustSearch] = ge.useState("");const [addCustExpanded, setAddCustExpanded] = ge.useState(false);const parseGPS = hex => { if (!hex || hex.length !== 50) return null; const hToD = h => { const b = new Uint8Array(8); for (let i = 0; i < 8; i++) b[i] = parseInt(h.substring(i * 2, i * 2 + 2), 16); return new DataView(b.buffer).getFloat64(0, true); }; return { lat: hToD(hex.substring(34, 50)), lng: hToD(hex.substring(18, 34)) }; };const [editingOrder, setEditingOrder] = ge.useState(null);const [adminOrderBeatFilter, setAdminOrderBeatFilter] = ge.useState("all");const [adminOrderDateFilter, setAdminOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });const [salesmanOrderDateFilter, setSalesmanOrderDateFilter] = ge.useState(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); });
   const [neErr, setNeErr] = ge.useState(!1);
+  const [isOnline, setIsOnline] = ge.useState(navigator.onLine);
+  const [isSyncing, setIsSyncing] = ge.useState(!1);
+  const [offlineCount, setOfflineCount] = ge.useState(() => JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]").length);
+  const [deliveryPersonsList, setDeliveryPersonsList] = ge.useState([]);
+  const [tripsList, setTripsList] = ge.useState([]);
+  const [selectedUnassignedOrders, setSelectedUnassignedOrders] = ge.useState([]);
+  const [selectedTripDeliveryPerson, setSelectedTripDeliveryPerson] = ge.useState("");
+  const [tripVehicleNo, setTripVehicleNo] = ge.useState("");
+  const [unassignedOrdersList, setUnassignedOrdersList] = ge.useState([]);
+  const [activeTripsTab, setActiveTripsTab] = ge.useState("builder");
+  const [selectedDeliveryPerson, setSelectedDeliveryPerson] = ge.useState(() => {
+    const stored = localStorage.getItem("kmart_delivery_person");
+    if (stored) {
+      try { return JSON.parse(stored); } catch(e) {}
+    }
+    return null;
+  });
+  const [activeTrip, setActiveTrip] = ge.useState(null);
+  const [tripStops, setTripStops] = ge.useState([]);
+  const [isCreatingTrip, setIsCreatingTrip] = ge.useState(!1);
+  const [adminDeliveryPersonName, setAdminDeliveryPersonName] = ge.useState("");
+  const [adminDeliveryPersonPhone, setAdminDeliveryPersonPhone] = ge.useState("");
+  const [editingDeliveryPerson, setEditingDeliveryPerson] = ge.useState(null);
+  const [editDeliveryPersonName, setEditDeliveryPersonName] = ge.useState("");
+  const [editDeliveryPersonPhone, setEditDeliveryPersonPhone] = ge.useState("");
+  const [editDeliveryPersonActive, setEditDeliveryPersonActive] = ge.useState(!0);
+  const [adminDeliveryPersonPin, setAdminDeliveryPersonPin] = ge.useState("");
+  const [editDeliveryPersonPin, setEditDeliveryPersonPin] = ge.useState("");
+  const [deliveryPersonSelId, setDeliveryPersonSelId] = ge.useState("");
+  const [groupType, setGroupType] = ge.useState("beat");
+  
+  
   const [X, $] = ge.useState(!1);
   const [I, q] = ge.useState(!1);
   const [ie, ke] = ge.useState("");
+  const ye=ge.useCallback(j=>{ke(j),setTimeout(()=>ke(""),2400)},[]);
+  const [realtimeRefreshTick,setRealtimeRefreshTick]=ge.useState(0);
+  const handleRealtimeRefresh=ge.useCallback(()=>setRealtimeRefreshTick(prev=>prev+1),[]);
+  ge.useEffect(()=>{
+    const tables=["beats","brand_images","customers","delivery_persons","orders","product_batches","products","pwa_notifications","pwa_push_subscriptions","salesmen","trip_orders","trips"];
+    let isClosed=false;
+    let debounceId=null;
+    const scheduleRefresh=()=>{
+      if(isClosed)return;
+      window.clearTimeout(debounceId);
+      debounceId=window.setTimeout(handleRealtimeRefresh,350);
+    };
+    const channel=Or.channel("kmart-site-live-refresh");
+    tables.forEach(table=>{
+      channel.on("postgres_changes",{event:"*",schema:"public",table},scheduleRefresh);
+    });
+    channel.subscribe(status=>{
+      if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("KMART realtime subscription issue:",status);
+    });
+    return()=>{
+      isClosed=true;
+      window.clearTimeout(debounceId);
+      Or.removeChannel(channel);
+    };
+  },[handleRealtimeRefresh]);
   const [se, W] = ge.useState(!1);
   const [slAuth, setSlAuth] = ge.useState(() => localStorage.getItem("kmart_salesman") !== null);
   const [authTarget, setAuthTarget] = ge.useState("admin");
@@ -831,6 +899,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [deliveredQties, setDeliveredQties] = ge.useState({});
   const [deliveryStatusOption, setDeliveryStatusOption] = ge.useState("Delivered");
   const [paymentMode, setPaymentMode] = ge.useState("Cash");
+  const [partialCreditMode, setPartialCreditMode] = ge.useState("Cash");
   const [collectedAmount, setCollectedAmount] = ge.useState("");
   const [chequeNo, setChequeNo] = ge.useState("");
   const [chequeBank, setChequeBank] = ge.useState("");
@@ -871,15 +940,17 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   }, [r]);
 
   ge.useEffect(() => {
-    if (activeStopOrder) {
+    if (activeStopOrder && activeStopOrder.order_id) {
+      const orderObj = activeStopOrder.order_id;
       const initialQties = {};
-      activeStopOrder.items.forEach(item => {
+      const items = orderObj.items || [];
+      items.forEach(item => {
         initialQties[item.id] = item.qty;
       });
       setDeliveredQties(initialQties);
       setDeliveryStatusOption("Delivered");
       setPaymentMode("Cash");
-      setCollectedAmount(String(activeStopOrder.total_amount));
+      setCollectedAmount(String(orderObj.total_amount || 0));
       setChequeNo("");
       setChequeBank("");
       setNonDeliveryReason("Shop Closed");
@@ -887,7 +958,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     }
   }, [activeStopOrder]);
 
-  const deliveredSubtotal = activeStopOrder ? activeStopOrder.items.reduce((sum, item) => {
+  const deliveredSubtotal = (activeStopOrder && activeStopOrder.order_id && activeStopOrder.order_id.items) ? activeStopOrder.order_id.items.reduce((sum, item) => {
     const dQty = deliveredQties[item.id] ?? item.qty;
     const itemPrice = item.price || 0;
     const itemDiscount = item.discount || 0;
@@ -927,6 +998,50 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     return null;
   });
   const [salesmanSelId, setSalesmanSelId] = ge.useState("");
+
+  ge.useEffect(() => {
+    async function initPush() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      let role = null;
+      let userId = null;
+      const pushRoles = [];
+      if (selectedSalesman) pushRoles.push({ role: 'salesman', userId: selectedSalesman.id });
+      if (selectedDeliveryPerson) pushRoles.push({ role: 'delivery_person', userId: selectedDeliveryPerson.id });
+      if (cust) pushRoles.push({ role: 'customer', userId: cust.id });
+      if (pushRoles.length === 0) return;
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+        const registration = await navigator.serviceWorker.ready;
+        const vapidPublicKey = 'BF_1iPLa7YMuLTyHTd7aRyw1L-vu4Q-TdHHDY-f4_q2Kx4xgtMn7LfRO8QUGIJgxqj583NsZI440xS63BtYnnzs';
+        const convertedVapidKey = (() => {
+          const padding = '='.repeat((4 - vapidPublicKey.length % 4) % 4);
+          const base64 = (vapidPublicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
+        })();
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+        });
+        for (const pr of pushRoles) {
+          await Or.from("pwa_push_subscriptions").upsert({
+            user_role: pr.role,
+            user_id: pr.userId,
+            subscription: subscription
+          }, { onConflict: 'user_role,user_id' });
+          console.log("PWA Push Notification subscribed successfully for", pr.role, pr.userId);
+        }
+      } catch (err) {
+        console.warn("Failed to subscribe to PWA Push Notifications:", err);
+      }
+    }
+    initPush();
+  }, [selectedSalesman, selectedDeliveryPerson, cust]);
   const [beatCustomers, setBeatCustomers] = ge.useState([]);
   const [salesmanTab, setSalesmanTab] = ge.useState("catalogue");
   const [salesmanOrders, setSalesmanOrders] = ge.useState([]);
@@ -1007,6 +1122,19 @@ ${itemsText}
           Me(!0);
           a("customer");
         }
+      } else if (p.startsWith("/delivery")) {
+        if (se) {
+          a("admin");
+        } else if (selectedDeliveryPerson) {
+          a("delivery");
+        } else {
+          setAuthTarget("delivery");
+          setDeliveryPersonSelId("");
+          tt("");
+          pt(!1);
+          Me(!0);
+          a("customer");
+        }
       } else {
         if (se) {
           a("admin");
@@ -1024,15 +1152,71 @@ ${itemsText}
   // Load initial data
   ge.useEffect(() => {
     const loadInitialData = async () => {
-      const { data: sList } = await Or.from("salesmen").select("*").order("name");
-      if (sList) {
-        setSalesmenList(sList);
-        setAdminSalesmen(sList);
+      try {
+        const { data: sList } = await Or.from("salesmen").select("*").order("name");
+        if (sList) {
+          localStorage.setItem("kmart_offline_salesmen", JSON.stringify(sList));
+          setSalesmenList(sList);
+          setAdminSalesmen(sList);
+        }
+      } catch (e) {
+        const cached = localStorage.getItem("kmart_offline_salesmen");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setSalesmenList(parsed);
+            setAdminSalesmen(parsed);
+          } catch (err) {}
+        }
       }
-      const { data: cList } = await Or.from("customers").select("*").order("name");
-      if (cList) setBeatCustomers(cList);
-      const { data: bList } = await Or.from("beats").select("*").order("name");
-      if (bList) setDbBeats(bList.map(b => b.name));
+
+      try {
+        const { data: cList } = await Or.from("customers").select("*").order("name");
+        if (cList) {
+          localStorage.setItem("kmart_offline_customers", JSON.stringify(cList));
+          setBeatCustomers(cList);
+        }
+      } catch (e) {
+        const cached = localStorage.getItem("kmart_offline_customers");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setBeatCustomers(parsed);
+          } catch (err) {}
+        }
+      }
+
+      try {
+        const { data: bList } = await Or.from("beats").select("*").order("name");
+        if (bList) {
+          const beatsNames = bList.map(b => b.name);
+          localStorage.setItem("kmart_offline_beats", JSON.stringify(beatsNames));
+          setDbBeats(beatsNames);
+        }
+      } catch (e) {
+        const cached = localStorage.getItem("kmart_offline_beats");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setDbBeats(parsed);
+          } catch (err) {}
+        }
+      }
+
+      try {
+        const { data: dList } = await Or.from("delivery_persons").select("*").order("name");
+        if (dList) {
+          localStorage.setItem("kmart_offline_delivery_persons", JSON.stringify(dList));
+          setDeliveryPersonsList(dList);
+        }
+      } catch (e) {
+        const cached = localStorage.getItem("kmart_offline_delivery_persons");
+        if (cached) {
+          try {
+            setDeliveryPersonsList(JSON.parse(cached));
+          } catch (err) {}
+        }
+      }
     };
     loadInitialData();
 
@@ -1045,19 +1229,161 @@ ${itemsText}
         setSlAuth(!0);
       } catch(e) {}
     }
-  }, []);
+  }, [realtimeRefreshTick]);
 
   // Customer Orders and Name synchronization
   ge.useEffect(() => {
-    if (cust) {
+    if (cust && r === "customer") {
       H(cust.name);
       const fetchOrders = async () => {
-        const { data, error } = await Or.from("orders").select("*, customer_id(name)").eq("customer_id", cust.id).order("created_at", { ascending: false });
-        if (!error) setCustOrders(data || []);
+        try {
+          const { data, error } = await Or.from("orders").select("*, customer_id(name)").eq("customer_id", cust.id).order("created_at", { ascending: false });
+          if (error) throw error;
+          localStorage.setItem("kmart_offline_customer_orders_" + cust.id, JSON.stringify(data || []));
+          
+          const offlineOrders = JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]")
+            .filter(o => o.customer_id && o.customer_id.name === cust.name);
+          setCustOrders([...offlineOrders, ...(data || [])]);
+        } catch(err) {
+          console.error("Fetch customer orders failed, loading offline:", err);
+          const cached = localStorage.getItem("kmart_offline_customer_orders_" + cust.id);
+          const offlineOrders = JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]")
+            .filter(o => o.customer_id && o.customer_id.name === cust.name);
+          if (cached) {
+            try {
+              setCustOrders([...offlineOrders, ...JSON.parse(cached)]);
+            } catch(e) {
+              setCustOrders(offlineOrders);
+            }
+          } else {
+            setCustOrders(offlineOrders);
+          }
+        }
       };
       fetchOrders();
     }
-  }, [cust]);
+  }, [cust, r, realtimeRefreshTick]);
+
+  // Admin Trips Builder actions
+  const handleCreateTrip = async () => {
+    if (!selectedTripDeliveryPerson) {
+      ye("Please select a delivery person.");
+      return;
+    }
+    if (selectedUnassignedOrders.length === 0) {
+      ye("Please select at least one order.");
+      return;
+    }
+    setIsCreatingTrip(!0);
+
+    try {
+      const { data: newTrip, error: tripErr } = await Or.from("trips").insert({
+        delivery_person_id: parseInt(selectedTripDeliveryPerson),
+        vehicle_no: tripVehicleNo.trim() || null,
+        status: "draft"
+      }).select().single();
+
+      if (tripErr) throw tripErr;
+
+      const stopRecords = selectedUnassignedOrders.map((orderId, index) => ({
+        trip_id: newTrip.id,
+        order_id: orderId,
+        stop_sequence: index + 1,
+        status: "pending"
+      }));
+
+      const { error: stopsErr } = await Or.from("trip_orders").insert(stopRecords);
+      if (stopsErr) throw stopsErr;
+
+      ye("🎉 Trip created successfully as Draft!");
+      setSelectedUnassignedOrders([]);
+      setSelectedTripDeliveryPerson("");
+      setTripVehicleNo("");
+      
+      // Refresh
+      const { data: tList } = await Or.from("trips").select("*, delivery_person_id(*)").order("created_at", { ascending: false });
+      if (tList) setTripsList(tList);
+      const { data: assignedOrders } = await Or.from("trip_orders").select("order_id");
+      const assignedSet = new Set(assignedOrders ? assignedOrders.map(x => x.order_id) : []);
+      const { data: confirmedOrders } = await Or.from("orders").select("*, customer_id(name,phone,beat), salesman_id(name)").eq("status", "Pending");
+      if (confirmedOrders) {
+        const unassigned = confirmedOrders.filter(o => !assignedSet.has(o.id));
+        setUnassignedOrdersList(unassigned);
+      }
+    } catch (err) {
+      console.error(err);
+      ye("Failed to create trip.");
+    } finally {
+      setIsCreatingTrip(!1);
+    }
+  };
+
+  const handleActivateTrip = async (tripId) => {
+    try {
+      const { error } = await Or.from("trips").update({
+        status: "active",
+        activated_at: new Date().toISOString()
+      }).eq("id", tripId);
+
+      if (error) throw error;
+      ye("🚀 Trip activated successfully!");
+      const { data: tList } = await Or.from("trips").select("*, delivery_person_id(*)").order("created_at", { ascending: false });
+      if (tList) setTripsList(tList);
+    } catch(err) {
+      console.error(err);
+      ye("Failed to activate trip.");
+    }
+  };
+
+  const handleCompleteTrip = async (tripId) => {
+    try {
+      const { error } = await Or.from("trips").update({
+        status: "completed",
+        completed_at: new Date().toISOString()
+      }).eq("id", tripId);
+
+      if (error) throw error;
+      ye("🏁 Trip completed successfully!");
+      setActiveTrip(null);
+      setTripStops([]);
+      setSelectedDeliveryPerson(null);
+      localStorage.removeItem("kmart_delivery_person");
+    } catch(err) {
+      console.error(err);
+      ye("Failed to complete trip.");
+    }
+  };
+
+  // Trips data loader for Admin Trip Builder
+  ge.useEffect(() => {
+    if (adminTab === "trips" && se) {
+      const fetchTripsData = async () => {
+        try {
+          const { data: dList } = await Or.from("delivery_persons").select("*").order("name");
+          if (dList) setDeliveryPersonsList(dList);
+
+          const { data: tList } = await Or.from("trips").select("*, delivery_person_id(*)").order("created_at", { ascending: false });
+          if (tList) setTripsList(tList);
+
+          const { data: assignedOrders } = await Or.from("trip_orders").select("order_id");
+          const assignedSet = new Set(assignedOrders ? assignedOrders.map(x => x.order_id) : []);
+
+          const { data: confirmedOrders } = await Or.from("orders").select("*, customer_id(name,phone,beat), salesman_id(name)").eq("status", "Pending");
+          if (confirmedOrders) {
+            const unassigned = confirmedOrders.filter(o => !assignedSet.has(o.id));
+            setUnassignedOrdersList(unassigned);
+          }
+          if (expandedTripId) {
+            const { data: stops } = await Or.from("trip_orders").select("*, order_id(*, customer_id(*))").eq("trip_id", expandedTripId).order("stop_sequence");
+            setExpandedTripStops(stops || []);
+          }
+        } catch(err) {
+          console.error(err);
+        }
+      };
+      fetchTripsData();
+    }
+  }, [adminTab, se, tripsRefreshTrigger, realtimeRefreshTick, expandedTripId]);
 
   // Admin Orders loader
   ge.useEffect(() => {
@@ -1068,26 +1394,86 @@ ${itemsText}
       };
       fetchAdminOrders();
     }
-  }, [adminTab, se]);
+  }, [adminTab, se, realtimeRefreshTick]);
 
   ge.useEffect(() => {
-    if (r === "salesman" && selectedSalesman && (salesmanTab === "orders" || salesmanOrders.length === 0)) {
+    if (r === "salesman" && selectedSalesman) {
       const fetchSalesmanOrders = async () => {
-        const { data, error } = await Or.from("orders").select("*, customer_id(name,phone)").eq("salesman_id", selectedSalesman.id).order("created_at", { ascending: false });
-        if (!error) setSalesmanOrders(data || []);
+        try {
+          const { data, error } = await Or.from("orders").select("*, customer_id(name,phone)").eq("salesman_id", selectedSalesman.id).order("created_at", { ascending: false });
+          if (error) throw error;
+          localStorage.setItem("kmart_offline_salesman_orders_" + selectedSalesman.id, JSON.stringify(data || []));
+          
+          const offlineOrders = JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]")
+            .filter(o => o.salesman_id === selectedSalesman.id);
+          setSalesmanOrders([...offlineOrders, ...(data || [])]);
+        } catch(err) {
+          console.error("Fetch orders failed, loading offline:", err);
+          const cached = localStorage.getItem("kmart_offline_salesman_orders_" + selectedSalesman.id);
+          const offlineOrders = JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]")
+            .filter(o => o.salesman_id === selectedSalesman.id);
+          if (cached) {
+            try {
+              setSalesmanOrders([...offlineOrders, ...JSON.parse(cached)]);
+            } catch(e) {
+              setSalesmanOrders(offlineOrders);
+            }
+          } else {
+            setSalesmanOrders(offlineOrders);
+          }
+        }
       };
       fetchSalesmanOrders();
     }
-  }, [r, selectedSalesman, salesmanTab]);
+  }, [r, selectedSalesman, salesmanTab, realtimeRefreshTick]);
+  // Active trip loader for Delivery Person
   ge.useEffect(() => {
-    if (r === "delivery") {
-      const fetchDeliveryOrders = async () => {
-        const { data, error } = await Or.from("orders").select("*, customer_id(id,name,phone,beat,location), salesman_id(name)").order("created_at", { ascending: false });
-        if (!error) setDeliveryOrders(data || []);
+    if (r === "delivery" && selectedDeliveryPerson) {
+      const fetchActiveTrip = async () => {
+        try {
+          const { data: trips, error } = await Or.from("trips")
+            .select("*, delivery_person_id(*)")
+            .eq("delivery_person_id", selectedDeliveryPerson.id)
+            .eq("status", "active")
+            .limit(1);
+          
+          if (error) throw error;
+          if (trips && trips.length > 0) {
+            const trip = trips[0];
+            setActiveTrip(trip);
+            localStorage.setItem("kmart_offline_active_trip_" + selectedDeliveryPerson.id, JSON.stringify(trip));
+            
+            // Load stops
+            const { data: stops, error: stopsErr } = await Or.from("trip_orders")
+              .select("*, order_id(*, customer_id(id,name,phone,beat,location), salesman_id(name))")
+              .eq("trip_id", trip.id)
+              .order("stop_sequence");
+            
+            if (stopsErr) throw stopsErr;
+            setTripStops(stops || []);
+            localStorage.setItem("kmart_offline_trip_stops_" + trip.id, JSON.stringify(stops || []));
+          } else {
+            setActiveTrip(null);
+            setTripStops([]);
+          }
+        } catch (err) {
+          console.error("Failed to load active trip:", err);
+          const cachedTrip = localStorage.getItem("kmart_offline_active_trip_" + selectedDeliveryPerson.id);
+          if (cachedTrip) {
+            try {
+              const parsedTrip = JSON.parse(cachedTrip);
+              setActiveTrip(parsedTrip);
+              const cachedStops = localStorage.getItem("kmart_offline_trip_stops_" + parsedTrip.id);
+              if (cachedStops) {
+                setTripStops(JSON.parse(cachedStops));
+              }
+            } catch(e) {}
+          }
+        }
       };
-      fetchDeliveryOrders();
+      fetchActiveTrip();
     }
-  }, [r]);
+  }, [r, selectedDeliveryPerson, realtimeRefreshTick]);
 
   // Stylesheet and Fonts
   ge.useEffect(()=>{
@@ -1097,21 +1483,196 @@ ${itemsText}
 
   // Fetch products
   const ue=ge.useCallback(async()=>{
-    const{data:j,error:J}=await Or.from("products").select("*,product_batches(*)").order("id");
-    if(J){console.error(J),h(!1);return}
-    const{data:bImgs}=await Or.from("brand_images").select("*");
-    if(bImgs)setBrandImages(bImgs);
-    if(j&&j.length>0)l(sortProducts(j.map(yl)));
-    else{
-      const he=Fb.map(ce=>({name:ce.name,cat:ce.cat,unit:ce.unit,mrp:ce.mrp,tp:ce.tp,note:ce.desc??""})),{data:me}=await Or.from("products").insert(he).select();
-      me&&l(sortProducts(me.map(yl)))
+    try {
+      const{data:j,error:J}=await Or.from("products").select("*,product_batches(*)").order("id");
+      if(J) throw J;
+      const{data:bImgs}=await Or.from("brand_images").select("*");
+      if(bImgs) {
+        setBrandImages(bImgs);
+        localStorage.setItem("kmart_offline_brand_images", JSON.stringify(bImgs));
+      }
+      if(j&&j.length>0) {
+        l(sortProducts(j.map(yl)));
+        localStorage.setItem("kmart_offline_products", JSON.stringify(j));
+      } else {
+        const he=Fb.map(ce=>({name:ce.name,cat:ce.cat,unit:ce.unit,mrp:ce.mrp,tp:ce.tp,note:ce.desc??""})),{data:me}=await Or.from("products").insert(he).select();
+        if (me) {
+          l(sortProducts(me.map(yl)));
+          localStorage.setItem("kmart_offline_products", JSON.stringify(me));
+        }
+      }
+    } catch(err) {
+      console.error("Fetch products failed, trying offline cache:", err);
+      const cachedProds = localStorage.getItem("kmart_offline_products");
+      const cachedBImgs = localStorage.getItem("kmart_offline_brand_images");
+      if (cachedBImgs) {
+        try { setBrandImages(JSON.parse(cachedBImgs)); } catch(e) {}
+      }
+      if (cachedProds) {
+        try {
+          const parsed = JSON.parse(cachedProds);
+          l(sortProducts(parsed.map(yl)));
+          ye("Working offline (loaded cached products).");
+        } catch(e) {
+          ye("Offline: Failed to load cached products.");
+        }
+      } else {
+        ye("Offline: No cached products found.");
+      }
     }
     h(!1)
-  },[]);
+  },[ye]);
 
-  ge.useEffect(()=>{ue()},[ue]);
+  ge.useEffect(()=>{ue()},[ue,realtimeRefreshTick]);
 
-  const ye=ge.useCallback(j=>{ke(j),setTimeout(()=>ke(""),2400)},[]),
+  // Track online/offline status
+  ge.useEffect(() => {
+    const handleOnline = () => setIsOnline(!0);
+    const handleOffline = () => setIsOnline(!1);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Sync offline orders callback
+  const syncOfflineOrders = ge.useCallback(async () => {
+    if (isSyncing || !navigator.onLine) return;
+    const offlineOrders = JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]");
+    if (offlineOrders.length === 0) {
+      setOfflineCount(0);
+      return;
+    }
+
+    setIsSyncing(!0);
+    ye("🔄 Syncing offline orders...");
+
+    const remainingOrders = [];
+    let syncedCount = 0;
+
+    for (const order of offlineOrders) {
+      try {
+        let finalCustId = order.actual_customer_id;
+        
+        // 1. If this was a new customer created offline, insert it now!
+        if (!finalCustId && order.new_customer_data) {
+          const { name, phone, beat } = order.new_customer_data;
+          const { data: existing } = await Or.from("customers").select("id").eq("name", name);
+          if (existing && existing.length > 0) {
+            finalCustId = existing[0].id;
+          } else {
+            const { data: inserted, error: insErr } = await Or.from("customers").insert({ name, phone, beat }).select().single();
+            if (insErr) throw insErr;
+            finalCustId = inserted.id;
+          }
+        }
+
+        // 2. Prepare order data
+        const cleanOrder = {
+          salesman_id: order.salesman_id,
+          customer_id: finalCustId,
+          source: order.source,
+          items: order.items,
+          total_amount: order.total_amount,
+          status: "Pending",
+          idempotency_key: order.idempotency_key
+        };
+
+        // 3. Insert order
+        const { error: orderErr } = await Or.from("orders").insert(cleanOrder);
+        if (orderErr) {
+          if (!(orderErr.code === "23505" || (orderErr.message && orderErr.message.toLowerCase().includes("duplicate")))) {
+            throw orderErr;
+          }
+        }
+        syncedCount++;
+      } catch (err) {
+        console.error("Failed to sync offline order:", order.id, err);
+        remainingOrders.push(order);
+      }
+    }
+
+    localStorage.setItem("kmart_offline_orders", JSON.stringify(remainingOrders));
+    setOfflineCount(remainingOrders.length);
+    setIsSyncing(!1);
+
+    if (syncedCount > 0) {
+      ye("✅ Synced " + syncedCount + " offline order(s) successfully!");
+      ue();
+      if (r === "salesman" && selectedSalesman) {
+        try {
+          const { data } = await Or.from("orders").select("*, customer_id(name,phone)").eq("salesman_id", selectedSalesman.id).order("created_at", { ascending: false });
+          if (data) {
+            localStorage.setItem("kmart_offline_salesman_orders_" + selectedSalesman.id, JSON.stringify(data));
+            setSalesmanOrders([...remainingOrders, ...data]);
+          }
+        } catch (e) {}
+      }
+    }
+  }, [isSyncing, selectedSalesman, r, ue, ye]);
+
+  // Sync offline delivery outcomes callback
+  const syncOfflineDeliveries = ge.useCallback(async () => {
+    if (!navigator.onLine) return;
+    const offlineSubmits = JSON.parse(localStorage.getItem("kmart_offline_delivery_submits") || "[]");
+    if (offlineSubmits.length === 0) return;
+
+    const remainingSubmits = [];
+    let syncedCount = 0;
+
+    for (const submit of offlineSubmits) {
+      try {
+        const { error: ordErr } = await Or.from("orders").update(submit.payload).eq("id", submit.parent_order_id);
+        if (ordErr) throw ordErr;
+
+        const { error: stopErr } = await Or.from("trip_orders").update(submit.stop_update).eq("id", submit.stop_id);
+        if (stopErr) throw stopErr;
+
+        syncedCount++;
+      } catch (err) {
+        console.error("Failed to sync offline delivery:", submit.stop_id, err);
+        remainingSubmits.push(submit);
+      }
+    }
+
+    localStorage.setItem("kmart_offline_delivery_submits", JSON.stringify(remainingSubmits));
+    if (syncedCount > 0) {
+      ye("✅ Synced " + syncedCount + " offline delivery outcome(s)!");
+      if (activeTrip) {
+        try {
+          const { data: stops } = await Or.from("trip_orders")
+            .select("*, order_id(*, customer_id(id,name,phone,beat,location), salesman_id(name))")
+            .eq("trip_id", activeTrip.id)
+            .order("stop_sequence");
+          if (stops) setTripStops(stops);
+        } catch(e) {}
+      }
+    }
+  }, [activeTrip, ye]);
+
+  // Trigger sync on online/mount
+  ge.useEffect(() => {
+    syncOfflineOrders();
+    syncOfflineDeliveries();
+    const handleOnlineSync = () => {
+      syncOfflineOrders();
+      syncOfflineDeliveries();
+    };
+    window.addEventListener("online", handleOnlineSync);
+    const interval = setInterval(() => {
+      syncOfflineOrders();
+      syncOfflineDeliveries();
+    }, 30000);
+    return () => {
+      window.removeEventListener("online", handleOnlineSync);
+      clearInterval(interval);
+    };
+  }, [syncOfflineOrders, syncOfflineDeliveries]);
+  
+
+  const 
   Pe=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.cat)))],[s]),dbBrands=ge.useMemo(()=>{const brandsList=["All",...Array.from(new Set(s.map(j=>j.brand).filter(Boolean)))];return brandsList.map(b=>{const found=brandImages.find(bi=>bi.brand===b);return{name:b,image_url:found?found.image_url:""}})},[s,brandImages]),Ue=ge.useMemo(()=>s.filter(j=>(g==="All"||j.cat===g)&&(selectedBrand==="All"||j.brand===selectedBrand)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[s,f,g,selectedBrand]),
   Dn=ge.useMemo(()=>s.filter(j=>(adminCatFilter==="All"||j.cat===adminCatFilter)&&(j.name.toLowerCase().includes(B.toLowerCase())||j.cat.toLowerCase().includes(B.toLowerCase()))), [s,B,adminCatFilter]),
   tn=ge.useMemo(()=>Object.entries(v).reduce((j,[J,he])=>{
@@ -1213,12 +1774,28 @@ ${itemsText}
               setTimeout(()=>{pt(!0)},50);
               setTimeout(()=>{tt(""),pt(!1)},900);
             }
+          }else if(authTarget==="delivery"){
+            if(!deliveryPersonSelId){
+              ye("Please select your name first.");
+              return "";
+            }
+            const matching=deliveryPersonsList.find(d=>d.id===+deliveryPersonSelId&&d.pin===he);
+            if(matching){
+              setTimeout(()=>{
+                setSelectedDeliveryPerson(matching);
+                localStorage.setItem("kmart_delivery_person",JSON.stringify(matching));
+                Me(!1),a("delivery"),y(""),m("All"),tt("")
+              },120);
+            }else{
+              setTimeout(()=>{pt(!0)},50);
+              setTimeout(()=>{tt(""),pt(!1)},900);
+            }
           }
         }
         return he;
       })
     }
-  },[authTarget,salesmanSelId,salesmenList]);
+  },[authTarget,salesmanSelId,salesmenList,deliveryPersonSelId,deliveryPersonsList]);
 
   const ka=()=>{
     const p = window.location.pathname.toLowerCase();
@@ -1230,6 +1807,8 @@ ${itemsText}
         tt(""), pt(!1);
       }
     } else if (p.startsWith("/salesman") && !slAuth) {
+      tt(""), pt(!1);
+    } else if (p.startsWith("/delivery") && !selectedDeliveryPerson) {
       tt(""), pt(!1);
     } else {
       Me(!1), tt(""), pt(!1);
@@ -1293,45 +1872,70 @@ _via KMART_`
     setIsSubmittingOrder(!0);
 
     let finalCustId = null;
+    let newCustData = null;
+    let isOffline = !navigator.onLine;
+
     if (r === "customer") {
       finalCustId = cust.id;
     } else if (r === "salesman") {
       const name = z.trim();
-      const { data: existing, error: findErr } = await Or.from("customers").select("*").eq("name", name);
-      if (findErr) {
-        ye("Database lookup failed. Try again.");
-        console.error(findErr);
-        setIsSubmittingOrder(!1);
-        return;
-      }
-      if (existing && existing.length > 0) {
-        finalCustId = existing[0].id;
-      } else {
-        let inserted = null, insErr = null;
-        const insertRes = await Or.from("customers").insert({
-          name,
-          phone: newCustomerPhone.trim() || ("salesman-" + Date.now()),
-          beat: selectedBeat
-        }).select().single();
-        inserted = insertRes.data;
-        insErr = insertRes.error;
-        if (insErr && (insErr.message && insErr.message.toLowerCase().includes("beat") || insErr.code === "PGRST204")) {
-          const retryRes = await Or.from("customers").insert({
+      if (isOffline) {
+        if (selectedCustomerId && selectedCustomerId !== "new") {
+          finalCustId = parseInt(selectedCustomerId);
+        } else {
+          newCustData = {
             name,
-            phone: newCustomerPhone.trim() || ("salesman-" + Date.now())
-          }).select().single();
-          inserted = retryRes.data;
-          insErr = retryRes.error;
+            phone: newCustomerPhone.trim() || ("salesman-" + Date.now()),
+            beat: selectedBeat
+          };
         }
-        if (insErr) {
-          ye("Failed to register shop. Try again.");
-          console.error(insErr);
-          setIsSubmittingOrder(!1);
-          return;
+      } else {
+        try {
+          const { data: existing, error: findErr } = await Or.from("customers").select("*").eq("name", name);
+          if (findErr) throw findErr;
+          if (existing && existing.length > 0) {
+            finalCustId = existing[0].id;
+          } else {
+            let inserted = null, insErr = null;
+            const insertRes = await Or.from("customers").insert({
+              name,
+              phone: newCustomerPhone.trim() || ("salesman-" + Date.now()),
+              beat: selectedBeat
+            }).select().single();
+            inserted = insertRes.data;
+            insErr = insertRes.error;
+            if (insErr && (insErr.message && insErr.message.toLowerCase().includes("beat") || insErr.code === "PGRST204")) {
+              const retryRes = await Or.from("customers").insert({
+                name,
+                phone: newCustomerPhone.trim() || ("salesman-" + Date.now())
+              }).select().single();
+              inserted = retryRes.data;
+              insErr = retryRes.error;
+            }
+            if (insErr) throw insErr;
+            finalCustId = inserted.id;
+            const { data: cList } = await Or.from("customers").select("*").order("name");
+            if (cList) setBeatCustomers(cList);
+          }
+        } catch(err) {
+          console.error("Online lookup failed, checking offline state:", err);
+          if (err.message && (err.message.includes("fetch") || err.status === 0 || !navigator.onLine)) {
+            isOffline = true;
+            if (selectedCustomerId && selectedCustomerId !== "new") {
+              finalCustId = parseInt(selectedCustomerId);
+            } else {
+              newCustData = {
+                name,
+                phone: newCustomerPhone.trim() || ("salesman-" + Date.now()),
+                beat: selectedBeat
+              };
+            }
+          } else {
+            ye("Database lookup failed. Try again.");
+            setIsSubmittingOrder(!1);
+            return;
+          }
         }
-        finalCustId = inserted.id;
-        const { data: cList } = await Or.from("customers").select("*").order("name");
-        if (cList) setBeatCustomers(cList);
       }
     }
 
@@ -1390,9 +1994,60 @@ _via KMART_`
       idempotency_key: checkoutToken
     };
 
-    let result = await Or.from("orders").insert(orderDataWithIdemp).select();
-    let insertErr = result.error;
-    let insertData = result.data;
+    let result = null;
+    let insertErr = null;
+    let insertData = null;
+
+    try {
+      if (!isOffline) {
+        result = await Or.from("orders").insert(orderDataWithIdemp).select();
+        insertErr = result.error;
+        insertData = result.data;
+      }
+    } catch(err) {
+      console.error("Order placement failed, trying offline fallback:", err);
+      insertErr = { message: "Network error", networkError: true };
+    }
+
+    const actuallyOffline = isOffline || (insertErr && (insertErr.networkError || insertErr.message === "TypeError: Failed to fetch" || insertErr.message.includes("fetch") || insertErr.status === 0));
+
+    if (actuallyOffline) {
+      const offlineOrders = JSON.parse(localStorage.getItem("kmart_offline_orders") || "[]");
+      const offlineId = "offline-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9);
+      const newOfflineOrder = {
+        id: offlineId,
+        ...orderDataWithIdemp,
+        created_at: new Date().toISOString(),
+        customer_id: { name: r === "salesman" ? z.trim() : (cust ? cust.name : "Offline Customer") },
+        actual_customer_id: finalCustId,
+        new_customer_data: newCustData,
+        status: "Pending Sync",
+        is_offline: true
+      };
+
+      offlineOrders.push(newOfflineOrder);
+      localStorage.setItem("kmart_offline_orders", JSON.stringify(offlineOrders));
+      setOfflineCount(offlineOrders.length);
+
+      if (r === "salesman") {
+        setSalesmanOrders(prev => [newOfflineOrder, ...prev]);
+      } else if (r === "customer") {
+        setCustOrders(prev => [newOfflineOrder, ...prev]);
+      }
+
+      ye("💾 Saved offline! Will sync when connection restores.");
+      b({});
+      x({});
+      H(r === "customer" && cust ? cust.name : "");
+      setNeErr(!1);
+      $(!1);
+      setIsSubmittingOrder(!1);
+      setSelectedCustomerId("");
+      setNewCustomerName("");
+      setNewCustomerPhone("");
+      setCheckoutToken("chk-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9));
+      return;
+    }
 
     if (insertErr) {
       if (insertErr.code === "23505" || (insertErr.message && insertErr.message.toLowerCase().includes("duplicate"))) {
@@ -1558,8 +2213,16 @@ _Contact us to place your order!_`;
         pt(!1);
         Me(!0);
       }
+    } else if (p.startsWith("/delivery")) {
+      if (!selectedDeliveryPerson) {
+        setAuthTarget("delivery");
+        setDeliveryPersonSelId("");
+        tt("");
+        pt(!1);
+        Me(!0);
+      }
     }
-  }, [r, se, slAuth]);
+  }, [r, se, slAuth, selectedDeliveryPerson]);
 
   return S.jsxs("div",{
     style:{fontFamily:"'Outfit', sans-serif",background:C.bg,minHeight:"100vh",width:"100%",maxWidth:480,margin:"0 auto",position:"relative",paddingBottom:80},
@@ -1617,6 +2280,52 @@ _Contact us to place your order!_`;
       r!=="admin"&&r!=="delivery"&&S.jsxs("div",{
         style:{padding:16},
         children:[
+          (!isOnline || offlineCount > 0) && S.jsxs("div", {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: !isOnline ? "#fff3cd" : "#d1ecf1",
+              border: !isOnline ? "1px solid #ffeeba" : "1px solid #bee5eb",
+              color: !isOnline ? "#856404" : "#0c5460",
+              padding: "10px 14px",
+              borderRadius: 12,
+              marginBottom: 14,
+              fontSize: 13,
+              fontWeight: 600,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.04)"
+            },
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", alignItems: "center", gap: 8 },
+                children: [
+                  S.jsx("span", { style: { fontSize: 16 }, children: !isOnline ? "⚠️" : "🔄" }),
+                  S.jsx("span", {
+                    children: !isOnline
+                      ? "Working Offline. Orders will be saved locally."
+                      : "Online — " + offlineCount + " offline order(s) pending sync."
+                  })
+                ]
+              }),
+              isOnline && offlineCount > 0 && S.jsx("button", {
+                onClick: syncOfflineOrders,
+                disabled: isSyncing,
+                style: {
+                  background: C.primary,
+                  color: "#fff",
+                  border: "none",
+                  padding: "5px 12px",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  opacity: isSyncing ? 0.6 : 1,
+                  fontFamily: "'Outfit', sans-serif"
+                },
+                children: isSyncing ? "Syncing..." : "Sync Now"
+              })
+            ]
+          }),
           r === "salesman" && S.jsxs("div", {
             style: { display: "flex", gap: 8, marginBottom: 14, background: C.bg, padding: 4, borderRadius: 10 },
             children: [
@@ -2196,172 +2905,137 @@ _Contact us to place your order!_`;
       r==="delivery"&&S.jsxs("div",{
         style:{padding:16, fontFamily:"'Outfit', sans-serif"},
         children:[
-          // Back button / Navigation header if in sub-views
-          (deliveryBeat || activeStopOrder) && S.jsxs("div", {
-            style: { display: "flex", gap: 10, alignItems: "center", marginBottom: 16 },
+          // 1. If no delivery person selected, show LOGIN SCREEN placeholder
+          !selectedDeliveryPerson && S.jsx("div", {
+            style: { textAlign: "center", padding: "40px 16px" },
+            children: S.jsx("div", { style: { fontSize: 14, fontWeight: 700, color: C.muted }, children: "Please log in using the PIN keypad screen." })
+          }),
+
+          // 2. If logged in but no active trip
+          selectedDeliveryPerson && !activeTrip && S.jsxs("div", {
+            style: { textAlign: "center", padding: "40px 16px" },
             children: [
+              S.jsx("div", { style: { fontSize: 48, marginBottom: 12 }, children: "💤" }),
+              S.jsxs("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: ["Hi, ", selectedDeliveryPerson.name] }),
+              S.jsx("div", { style: { fontSize: 13, color: C.muted, marginTop: 6, lineHeight: 1.5 }, children: "You do not have any active delivery trips assigned for today. Please contact the administrator to build and activate your trip." }),
               S.jsx("button", {
                 onClick: () => {
-                  if (activeStopOrder) {
-                    setActiveStopOrder(null);
-                  } else if (deliveryBeat) {
-                    setDeliveryBeat(null);
-                  }
+                  setSelectedDeliveryPerson(null);
+                  localStorage.removeItem("kmart_delivery_person");
                 },
-                style: { background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 5 },
-                children: "← Back"
-              }),
-              S.jsx("div", {
-                style: { fontSize: 14, fontWeight: 700, color: C.muted },
-                children: activeStopOrder ? "Delivery Details" : `Beat: ${deliveryBeat}`
+                style: { marginTop: 20, padding: "8px 16px", background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 700, color: C.text, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                children: "Logout / Change User"
               })
             ]
           }),
 
-          // VIEW A: Beat Selection View (default)
-          !deliveryBeat && !activeStopOrder && (() => {
-            const todayStr = new Date().toLocaleDateString("en-CA");
-            const cashToday = deliveryOrders.reduce((sum, o) => {
-              if ((o.delivery_status === "Delivered" || o.delivery_status === "Partial") && o.payment_mode === "Cash" && o.delivered_at) {
-                const dDate = new Date(o.delivered_at).toLocaleDateString("en-CA");
-                if (dDate === todayStr) {
-                  return sum + (o.collected_amount || 0);
-                }
+          // 3. Stop List View (activeTrip found and no stop selected)
+          selectedDeliveryPerson && activeTrip && !activeStopOrder && (() => {
+            const completedCount = tripStops.filter(s => s.status !== "pending").length;
+            const cashToday = tripStops.reduce((sum, s) => {
+              if ((s.status === "delivered" || s.status === "partial") && (s.payment_mode === "Cash" || s.payment_mode === "Partial Credit (Cash)")) {
+                return sum + (s.payment_collected || 0);
               }
               return sum;
             }, 0);
 
-            const activeOrders = deliveryOrders.filter(o => {
-              return (o.delivery_status || "Pending") === "Pending" && o.status !== "Delivered" && o.status !== "Cancelled";
-            });
+            const allCompleted = tripStops.length > 0 && completedCount === tripStops.length;
 
-            const beatGroups = {};
-            activeOrders.forEach(o => {
-              const bName = o.customer_id?.beat || "Others";
-              if (!beatGroups[bName]) {
-                beatGroups[bName] = { name: bName, customerIds: new Set(), totalVal: 0 };
-              }
-              beatGroups[bName].customerIds.add(o.customer_id?.id);
-              beatGroups[bName].totalVal += o.total_amount || 0;
-            });
-
-            const beatsList = Object.values(beatGroups);
-
-            return S.jsxs("div", {
-              children: [
-                S.jsxs("div", {
-                  style: { background: C.greenBg, border: `1.5px solid ${C.green}40`, borderRadius: 14, padding: 14, marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "center" },
-                  children: [
-                    S.jsxs("div", {
-                      children: [
-                        S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 0.5 }, children: "💵 Running Cash In Hand" }),
-                        S.jsx("div", { style: { fontSize: 22, fontWeight: 800, color: C.primary, marginTop: 2 }, children: un(cashToday) })
-                      ]
-                    }),
-                    S.jsx("button", {
-                      onClick: async () => {
-                        const { data, error } = await Or.from("orders").select("*, customer_id(id,name,phone,beat,location), salesman_id(name)").order("created_at", { ascending: false });
-                        if (!error) {
-                          setDeliveryOrders(data || []);
-                          ye("Deliveries list refreshed!");
-                        }
-                      },
-                      style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 },
-                      children: "Refresh 🔄"
-                    })
-                  ]
-                }),
-
-                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 }, children: "Select Delivery Route / Beat" }),
-
-                beatsList.length === 0 ? S.jsx("div", {
-                  style: { textAlign: "center", color: C.muted, padding: "40px 0" },
-                  children: "No active delivery beats."
-                }) : S.jsx("div", {
-                  style: { display: "flex", flexDirection: "column", gap: 10 },
-                  children: beatsList.map(b => S.jsxs("div", {
-                    onClick: () => setDeliveryBeat(b.name),
-                    style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" },
-                    children: [
-                      S.jsxs("div", {
-                        children: [
-                          S.jsx("div", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: b.name }),
-                          S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 3 }, children: [`${b.customerIds.size} customer(s)`] })
-                        ]
-                      }),
-                      S.jsxs("div", {
-                        style: { textAlign: "right" },
-                        children: [
-                          S.jsx("div", { style: { fontSize: 10, color: C.muted, fontWeight: 500 }, children: "Total Value" }),
-                          S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(b.totalVal) })
-                        ]
-                      })
-                    ]
-                  }, b.name))
-                })
-              ]
-            });
-          })(),
-
-          // VIEW B: Stop List (Beat View)
-          deliveryBeat && !activeStopOrder && (() => {
-            const todayStr = new Date().toLocaleDateString("en-CA");
-            const beatOrders = deliveryOrders.filter(o => {
-              const bName = o.customer_id?.beat || "Others";
-              if (bName !== deliveryBeat) return false;
-
-              const isPending = (o.delivery_status || "Pending") === "Pending" && o.status !== "Delivered" && o.status !== "Cancelled";
-              if (isPending) return true;
-
-              if (o.delivered_at) {
-                return new Date(o.delivered_at).toLocaleDateString("en-CA") === todayStr;
-              }
-              return false;
-            });
-
-            const stops = beatOrders.map(o => {
-              const custInfo = o.customer_id || {};
+            const stops = tripStops.map(o => {
+              const order = o.order_id || {};
+              const custInfo = order.customer_id || {};
               const coords = parseGPS(custInfo.location);
               let distance = null;
               if (userCoords && coords) {
                 distance = getDistance(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
               }
-              return { order: o, custInfo, coords, distance };
+              return { stop: o, order, custInfo, coords, distance };
             });
 
-            stops.sort((a, b) => {
-              if (a.distance === null && b.distance === null) return 0;
-              if (a.distance === null) return 1;
-              if (b.distance === null) return -1;
-              return a.distance - b.distance;
-            });
+            // Keep stops ordered by sequence
+            stops.sort((a, b) => a.stop.stop_sequence - b.stop.stop_sequence);
 
             return S.jsxs("div", {
               children: [
-                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 }, children: `Stops in ${deliveryBeat}` }),
+                // Top Header Card
+                S.jsxs("div", {
+                  style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" },
+                  children: [
+                    S.jsxs("div", {
+                      children: [
+                        S.jsxs("div", { style: { fontSize: 15, fontWeight: 800, color: C.text }, children: ["Trip #", activeTrip.id] }),
+                        S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 2 }, children: ["Vehicle: ", activeTrip.vehicle_no || "N/A"] }),
+                        S.jsxs("div", { style: { fontSize: 11, color: C.muted, marginTop: 1 }, children: ["Stops: ", completedCount, "/", tripStops.length, " Completed"] })
+                      ]
+                    }),
+                    allCompleted ? S.jsx("button", {
+                      onClick: () => handleCompleteTrip(activeTrip.id),
+                      style: { background: C.green, color: "#fff", border: "none", borderRadius: 20, padding: "8px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                      children: "Complete Trip"
+                    }) : S.jsx("button", {
+                      onClick: async () => {
+                        const { data: stops } = await Or.from("trip_orders")
+                          .select("*, order_id(*, customer_id(id,name,phone,beat,location), salesman_id(name))")
+                          .eq("trip_id", activeTrip.id)
+                          .order("stop_sequence");
+                        if (stops) {
+                          setTripStops(stops);
+                          ye("Trip stops refreshed!");
+                        }
+                      },
+                      style: { background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: C.text, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                      children: "Refresh 🔄"
+                    })
+                  ]
+                }),
+
+                // Running cash collected card
+                S.jsxs("div", {
+                  style: { background: C.greenBg, border: `1.5px solid ${C.green}40`, borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" },
+                  children: [
+                    S.jsxs("div", {
+                      children: [
+                        S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 0.5 }, children: "💵 Running Cash Collected" }),
+                        S.jsx("div", { style: { fontSize: 20, fontWeight: 800, color: C.primary, marginTop: 2 }, children: un(cashToday) })
+                      ]
+                    }),
+                    S.jsx("button", {
+                      onClick: () => {
+                        setSelectedDeliveryPerson(null);
+                        localStorage.removeItem("kmart_delivery_person");
+                      },
+                      style: { background: "none", border: "none", color: C.red, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                      children: "Logout"
+                    })
+                  ]
+                }),
+
+                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 12 }, children: "Trip Delivery Stops" }),
 
                 stops.length === 0 ? S.jsx("div", {
                   style: { textAlign: "center", color: C.muted, padding: "40px 0" },
-                  children: "No stops found."
+                  children: "No stops assigned."
                 }) : S.jsx("div", {
                   style: { display: "flex", flexDirection: "column", gap: 10 },
-                  children: stops.map(stop => {
-                    const o = stop.order;
-                    const c = stop.custInfo;
-                    const d = stop.distance;
-                    const status = o.delivery_status || "Pending";
+                  children: stops.map(stopObj => {
+                    const stopRow = stopObj.stop;
+                    const orderObj = stopObj.order;
+                    const custObj = stopObj.custInfo;
+                    const d = stopObj.distance;
+                    const statusVal = stopRow.status;
 
                     let statusColor = C.muted;
                     let statusBg = C.bg;
-                    if (status === "Delivered") { statusColor = C.green; statusBg = C.greenBg; }
-                    else if (status === "Partial") { statusColor = C.accent; statusBg = C.accentLight; }
-                    else if (status === "Skipped") { statusColor = C.red; statusBg = C.redBg; }
+                    let displayStatus = "Pending";
+                    if (statusVal === "delivered") { statusColor = C.green; statusBg = C.greenBg; displayStatus = "Delivered"; }
+                    else if (statusVal === "partial") { statusColor = C.accent; statusBg = C.accentLight; displayStatus = "Partial"; }
+                    else if (statusVal === "failed") { statusColor = C.red; statusBg = C.redBg; displayStatus = "Failed"; }
 
-                    const payMode = o.payment_mode ? ` | ${o.payment_mode}` : "";
+                    const payModeText = stopRow.payment_mode ? ` | ${stopRow.payment_mode}` : "";
 
                     return S.jsxs("div", {
                       onClick: () => {
-                        setActiveStopOrder(o);
+                        setActiveStopOrder(stopRow);
                       },
                       style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" },
                       children: [
@@ -2371,18 +3045,19 @@ _Contact us to place your order!_`;
                             S.jsxs("div", {
                               style: { display: "flex", alignItems: "center", gap: 6 },
                               children: [
-                                S.jsx("span", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: c.name || "Unknown Shop" }),
+                                S.jsx("span", { style: { fontWeight: 800, fontSize: 12, color: C.primary, background: C.bg, borderRadius: "50%", width: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center" }, children: [stopRow.stop_sequence] }),
+                                S.jsx("span", { style: { fontWeight: 800, fontSize: 13.5, color: C.text }, children: custObj.name || "Unknown Shop" }),
                                 S.jsx("span", {
                                   style: { fontSize: 10, fontWeight: 700, color: statusColor, background: statusBg, padding: "2px 6px", borderRadius: 4 },
-                                  children: status
+                                  children: displayStatus
                                 })
                               ]
                             }),
                             S.jsxs("div", {
                               style: { fontSize: 11.5, color: C.muted },
                               children: [
-                                `Beat: ${c.beat || "N/A"}`,
-                                stop.coords ? ` (${stop.coords.lat.toFixed(5)}, ${stop.coords.lng.toFixed(5)})` : " (No GPS)"
+                                `Beat: ${custObj.beat || "N/A"}`,
+                                stopObj.coords ? ` (${stopObj.coords.lat.toFixed(5)}, ${stopObj.coords.lng.toFixed(5)})` : " (No GPS)"
                               ]
                             }),
                             d !== null && S.jsxs("div", {
@@ -2397,140 +3072,129 @@ _Contact us to place your order!_`;
                         S.jsxs("div", {
                           style: { textAlign: "right", flexShrink: 0 },
                           children: [
-                            S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(o.total_amount) }),
-                            S.jsx("div", { style: { fontSize: 10, color: C.muted, marginTop: 2 }, children: `Unpaid${payMode}` })
+                            S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(orderObj.total_amount) }),
+                            S.jsx("div", { style: { fontSize: 10, color: C.muted, marginTop: 2 }, children: displayStatus === "Pending" ? "Unpaid" : `Paid${payModeText}` })
                           ]
                         })
                       ]
-                    }, o.id);
+                    }, stopRow.id);
                   })
                 })
               ]
             });
           })(),
 
-          // VIEW C: Per-Customer Delivery Screen
-          activeStopOrder && (() => {
+          // 4. Per-Customer Stop Details / Execution View
+          selectedDeliveryPerson && activeTrip && activeStopOrder && (() => {
             const o = activeStopOrder;
-            const c = o.customer_id || {};
-            const coords = parseGPS(c.location);
-            
+            const orderObj = o.order_id || {};
+            const custInfo = orderObj.customer_id || {};
+            const coords = parseGPS(custInfo.location);
+
             let distance = null;
             if (userCoords && coords) {
               distance = getDistance(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
             }
 
+            const isLocationMatch = distance !== null && distance <= 100;
+
             return S.jsxs("div", {
               children: [
+                // Top Header Card
                 S.jsxs("div", {
-                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                  style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
                   children: [
-                    S.jsx("div", { style: { fontWeight: 800, fontSize: 16, color: C.text }, children: c.name || "Unknown Shop" }),
-                    S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 4 }, children: [`Beat: ${c.beat || "N/A"}`] }),
-                    c.phone && S.jsxs("div", {
-                      style: { display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 12.5 },
+                    S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: custInfo.name || "Unknown Shop" }),
+                    S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 4 }, children: ["Beat: ", custInfo.beat || "N/A", " | Phone: ", custInfo.phone ? S.jsx("a", { href: `tel:${custInfo.phone}`, style: { color: C.primary, textDecoration: "none", fontWeight: 700 }, children: custInfo.phone }) : "N/A"] }),
+                    
+                    // Live proximity status
+                    distance !== null ? S.jsxs("div", {
+                      style: { display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, padding: "5px 10px", borderRadius: 8, background: isLocationMatch ? C.greenBg : C.redBg, border: isLocationMatch ? `1px solid ${C.green}40` : `1px solid ${C.red}40`, color: isLocationMatch ? C.green : C.red, fontSize: 11.5, fontWeight: 700 },
                       children: [
-                        S.jsx("span", { children: "📞" }),
-                        S.jsx("a", {
-                          href: `tel:${c.phone}`,
-                          style: { color: C.primary, fontWeight: 700, textDecoration: "underline" },
-                          children: c.phone
-                        })
+                        S.jsx("span", { children: isLocationMatch ? "✓ On Location" : "⚠️ Out of Range" }),
+                        S.jsx("span", { style: { opacity: 0.8 }, children: `(${distance < 1000 ? `${distance.toFixed(0)}m` : `${(distance/1000).toFixed(1)}km`})` })
                       ]
+                    }) : S.jsx("div", {
+                      style: { display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, padding: "5px 10px", borderRadius: 8, background: C.bg, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11.5, fontWeight: 700 },
+                      children: "📍 No GPS location tagged"
                     })
                   ]
                 }),
 
+                // Actions Selectors
                 S.jsxs("div", {
-                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 12, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 },
+                  style: { display: "flex", flexDirection: "column", gap: 14, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
                   children: [
-                    S.jsx("span", { style: { fontSize: 14 }, children: "📍" }),
                     S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 4 },
                       children: [
-                        S.jsx("div", { style: { fontSize: 12, fontWeight: 700, color: C.text }, children: "GPS Proximity Check" }),
-                        S.jsx("div", {
-                          style: { fontSize: 11.5, fontWeight: 600, color: distance !== null && distance < 100 ? C.green : C.accent, marginTop: 2 },
-                          children: coords ? (distance !== null ? (distance < 100 ? `✓ On Location (${distance.toFixed(0)}m)` : `⚠️ ${distance < 1000 ? distance.toFixed(0) + "m" : (distance/1000).toFixed(1) + "km"} away from shop`) : "Calculating distance...") : "Coordinates not tagged"
-                        })
-                      ]
-                    })
-                  ]
-                }),
-
-                S.jsxs("div", {
-                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
-                  children: [
-                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Mark Delivery Outcome" }),
-                    S.jsxs("div", {
-                      style: { display: "flex", gap: 8 },
-                      children: [
-                        S.jsx("button", {
-                          onClick: () => {
-                            setDeliveryStatusOption("Delivered");
-                            const q = {};
-                            o.items.forEach(item => { q[item.id] = item.qty; });
-                            setDeliveredQties(q);
+                        S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "DELIVERY STATUS" }),
+                        S.jsxs("select", {
+                          value: deliveryStatusOption,
+                          onChange: e => {
+                            setDeliveryStatusOption(e.target.value);
+                            if (e.target.value === "Delivered") {
+                              setDeliveredQties({});
+                            }
                           },
-                          style: { flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: deliveryStatusOption === "Delivered" ? C.green : C.bg, color: deliveryStatusOption === "Delivered" ? "#fff" : C.text },
-                          children: "Full Delivery"
-                        }),
-                        S.jsx("button", {
-                          onClick: () => {
-                            setDeliveryStatusOption("Partial");
-                          },
-                          style: { flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: deliveryStatusOption === "Partial" ? C.accent : C.bg, color: deliveryStatusOption === "Partial" ? "#fff" : C.text },
-                          children: "Partial Delivery"
-                        }),
-                        S.jsx("button", {
-                          onClick: () => {
-                            setDeliveryStatusOption("Skipped");
-                            const q = {};
-                            o.items.forEach(item => { q[item.id] = 0; });
-                            setDeliveredQties(q);
-                          },
-                          style: { flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: deliveryStatusOption === "Skipped" ? C.red : C.bg, color: deliveryStatusOption === "Skipped" ? "#fff" : C.text },
-                          children: "Could Not Deliver"
+                          style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", fontFamily: "'Outfit', sans-serif" },
+                          children: [
+                            S.jsx("option", { value: "Delivered", children: "Full Delivery" }),
+                            S.jsx("option", { value: "Partial", children: "Partial Delivery" }),
+                            S.jsx("option", { value: "Skipped", children: "Could Not Deliver" })
+                          ]
                         })
                       ]
                     }),
+
+                    // Non-delivery reasons
                     deliveryStatusOption === "Skipped" && S.jsxs("div", {
-                      style: { marginTop: 12 },
+                      style: { display: "flex", flexDirection: "column", gap: 10 },
                       children: [
-                        S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Reason for Non-Delivery" }),
-                        S.jsxs("select", {
-                          value: nonDeliveryReason,
-                          onChange: (e) => setNonDeliveryReason(e.target.value),
-                          style: { ...pl, padding: "8px 10px", fontSize: 13 },
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
                           children: [
-                            S.jsx("option", { value: "Shop Closed", children: "Shop Closed" }),
-                            S.jsx("option", { value: "Owner Not Available", children: "Owner Not Available" }),
-                            S.jsx("option", { value: "Refused Delivery", children: "Refused Delivery" }),
-                            S.jsx("option", { value: "Payment Issues", children: "Payment Issues" }),
-                            S.jsx("option", { value: "Wrong Address", children: "Wrong Address" }),
-                            S.jsx("option", { value: "Other", children: "Other" })
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "REASON FOR NON-DELIVERY" }),
+                            S.jsxs("select", {
+                              value: nonDeliveryReason,
+                              onChange: e => setNonDeliveryReason(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", fontFamily: "'Outfit', sans-serif" },
+                              children: [
+                                S.jsx("option", { value: "Shop Closed", children: "Shop Closed" }),
+                                S.jsx("option", { value: "Owner Not Available", children: "Owner Not Available" }),
+                                S.jsx("option", { value: "Refused Delivery", children: "Refused Delivery" }),
+                                S.jsx("option", { value: "Payment Issues", children: "Payment Issues" }),
+                                S.jsx("option", { value: "Wrong Address", children: "Wrong Address" }),
+                                S.jsx("option", { value: "Other", children: "Other (Specify)" })
+                              ]
+                            })
                           ]
                         }),
                         nonDeliveryReason === "Other" && S.jsx("input", {
                           type: "text",
                           value: otherReasonText,
-                          onChange: (e) => setOtherReasonText(e.target.value),
-                          placeholder: "Type custom reason...",
-                          style: { ...pl, marginTop: 8, padding: "8px 10px", fontSize: 13 }
+                          onChange: e => setOtherReasonText(e.target.value),
+                          placeholder: "Enter details...",
+                          style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
                         })
                       ]
                     })
                   ]
                 }),
 
-                S.jsxs("div", {
-                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                // Items list for delivery
+                deliveryStatusOption !== "Skipped" && S.jsxs("div", {
+                  style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
                   children: [
-                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Order Items" }),
+                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 12 }, children: "ORDERED ITEMS" }),
                     S.jsx("div", {
                       style: { display: "flex", flexDirection: "column", gap: 12 },
-                      children: o.items.map(item => {
-                        const dQty = deliveredQties[item.id] ?? item.qty;
+                      children: orderObj.items.map(item => {
+                        const rawVal = deliveredQties[item.id];
+                        const dQty = rawVal === undefined ? item.qty : (parseInt(rawVal) || 0);
                         const isEditable = deliveryStatusOption === "Partial";
+                        const prod = s.find(p => p.id === item.id);
+                        const cs = prod ? (parseInt(prod.cs) || 0) : 0;
 
                         return S.jsxs("div", {
                           style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}50`, paddingBottom: 8 },
@@ -2539,107 +3203,173 @@ _Contact us to place your order!_`;
                               style: { flex: 1, paddingRight: 10 },
                               children: [
                                 S.jsx("div", { style: { fontSize: 13, fontWeight: 600, color: C.text }, children: item.name }),
-                                S.jsxs("div", { style: { fontSize: 11, color: C.muted, marginTop: 2 }, children: [`Price: ${un(item.price)} | Ordered: ${item.qty}`] })
+                                S.jsxs("div", { style: { fontSize: 11, color: C.muted, marginTop: 2 }, children: [`Price: ${un(item.price)} | Ordered: ${item.qty}`, cs > 0 ? ` (${Math.floor(item.qty / cs)} Cases · ${item.qty % cs} Pcs)` : ""] })
                               ]
                             }),
                             isEditable ? S.jsxs("div", {
-                              style: { display: "flex", alignItems: "center", gap: 6 },
+                              style: { display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" },
                               children: [
-                                S.jsx("button", {
-                                  onClick: () => {
-                                    setDeliveredQties(prev => ({ ...prev, [item.id]: Math.max(0, dQty - 1) }));
-                                  },
-                                  style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
-                                  children: "-"
+                                S.jsxs("div", {
+                                  style: { display: "flex", alignItems: "center", gap: 6 },
+                                  children: [
+                                    cs > 0 && S.jsx("span", { style: { fontSize: 11, color: C.muted, fontWeight: 600, width: 40, textAlign: "right" }, children: "PCS:" }),
+                                    S.jsx("button", {
+                                      onClick: () => {
+                                        setDeliveredQties(prev => ({ ...prev, [item.id]: Math.max(0, dQty - 1) }));
+                                      },
+                                      style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
+                                      children: "-"
+                                    }),
+                                    S.jsx("input", {
+                                      type: "number",
+                                      value: dQty,
+                                      onChange: e => {
+                                        const rawVal = e.target.value;
+                                        if (rawVal === "") {
+                                          setDeliveredQties(prev => ({ ...prev, [item.id]: "" }));
+                                        } else {
+                                          const val = parseInt(rawVal);
+                                          if (!isNaN(val)) {
+                                            setDeliveredQties(prev => ({ ...prev, [item.id]: Math.max(0, Math.min(item.qty, val)) }));
+                                          }
+                                        }
+                                      },
+                                      style: { width: 44, height: 26, borderRadius: 6, border: `1.5px solid ${C.border}`, textAlign: "center", fontSize: 13, fontWeight: 700, outline: "none", fontFamily: "'Outfit', sans-serif" }
+                                    }),
+                                    S.jsx("button", {
+                                      onClick: () => {
+                                        setDeliveredQties(prev => ({ ...prev, [item.id]: Math.min(item.qty, dQty + 1) }));
+                                      },
+                                      style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
+                                      children: "+"
+                                    })
+                                  ]
                                 }),
-                                S.jsx("span", { style: { fontSize: 13.5, fontWeight: 700, minWidth: 24, textAlign: "center" }, children: dQty }),
-                                S.jsx("button", {
-                                  onClick: () => {
-                                    setDeliveredQties(prev => ({ ...prev, [item.id]: Math.min(item.qty, dQty + 1) }));
-                                  },
-                                  style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
-                                  children: "+"
+                                cs > 0 && S.jsxs("div", {
+                                  style: { display: "flex", alignItems: "center", gap: 6 },
+                                  children: [
+                                    S.jsx("span", { style: { fontSize: 11, color: C.muted, fontWeight: 600, width: 40, textAlign: "right" }, children: "Cases:" }),
+                                    S.jsx("button", {
+                                      onClick: () => {
+                                        setDeliveredQties(prev => ({ ...prev, [item.id]: Math.max(0, dQty - cs) }));
+                                      },
+                                      style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
+                                      children: "-"
+                                    }),
+                                    S.jsx("input", {
+                                      type: "number",
+                                      value: Math.floor(dQty / cs),
+                                      onChange: e => {
+                                        const rawVal = e.target.value;
+                                        const newCases = parseInt(rawVal) || 0;
+                                        const loose = dQty % cs;
+                                        const newQty = Math.max(0, Math.min(item.qty, (newCases * cs) + loose));
+                                        setDeliveredQties(prev => ({ ...prev, [item.id]: newQty }));
+                                      },
+                                      style: { width: 44, height: 26, borderRadius: 6, border: `1.5px solid ${C.border}`, textAlign: "center", fontSize: 13, fontWeight: 700, outline: "none", fontFamily: "'Outfit', sans-serif" }
+                                    }),
+                                    S.jsx("button", {
+                                      onClick: () => {
+                                        setDeliveredQties(prev => ({ ...prev, [item.id]: Math.min(item.qty, dQty + cs) }));
+                                      },
+                                      style: { width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, fontWeight: "bold" },
+                                      children: "+"
+                                    })
+                                  ]
                                 })
                               ]
                             }) : S.jsx("span", {
                               style: { fontSize: 13.5, fontWeight: 700, color: C.text },
-                              children: `Delivered: ${dQty}`
+                              children: `Delivered: ${dQty}${cs > 0 ? ` (${Math.floor(dQty / cs)} Cases · ${dQty % cs} Pcs)` : ""}`
                             })
                           ]
                         }, item.id);
                       })
-                    }),
-                    S.jsxs("div", {
-                      style: { display: "flex", justifyContent: "space-between", marginTop: 14, fontWeight: 800, fontSize: 14, color: C.primary },
-                      children: [
-                        S.jsx("span", { children: "Delivered Value:" }),
-                        S.jsx("span", { children: un(deliveredSubtotal) })
-                      ]
                     })
                   ]
                 }),
 
+                // Payment Collection Card
                 deliveryStatusOption !== "Skipped" && S.jsxs("div", {
-                  style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
+                  style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", flexDirection: "column", gap: 12 },
                   children: [
-                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Payment Collection" }),
+                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "COLLECT PAYMENT" }),
                     S.jsxs("div", {
-                      style: { display: "flex", gap: 8, marginBottom: 12 },
+                      style: { display: "flex", gap: 8 },
+                      children: ["Cash", "Cheque", "Credit", "Partial Credit"].map(mode => (
+                        S.jsx("button", {
+                          key: mode,
+                          onClick: () => {
+                            setPaymentMode(mode);
+                            if (mode === "Credit") {
+                              setCollectedAmount("0");
+                            } else if (mode === "Partial Credit") {
+                              setCollectedAmount(String(Math.round(deliveredSubtotal / 2)));
+                            } else {
+                              setCollectedAmount(String(Math.round(deliveredSubtotal)));
+                            }
+                          },
+                          style: { flex: 1, padding: "8px 0", background: paymentMode === mode ? C.primary : C.bg, color: paymentMode === mode ? "#fff" : C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                          children: mode
+                        })
+                      ))
+                    }),
+
+                    paymentMode === "Partial Credit" && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 4 },
                       children: [
-                        S.jsx("button", {
-                          onClick: () => setPaymentMode("Cash"),
-                          style: { flex: 1, padding: "8px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: paymentMode === "Cash" ? C.primary : C.bg, color: paymentMode === "Cash" ? "#fff" : C.text },
-                          children: "💵 Cash"
-                        }),
-                        S.jsx("button", {
-                          onClick: () => setPaymentMode("Cheque"),
-                          style: { flex: 1, padding: "8px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: paymentMode === "Cheque" ? C.primary : C.bg, color: paymentMode === "Cheque" ? "#fff" : C.text },
-                          children: "✍️ Cheque"
-                        }),
-                        S.jsx("button", {
-                          onClick: () => setPaymentMode("Credit"),
-                          style: { flex: 1, padding: "8px 0", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", background: paymentMode === "Credit" ? C.primary : C.bg, color: paymentMode === "Credit" ? "#fff" : C.text },
-                          children: "💳 Credit"
+                        S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "COLLECTION MODE" }),
+                        S.jsxs("div", {
+                          style: { display: "flex", gap: 8 },
+                          children: ["Cash", "Cheque"].map(mode => (
+                            S.jsx("button", {
+                              key: mode,
+                              onClick: () => setPartialCreditMode(mode),
+                              style: { flex: 1, padding: "6px 0", background: partialCreditMode === mode ? C.primary : C.bg, color: partialCreditMode === mode ? "#fff" : C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                              children: mode
+                            })
+                          ))
                         })
                       ]
                     }),
-                    S.jsxs("div", {
-                      style: { marginBottom: 10 },
+
+                    paymentMode !== "Credit" && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 4 },
                       children: [
-                        S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Amount Collected" }),
+                        S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "AMOUNT COLLECTED (₹)" }),
                         S.jsx("input", {
                           type: "number",
                           value: collectedAmount,
-                          onChange: (e) => setCollectedAmount(e.target.value),
-                          placeholder: "Enter collected amount...",
-                          style: { ...pl, padding: "8px 10px", fontSize: 13 }
+                          onChange: e => setCollectedAmount(e.target.value),
+                          style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.primary, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
                         })
                       ]
                     }),
-                    paymentMode === "Cheque" && S.jsxs("div", {
-                      style: { display: "flex", flexDirection: "column", gap: 8, marginTop: 10 },
+
+                    (paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque")) && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 10 },
                       children: [
                         S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
                           children: [
-                            S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Cheque Number (Optional)" }),
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "CHEQUE NUMBER" }),
                             S.jsx("input", {
                               type: "text",
                               value: chequeNo,
-                              onChange: (e) => setChequeNo(e.target.value),
-                              placeholder: "Cheque Number",
-                              style: { ...pl, padding: "8px 10px", fontSize: 13 }
+                              onChange: e => setChequeNo(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
                             })
                           ]
                         }),
                         S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
                           children: [
-                            S.jsx("div", { style: { fontSize: 11.5, fontWeight: 600, color: C.muted, marginBottom: 5 }, children: "Bank Name (Optional)" }),
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "BANK NAME" }),
                             S.jsx("input", {
                               type: "text",
                               value: chequeBank,
-                              onChange: (e) => setChequeBank(e.target.value),
-                              placeholder: "Bank Name",
-                              style: { ...pl, padding: "8px 10px", fontSize: 13 }
+                              onChange: e => setChequeBank(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
                             })
                           ]
                         })
@@ -2648,35 +3378,88 @@ _Contact us to place your order!_`;
                   ]
                 }),
 
+                // Submit Button
                 S.jsx("button", {
                   onClick: async () => {
                     const amt = Number(collectedAmount) || 0;
                     const finalStatus = deliveryStatusOption;
                     const finalReason = finalStatus === "Skipped" ? (nonDeliveryReason === "Other" ? otherReasonText : nonDeliveryReason) : "";
+                    const resolvedPaymentMode = paymentMode === "Partial Credit" ? "Partial Credit (" + partialCreditMode + ")" : paymentMode;
+                    const isCheque = paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque");
                     
                     const payload = {
                       delivery_status: finalStatus,
-                      delivered_items: o.items.map(item => ({
+                      delivered_items: orderObj.items.map(item => ({
                         ...item,
-                        delivered_qty: deliveredQties[item.id] ?? item.qty
+                        delivered_qty: (() => {
+                          const val = deliveredQties[item.id];
+                          return val === undefined ? item.qty : (parseInt(val) || 0);
+                        })()
                       })),
-                      payment_mode: finalStatus !== "Skipped" ? paymentMode : null,
+                      payment_mode: finalStatus !== "Skipped" ? resolvedPaymentMode : null,
                       collected_amount: finalStatus !== "Skipped" ? amt : 0,
-                      cheque_no: finalStatus !== "Skipped" && paymentMode === "Cheque" ? chequeNo : null,
-                      cheque_bank: finalStatus !== "Skipped" && paymentMode === "Cheque" ? chequeBank : null,
+                      cheque_no: finalStatus !== "Skipped" && isCheque ? chequeNo : null,
+                      cheque_bank: finalStatus !== "Skipped" && isCheque ? chequeBank : null,
                       non_delivery_reason: finalReason,
                       delivered_at: new Date().toISOString(),
                       status: finalStatus === "Skipped" ? "Cancelled" : "Delivered"
                     };
 
-                    const { error } = await Or.from("orders").update(payload).eq("id", o.id);
-                    if (error) {
-                      ye("Failed to save delivery. Please try again.");
-                      console.error(error);
-                    } else {
-                      setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, ...payload } : x));
+                    const stopStatusMap = {
+                      "Delivered": "delivered",
+                      "Partial": "partial",
+                      "Skipped": "failed"
+                    };
+                    const stop_update = {
+                      status: stopStatusMap[finalStatus] || "delivered",
+                      payment_collected: finalStatus !== "Skipped" ? amt : 0,
+                      payment_mode: finalStatus !== "Skipped" ? resolvedPaymentMode : null,
+                      notes: finalReason || null,
+                      delivered_at: new Date().toISOString()
+                    };
+
+                    const actuallyOffline = !navigator.onLine;
+
+                    if (actuallyOffline) {
+                      const offlineSubmits = JSON.parse(localStorage.getItem("kmart_offline_delivery_submits") || "[]");
+                      offlineSubmits.push({
+                        stop_id: o.id,
+                        parent_order_id: orderObj.id,
+                        payload: payload,
+                        stop_update: stop_update
+                      });
+                      localStorage.setItem("kmart_offline_delivery_submits", JSON.stringify(offlineSubmits));
+                      
+                      // Apply locally
+                      setTripStops(prev => prev.map(s => s.id === o.id ? { ...s, status: stop_update.status, payment_collected: stop_update.payment_collected, payment_mode: stop_update.payment_mode, notes: stop_update.notes, delivered_at: stop_update.delivered_at } : s));
+
+                      ye("💾 Saved offline! Will sync when connection restores.");
                       setActiveStopOrder(null);
-                      ye("Delivery processed successfully!");
+                      return;
+                    }
+
+                    const { error } = await Or.from("orders").update(payload).eq("id", orderObj.id);
+                    if (error) {
+                      ye("Failed to update order. Try again.");
+                      console.error(error);
+                      return;
+                    }
+
+                    const { error: stopErr } = await Or.from("trip_orders").update(stop_update).eq("id", o.id);
+                    if (stopErr) {
+                      console.error("Stop update failed:", stopErr);
+                    }
+
+                    ye("Delivery processed successfully!");
+                    setActiveStopOrder(null);
+                    
+                    // Refresh stops
+                    if (activeTrip) {
+                      const { data: stops } = await Or.from("trip_orders")
+                        .select("*, order_id(*, customer_id(id,name,phone,beat,location), salesman_id(name))")
+                        .eq("trip_id", activeTrip.id)
+                        .order("stop_sequence");
+                      if (stops) setTripStops(stops);
                     }
                   },
                   style: { width: "100%", padding: "12px 0", border: "none", borderRadius: 10, background: C.primary, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 10px rgba(20,83,45,0.2)" },
@@ -2707,14 +3490,15 @@ _Contact us to place your order!_`;
             ]
           }),
           S.jsxs("div", {
-            style: { display: "flex", gap: 6, marginBottom: 16 },
+            style: { display: "flex", gap: 6, marginBottom: 16, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" },
             children: [
-              [["products", "📦 Products"], ["customers", "🏪 Customers"], ["salesmen", "💼 Salesmen"], ["orders", "📋 Orders"], ["brands", "🏷️ Brands"]].map(([tabKey, tabLabel]) =>
+              [["products", "📦 Products"], ["customers", "🏪 Customers"], ["salesmen", "💼 Salesmen"], ["delivery_persons", "🚚 Delivery Persons"], ["orders", "📋 Orders"], ["brands", "🏷️ Brands"], ["trips", "🚚 Trips"]].map(([tabKey, tabLabel]) =>
                 S.jsx("button", {
                   onClick: () => setAdminTab(tabKey),
                   style: {
-                    flex: 1,
-                    padding: "8px 4px",
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "8px 12px",
                     border: "none",
                     borderRadius: 8,
                     cursor: "pointer",
@@ -3057,6 +3841,31 @@ _Contact us to place your order!_`;
                       S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Customers List" }),
                       S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: [beatCustomers.length, " customers registered"] })
                     ]
+                  }),
+                  S.jsx("button", {
+                    onClick: async () => {
+                      const msg = window.prompt("Enter notification message for ALL customers:");
+                      if (!msg || !msg.trim()) return;
+                      const imgUrl = window.prompt("Image URL (optional, leave blank to skip):");
+                      const trimmed = msg.trim();
+                      let successCount = 0;
+                      let failCount = 0;
+                      for (const c of beatCustomers) {
+                        const notifData = {
+                          user_role: "customer",
+                          user_id: c.id,
+                          title: "KMART Alert",
+                          body: trimmed,
+                          status: "pending"
+                        };
+                        if (imgUrl && imgUrl.trim()) notifData.image_url = imgUrl.trim();
+                        const { error } = await Or.from("pwa_notifications").insert(notifData);
+                        if (error) { failCount++; } else { successCount++; }
+                      }
+                      ye(successCount + " notifications queued!" + (failCount > 0 ? " (" + failCount + " failed)" : ""));
+                    },
+                    style: { background: "linear-gradient(135deg, #4f46e5, #7c3aed)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(79,70,229,0.3)", fontFamily: "'Outfit', sans-serif" },
+                    children: "📢 Notify All"
                   })
                 ]
               }),
@@ -3341,6 +4150,30 @@ _Contact us to place your order!_`;
                               style: { display: "flex", gap: 6, flexShrink: 0, marginLeft: 10 },
                               children: [
                                 S.jsx("button", {
+                                  onClick: async () => {
+                                    const msg = window.prompt(`Enter notification message for ${c.name}:`);
+                                    if (!msg || !msg.trim()) return;
+                                    const imgUrl = window.prompt("Image URL (optional, leave blank to skip):");
+                                    const notifData = {
+                                      user_role: "customer",
+                                      user_id: c.id,
+                                      title: "KMART Alert",
+                                      body: msg.trim(),
+                                      status: "pending"
+                                    };
+                                    if (imgUrl && imgUrl.trim()) notifData.image_url = imgUrl.trim();
+                                    const { error } = await Or.from("pwa_notifications").insert(notifData);
+                                    if (error) {
+                                      ye("Failed to queue notification.");
+                                      console.error(error);
+                                    } else {
+                                      ye("Notification queued successfully!");
+                                    }
+                                  },
+                                  style: { background: "#e0e7ff", color: "#4f46e5", border: "none", borderRadius: 6, padding: "5px 8px", fontSize: 11.5, fontWeight: 700, cursor: "pointer" },
+                                  children: "🔔 Notify"
+                                }),
+                                S.jsx("button", {
                                   onClick: () => {
                                     setEditingCustomer(c);
                                     setEditCustName(c.name);
@@ -3379,6 +4212,228 @@ _Contact us to place your order!_`;
                           ]
                         }, c.id)
                   )
+            ]
+          }),
+          adminTab === "delivery_persons" && S.jsxs("div", {
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Delivery Persons List" }),
+                      S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: [deliveryPersonsList.length, " delivery staff registered"] })
+                    ]
+                  })
+                ]
+              }),
+              S.jsxs("div", {
+                style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 14, marginBottom: 16 },
+                children: [
+                  S.jsx("div", { style: { fontWeight: 700, fontSize: 13.5, color: C.text, marginBottom: 10 }, children: "Add New Delivery Person" }),
+                  S.jsxs("div", {
+                    style: { display: "flex", gap: 8, marginBottom: 10 },
+                    children: [
+                      S.jsx("input", {
+                        value: adminDeliveryPersonName,
+                        onChange: e => setAdminDeliveryPersonName(e.target.value),
+                        placeholder: "Name",
+                        style: { ...pl, flex: 2, padding: "8px 10px", fontSize: 13 }
+                      }),
+                      S.jsx("input", {
+                        value: adminDeliveryPersonPhone,
+                        onChange: e => setAdminDeliveryPersonPhone(e.target.value),
+                        placeholder: "Phone Number",
+                        style: { ...pl, flex: 1.5, padding: "8px 10px", fontSize: 13 }
+                      }),
+                      S.jsx("input", {
+                        value: adminDeliveryPersonPin,
+                        onChange: e => setAdminDeliveryPersonPin(e.target.value),
+                        placeholder: "PIN (4 digits)",
+                        maxLength: 4,
+                        style: { ...pl, flex: 1, padding: "8px 10px", fontSize: 13, textAlign: "center" }
+                      })
+                    ]
+                  }),
+                  S.jsx("button", {
+                    onClick: async () => {
+                      const name = adminDeliveryPersonName.trim();
+                      const phone = adminDeliveryPersonPhone.trim();
+                      const pin = adminDeliveryPersonPin.trim();
+                      if (!name || pin.length !== 4) {
+                        ye("Please enter a name and a 4-digit PIN.");
+                        return;
+                      }
+                      const { data, error } = await Or.from("delivery_persons").insert({
+                        name: name,
+                        phone: phone || null,
+                        pin: pin,
+                        active: true
+                      }).select().single();
+                      if (error) {
+                        ye("Failed to add delivery person.");
+                        console.error(error);
+                      } else {
+                        setDeliveryPersonsList(prev => [...prev, data]);
+                        setAdminDeliveryPersonName("");
+                        setAdminDeliveryPersonPhone("");
+                        setAdminDeliveryPersonPin("");
+                        ye("Delivery person added successfully!");
+                      }
+                    },
+                    style: {
+                      width: "100%",
+                      padding: "9px",
+                      background: C.primary,
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      fontFamily: "'Outfit', sans-serif"
+                    },
+                    children: "Add Delivery Person"
+                  })
+                ]
+              }),
+              deliveryPersonsList.length === 0 ? S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "20px 0" }, children: "No delivery staff found." }) :
+              S.jsx("div", {
+                style: { display: "flex", flexDirection: "column", gap: 8 },
+                children: deliveryPersonsList.slice().sort((a, b) => a.name.localeCompare(b.name)).map(dp => 
+                  editingDeliveryPerson && editingDeliveryPerson.id === dp.id
+                    ? S.jsxs("div", {
+                        style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 12, display: "flex", flexDirection: "column", gap: 8 },
+                        children: [
+                          S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.accent, textTransform: "uppercase" }, children: "Editing Delivery Person" }),
+                          S.jsx("input", {
+                            value: editDeliveryPersonName,
+                            onChange: e => setEditDeliveryPersonName(e.target.value),
+                            placeholder: "Name",
+                            style: { ...pl, padding: "6px 8px", fontSize: 13 }
+                          }),
+                          S.jsx("input", {
+                            value: editDeliveryPersonPhone,
+                            onChange: e => setEditDeliveryPersonPhone(e.target.value),
+                            placeholder: "Phone",
+                            style: { ...pl, padding: "6px 8px", fontSize: 13 }
+                          }),
+                          S.jsx("input", {
+                            value: editDeliveryPersonPin,
+                            onChange: e => setEditDeliveryPersonPin(e.target.value),
+                            placeholder: "PIN (4 digits)",
+                            maxLength: 4,
+                            style: { ...pl, padding: "6px 8px", fontSize: 13, textAlign: "center" }
+                          }),
+                          S.jsxs("label", {
+                            style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer", userSelect: "none" },
+                            children: [
+                              S.jsx("input", {
+                                type: "checkbox",
+                                checked: editDeliveryPersonActive,
+                                onChange: e => setEditDeliveryPersonActive(e.target.checked),
+                                style: { cursor: "pointer" }
+                              }),
+                              S.jsx("span", { children: "Active (Allowed to deliver)" })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "flex", gap: 6, marginTop: 4 },
+                            children: [
+                              S.jsx("button", {
+                                onClick: async () => {
+                                  const name = editDeliveryPersonName.trim();
+                                  const phone = editDeliveryPersonPhone.trim();
+                                  const pin = editDeliveryPersonPin.trim();
+                                  if (!name || pin.length !== 4) {
+                                    ye("Name cannot be empty and PIN must be 4 digits.");
+                                    return;
+                                  }
+                                  const { data, error } = await Or.from("delivery_persons").update({
+                                    name: name,
+                                    phone: phone || null,
+                                    pin: pin,
+                                    active: editDeliveryPersonActive
+                                  }).eq("id", dp.id).select().single();
+                                  if (error) {
+                                    ye("Failed to update delivery person.");
+                                    console.error(error);
+                                  } else {
+                                    setDeliveryPersonsList(prev => prev.map(x => x.id === dp.id ? data : x));
+                                    setEditingDeliveryPerson(null);
+                                    ye("Saved successfully!");
+                                  }
+                                },
+                                style: { flex: 1, padding: "6px", background: C.primary, color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                children: "Save"
+                              }),
+                              S.jsx("button", {
+                                onClick: () => setEditingDeliveryPerson(null),
+                                style: { flex: 1, padding: "6px", background: C.bg, border: `1.5px solid 	ext{C.border}`, color: C.text, borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                children: "Cancel"
+                              })
+                            ]
+                          })
+                        ]
+                      }, dp.id)
+                    : S.jsxs("div", {
+                        style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center" },
+                        children: [
+                          S.jsxs("div", {
+                            style: { display: "flex", flexDirection: "column", gap: 2 },
+                            children: [
+                              S.jsxs("div", {
+                                style: { display: "flex", alignItems: "center", gap: 6 },
+                                children: [
+                                  S.jsx("span", { style: { fontWeight: 700, color: C.text, fontSize: 13.5 }, children: dp.name }),
+                                  S.jsx("span", {
+                                    style: { fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: dp.active ? C.greenBg : C.redBg, color: dp.active ? C.green : C.red },
+                                    children: dp.active ? "Active" : "Inactive"
+                                  })
+                                ]
+                              }),
+                              S.jsx("div", { style: { fontSize: 11.5, color: C.muted }, children: dp.phone || "No phone number" })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "flex", gap: 6 },
+                            children: [
+                              S.jsx("button", {
+                                onClick: () => {
+                                  setEditingDeliveryPerson(dp);
+                                  setEditDeliveryPersonName(dp.name);
+                                  setEditDeliveryPersonPhone(dp.phone || "");
+                                  setEditDeliveryPersonPin(dp.pin || "0000");
+                                  setEditDeliveryPersonActive(dp.active);
+                                },
+                                style: { background: C.bg, border: `1.5px solid ${C.border}`, color: C.text, borderRadius: 6, padding: "5px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer" },
+                                children: "Edit"
+                              }),
+                              S.jsx("button", {
+                                onClick: () => {
+                                  setDeleteConfirm({
+                                    type: "delivery person",
+                                    name: dp.name,
+                                    onConfirm: async () => {
+                                      const { error } = await Or.from("delivery_persons").delete().eq("id", dp.id);
+                                      if (error) {
+                                        ye("Failed to delete delivery person.");
+                                      } else {
+                                        setDeliveryPersonsList(prev => prev.filter(x => x.id !== dp.id));
+                                        ye("Delivery person deleted.");
+                                      }
+                                    }
+                                  });
+                                },
+                                style: { background: C.redBg, color: C.red, border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer" },
+                                children: "Delete"
+                              })
+                            ]
+                          })
+                        ]
+                      }, dp.id)
+                )
+              })
             ]
           }),
           adminTab === "orders" && S.jsxs("div", {
@@ -3747,7 +4802,7 @@ _Contact us to place your order!_`;
                 ]
               }),
               S.jsxs("div", {
-                style: { background: "#fff", border: `1px solid 	ext{C.border}`, borderRadius: 12, padding: 14, marginBottom: 16 },
+                style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 14, marginBottom: 16 },
                 children: [
                   S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }, children: "Add New Brand" }),
                   S.jsxs("div", {
@@ -3815,12 +4870,12 @@ _Contact us to place your order!_`;
                   const foundLogo = brandImages.find(bi => bi.brand === b);
                   const logoUrl = foundLogo ? foundLogo.image_url : "";
                   return S.jsxs("div", {
-                    style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1px solid 	ext{C.border}`, borderRadius: 12, padding: "10px 14px", marginBottom: 10 },
+                    style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "10px 14px", marginBottom: 10 },
                     children: [
                       S.jsxs("div", {
                         style: { display: "flex", alignItems: "center", gap: 12 },
                         children: [
-                          logoUrl ? S.jsx("img", { src: logoUrl, style: { width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: `1px solid 	ext{C.border}`} }) 
+                          logoUrl ? S.jsx("img", { src: logoUrl, style: { width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: `1px solid ${C.border}`} }) 
                                   : S.jsx("div", { style: { width: 36, height: 36, borderRadius: "50%", background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: C.primary }, children: b.charAt(0).toUpperCase() }),
                           S.jsx("span", { style: { fontWeight: 700, color: C.text, fontSize: 13.5 }, children: b })
                         ]
@@ -3867,7 +4922,7 @@ _Contact us to place your order!_`;
                                 ye("Failed to delete: " + error.message);
                               } else {
                                 setBrandImages(prev => prev.filter(x => x.brand !== b));
-                                ye(`Deleted logo for "	ext{b}"`);
+                                ye(`Deleted logo for "${b}"`);
                               }
                             },
                             style: { background: "none", border: "none", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
@@ -3878,6 +4933,681 @@ _Contact us to place your order!_`;
                     ]
                   }, b);
                 })
+              })
+            ]
+          }),
+          adminTab === "trips" && S.jsxs("div", {
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Delivery Dispatch & Trips" }),
+                      S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: [tripsList.length + " trips created"] })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    style: { display: "flex", alignItems: "center", gap: 8 },
+                    children: [
+                      S.jsx("button", {
+                        onClick: () => {
+                          setTripsRefreshTrigger(prev => prev + 1);
+                          ye("Trips refreshed!");
+                        },
+                        style: { padding: "6px 12px", background: C.bg, border: `1px solid ${C.border}`, color: C.text, borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 4 },
+                        children: "🔄 Refresh"
+                      }),
+                      S.jsxs("div", {
+                        style: { display: "flex", background: C.bg, padding: 3, borderRadius: 8, gap: 4 },
+                        children: [
+                          S.jsx("button", {
+                            onClick: () => setActiveTripsTab("builder"),
+                        style: {
+                          padding: "5px 12px",
+                          borderRadius: 6,
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          background: activeTripsTab === "builder" ? "#fff" : "transparent",
+                          color: activeTripsTab === "builder" ? C.primary : C.muted,
+                          boxShadow: activeTripsTab === "builder" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+                          fontFamily: "'Outfit', sans-serif"
+                        },
+                        children: "Trip Builder"
+                      }),
+                      S.jsx("button", {
+                        onClick: () => setActiveTripsTab("list"),
+                        style: {
+                          padding: "5px 12px",
+                          borderRadius: 6,
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          background: activeTripsTab === "list" ? "#fff" : "transparent",
+                          color: activeTripsTab === "list" ? C.primary : C.muted,
+                          boxShadow: activeTripsTab === "list" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+                          fontFamily: "'Outfit', sans-serif"
+                        },
+                        children: "Trips List"
+                      })
+                    ]
+                  })
+                    ]
+                  })
+                ]
+              }),
+
+              activeTripsTab === "builder" ? S.jsxs("div", {
+                style: { display: "flex", flexDirection: "column", gap: 14 },
+                children: [
+                  S.jsxs("div", {
+                    style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 14, boxShadow: "0 1px 4px rgba(0,0,0,0.02)" },
+                    children: [
+                      S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 12 }, children: "Create New Delivery Trip" }),
+                      S.jsxs("div", {
+                        style: { display: "flex", flexDirection: "column", gap: 10 },
+                        children: [
+                          S.jsxs("div", {
+                            style: { display: "flex", flexDirection: "column", gap: 4 },
+                            children: [
+                              S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "SELECT DELIVERY PERSON" }),
+                              S.jsxs("select", {
+                                value: selectedTripDeliveryPerson,
+                                onChange: e => setSelectedTripDeliveryPerson(e.target.value),
+                                style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", fontFamily: "'Outfit', sans-serif" },
+                                children: [
+                                  S.jsx("option", { value: "", children: "-- Select Delivery Person --" }),
+                                  deliveryPersonsList.filter(dp => dp.active).map(dp => S.jsx("option", { value: String(dp.id), children: dp.name }, dp.id))
+                                ]
+                              })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "flex", flexDirection: "column", gap: 4 },
+                            children: [
+                              S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "VEHICLE NO" }),
+                              S.jsx("input", {
+                                type: "text",
+                                value: tripVehicleNo,
+                                onChange: e => setTripVehicleNo(e.target.value),
+                                placeholder: "e.g. PB-02-AX-1234",
+                                style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                              })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 10, borderTop: `1px solid ${C.border}60` },
+                            children: [
+                              S.jsxs("div", {
+                                children: [
+                                  S.jsxs("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: ["SELECTED STOPS: ", selectedUnassignedOrders.length] }),
+                                  S.jsxs("div", { style: { fontSize: 14, fontWeight: 800, color: C.primary, marginTop: 1 }, children: ["Total Value: ", un(unassignedOrdersList.filter(o => selectedUnassignedOrders.includes(o.id)).reduce((sum, o) => sum + (o.total_amount || 0), 0))] })
+                                ]
+                              }),
+                              S.jsx("button", {
+                                onClick: handleCreateTrip,
+                                disabled: isCreatingTrip || selectedUnassignedOrders.length === 0 || !selectedTripDeliveryPerson,
+                                style: { padding: "9px 18px", background: C.primary, color: "#fff", border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", opacity: (isCreatingTrip || selectedUnassignedOrders.length === 0 || !selectedTripDeliveryPerson) ? 0.6 : 1, fontFamily: "'Outfit', sans-serif" },
+                                children: isCreatingTrip ? "Creating..." : "Create Trip Draft"
+                              })
+                            ]
+                          })
+                        ]
+                      })
+                    ]
+                  }),
+
+                  S.jsxs("div", {
+                    children: [
+                      S.jsxs("div", {
+                        style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+                        children: [
+                          S.jsx("div", { style: { fontSize: 14, fontWeight: 800, color: C.text }, children: "Confirmed Unassigned Orders" }),
+                          S.jsxs("div", {
+                            style: { display: "flex", background: C.bg, padding: 3, borderRadius: 6, gap: 4 },
+                            children: [
+                              S.jsx("button", {
+                                onClick: () => setGroupType("beat"),
+                                style: {
+                                  padding: "3px 8px",
+                                  borderRadius: 4,
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: 10.5,
+                                  fontWeight: 700,
+                                  background: groupType === "beat" ? "#fff" : "transparent",
+                                  color: groupType === "beat" ? C.primary : C.muted,
+                                  fontFamily: "'Outfit', sans-serif"
+                                },
+                                children: "By Beat"
+                              }),
+                              S.jsx("button", {
+                                onClick: () => setGroupType("salesman"),
+                                style: {
+                                  padding: "3px 8px",
+                                  borderRadius: 4,
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: 10.5,
+                                  fontWeight: 700,
+                                  background: groupType === "salesman" ? "#fff" : "transparent",
+                                  color: groupType === "salesman" ? C.primary : C.muted,
+                                  fontFamily: "'Outfit', sans-serif"
+                                },
+                                children: "By Salesman"
+                              })
+                            ]
+                          })
+                        ]
+                      }),
+S.jsxs("div", {
+                        style: { display: "flex", gap: 10, alignItems: "center", marginBottom: 10, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 12px" },
+                        children: [
+                          S.jsx("span", { style: { fontSize: 12, fontWeight: 700, color: C.muted }, children: "Filter Date:" }),
+                          S.jsx("input", {
+                            type: "date",
+                            value: tripBuilderDate,
+                            onChange: e => setTripBuilderDate(e.target.value),
+                            style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, fontSize: 12, outline: "none", fontFamily: "'Outfit', sans-serif" }
+                          }),
+                          tripBuilderDate && S.jsx("button", {
+                            onClick: () => setTripBuilderDate(""),
+                            style: { background: "transparent", border: "none", color: C.red, fontSize: 12, cursor: "pointer", fontWeight: 700, fontFamily: "'Outfit', sans-serif" },
+                            children: "Clear"
+                          })
+                        ]
+                      }),
+
+                      (() => {
+                        const groups = {};
+                        const filteredOrders = unassignedOrdersList.filter(o => {
+                          if (!tripBuilderDate) return true;
+                          const d = new Date(o.created_at);
+                          const yyyy = d.getFullYear();
+                          const mm = String(d.getMonth() + 1).padStart(2, '0');
+                          const dd = String(d.getDate()).padStart(2, '0');
+                          return `${yyyy}-${mm}-${dd}` === tripBuilderDate;
+                        });
+                        filteredOrders.forEach(o => {
+                          const key = groupType === "beat"
+                            ? (o.customer_id?.beat || "Others")
+                            : (o.salesman_id?.name || "Direct Customer");
+                          if (!groups[key]) groups[key] = [];
+                          groups[key].push(o);
+                        });
+
+                        const groupKeys = Object.keys(groups).sort();
+                        if (groupKeys.length === 0) {
+                          return S.jsx("div", { style: { textAlign: "center", padding: "30px 0", color: C.muted, fontSize: 13 }, children: "No unassigned orders available." });
+                        }
+
+                        return S.jsx("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 12 },
+                          children: groupKeys.map(groupName => {
+                            const groupOrders = groups[groupName];
+                            const allGroupSelected = groupOrders.every(o => selectedUnassignedOrders.includes(o.id));
+                            const groupTotalVal = groupOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+                            return S.jsxs("div", {
+                              style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" },
+                              children: [
+                                S.jsxs("div", {
+                                  style: { background: C.bg, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}` },
+                                  children: [
+                                    S.jsxs("div", {
+                                      style: { display: "flex", alignItems: "center", gap: 8 },
+                                      children: [
+                                        S.jsx("input", {
+                                          type: "checkbox",
+                                          checked: allGroupSelected,
+                                          onChange: () => {
+                                            if (allGroupSelected) {
+                                              setSelectedUnassignedOrders(prev => prev.filter(id => !groupOrders.map(o => o.id).includes(id)));
+                                            } else {
+                                              const orderIds = groupOrders.map(o => o.id);
+                                              setSelectedUnassignedOrders(prev => Array.from(new Set([...prev, ...orderIds])));
+                                            }
+                                          },
+                                          style: { cursor: "pointer" }
+                                        }),
+                                        S.jsxs("span", { style: { fontWeight: 800, fontSize: 13, color: C.text }, children: [groupName, " (", groupOrders.length, ")"] })
+                                      ]
+                                    }),
+                                    S.jsx("span", { style: { fontWeight: 800, fontSize: 12.5, color: C.primary }, children: un(groupTotalVal) })
+                                  ]
+                                }),
+                                S.jsx("div", {
+                                  style: { padding: 10, display: "flex", flexDirection: "column", gap: 8 },
+                                  children: groupOrders.map(o => {
+                                    const isChecked = selectedUnassignedOrders.includes(o.id);
+                                    const custName = o.customer_id?.name || "Unknown Shop";
+                                    return S.jsxs("div", {
+                                      style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 8px", borderRadius: 8, background: isChecked ? C.primaryLight : "transparent", border: isChecked ? `1px solid ${C.primary}30` : `1px solid transparent`, fontSize: 12.5 },
+                                      children: [
+                                        S.jsxs("div", {
+                                          onClick: () => {
+                                            if (isChecked) {
+                                              setSelectedUnassignedOrders(prev => prev.filter(id => id !== o.id));
+                                            } else {
+                                              setSelectedUnassignedOrders(prev => [...prev, o.id]);
+                                            }
+                                          },
+                                          style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flex: 1 },
+                                          children: [
+                                            S.jsx("input", {
+                                              type: "checkbox",
+                                              checked: isChecked,
+                                              readOnly: true,
+                                              style: { cursor: "pointer" }
+                                            }),
+                                            S.jsxs("div", {
+                                              children: [
+                                                S.jsx("div", { style: { fontWeight: 700, color: C.text }, children: custName }),
+                                                S.jsxs("div", { style: { fontSize: 10.5, color: C.muted, marginTop: 1 }, children: [o.items.length, " items · ", o.salesman_id?.name || "Self", " · ", new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })] })
+                                              ]
+                                            })
+                                          ]
+                                        }),
+                                        S.jsxs("div", {
+                                          style: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 },
+                                          children: [
+                                            S.jsx("div", { style: { fontWeight: 700, color: C.primary }, children: un(o.total_amount) }),
+                                            S.jsx("button", {
+                                              onClick: async (e) => {
+                                                e.stopPropagation();
+                                                setDeleteConfirm({
+                                                  type: "unassigned order",
+                                                  name: `from ${custName} (₹${o.total_amount})`,
+                                                  onConfirm: async () => {
+                                                    const { error } = await Or.from("orders").update({ status: "Cancelled" }).eq("id", o.id);
+                                                    if (error) {
+                                                      ye("Failed to discard order.");
+                                                    } else {
+                                                      ye("Order marked as Cancelled.");
+                                                      setSelectedUnassignedOrders(prev => prev.filter(id => id !== o.id));
+                                                      fetchTripsData();
+                                                    }
+                                                  }
+                                                });
+                                              },
+                                              style: { background: "transparent", border: "none", color: C.red, fontSize: 10.5, fontWeight: 700, cursor: "pointer", padding: "2px 4px", fontFamily: "'Outfit', sans-serif" },
+                                              children: "Discard"
+                                            })
+                                          ]
+                                        })
+                                      ]
+                                    }, o.id);
+                                  })
+                                })
+                              ]
+                            }, groupName);
+                          })
+                        });
+                      })()
+                    ]
+                  })
+                ]
+              }) : S.jsxs("div", {
+                style: { display: "flex", flexDirection: "column", gap: 12 },
+                children: [
+                  tripsList.length === 0 ? S.jsx("div", { style: { textAlign: "center", padding: "40px 0", color: C.muted, fontSize: 13.5 }, children: "No trips found." }) : tripsList.map(t => {
+                    const dpName = t.delivery_person_id?.name || "Unassigned";
+                    const formattedDate = new Date(t.trip_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+                    
+                    let statusColor = C.muted;
+                    let statusBg = C.bg;
+                    if (t.status === "active") { statusColor = C.accent; statusBg = C.accentLight; }
+                    else if (t.status === "completed") { statusColor = C.green; statusBg = C.greenBg; }
+
+                    const isExpanded = expandedTripId === t.id;
+
+                    return S.jsxs("div", {
+                      style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 12 },
+                      children: [
+                        S.jsxs("div", {
+                          onClick: async () => {
+                            if (isExpanded) {
+                              setExpandedTripId(null);
+                            } else {
+                              setExpandedTripId(t.id);
+                              setEditTripDeliveryPerson(String(t.delivery_person_id?.id || ""));
+                              setEditTripVehicleNo(t.vehicle_no || "");
+                              setEditTripName(t.name || "");
+                              setAddOrderTripId("");
+                              setLoadingTripStops(true);
+                              try {
+                                const { data: stops } = await Or.from("trip_orders").select("*, order_id(*, customer_id(*))").eq("trip_id", t.id).order("stop_sequence");
+                                setExpandedTripStops(stops || []);
+                              } catch(e) {
+                                console.error(e);
+                              } finally {
+                                setLoadingTripStops(false);
+                              }
+                            }
+                          },
+                          style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" },
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 4 },
+                              children: [
+                                S.jsxs("div", {
+                                  style: { display: "flex", alignItems: "center", gap: 8 },
+                                  children: [
+                                    S.jsxs("span", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: ["Trip #", t.id, t.name ? `: ${t.name}` : ""] }),
+                                    S.jsx("span", {
+                                      style: { fontSize: 10, fontWeight: 700, color: statusColor, background: statusBg, padding: "2px 6px", borderRadius: 4 },
+                                      children: t.status.toUpperCase()
+                                    })
+                                  ]
+                                }),
+                                S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: ["Person: ", S.jsx("strong", { style: { color: C.text }, children: dpName }), " | Vehicle: ", t.vehicle_no || "N/A"] }),
+                                S.jsxs("div", { style: { fontSize: 11, color: C.muted }, children: ["Created: ", formattedDate, t.activated_at ? ` · Active: ${new Date(t.activated_at).toLocaleDateString("en-IN", { hour: "2-digit", minute: "2-digit" })}` : ""] })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 10 },
+                              children: [
+                                t.status === "draft" && !isExpanded ? S.jsx("button", {
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    handleActivateTrip(t.id);
+                                  },
+                                  style: { padding: "6px 12px", background: C.accent, color: "#fff", border: "none", borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                  children: "Activate"
+                                }) : null,
+                                S.jsx("span", {
+                                  style: { fontSize: 16, color: C.muted, transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" },
+                                  children: "▼"
+                                })
+                              ]
+                            })
+                          ]
+                        }),
+                        isExpanded ? S.jsxs("div", {
+                          style: { borderTop: `1px solid ${C.border}60`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 12 },
+                          children: [
+                            (() => {
+                              let totalValue = 0;
+                              let cashCollected = 0;
+                              let chequeCollected = 0;
+                              let upiCollected = 0;
+                              let creditOutstanding = 0;
+                              let creditBillsCount = 0;
+
+                              expandedTripStops.forEach(stop => {
+                                const ord = stop.order_id || {};
+                                const val = Number(ord.total_amount) || 0;
+                                const col = Number(stop.payment_collected) || 0;
+                                const mode = stop.payment_mode || "";
+
+                                totalValue += val;
+                                
+                                if (mode === "Cash" || mode === "Partial Credit (Cash)") {
+                                  cashCollected += col;
+                                } else if (mode === "Cheque" || mode === "Partial Credit (Cheque)") {
+                                  chequeCollected += col;
+                                } else if (mode === "UPI") {
+                                  upiCollected += col;
+                                }
+
+                                if (mode === "Credit" || mode.startsWith("Partial Credit")) {
+                                  creditOutstanding += (val - col);
+                                  creditBillsCount += 1;
+                                }
+                              });
+
+                              return S.jsxs("div", {
+                                style: { background: C.bg, padding: 12, borderRadius: 10, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: 8 },
+                                children: [
+                                  S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "TRIP PAYMENT SUMMARY" }),
+                                  S.jsxs("div", {
+                                    style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 },
+                                    children: [
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "TOTAL VALUE" }),
+                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.text, marginTop: 2 }, children: [un(totalValue)] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "CASH" }),
+                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.green, marginTop: 2 }, children: [un(cashCollected)] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "CHEQUE" }),
+                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.accent, marginTop: 2 }, children: [un(chequeCollected)] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: `CREDIT (${creditBillsCount} BILLS)` }),
+                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: "#b91c1c", marginTop: 2 }, children: [un(creditOutstanding)] })
+                                        ]
+                                      })
+                                    ]
+                                  })
+                                ]
+                              });
+                            })(),
+
+                            S.jsxs("div", {
+                              style: { background: C.bg, padding: 10, borderRadius: 8, display: "flex", flexDirection: "column", gap: 8 },
+                              children: [
+                                S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "EDIT TRIP DETAILS" }),
+                                S.jsxs("div", {
+                                  style: { display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" },
+                                  children: [
+                                    S.jsx("input", {
+                                      type: "text",
+                                      value: editTripName,
+                                      onChange: e => setEditTripName(e.target.value),
+                                      placeholder: "Trip Name (e.g. Route A)",
+                                      style: { flex: "1 1 120px", padding: "6px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif" }
+                                    }),
+                                    S.jsxs("select", {
+                                      value: editTripDeliveryPerson,
+                                      onChange: e => setEditTripDeliveryPerson(e.target.value),
+                                      style: { flex: "1 1 120px", padding: "6px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif" },
+                                      children: [
+                                        S.jsx("option", { value: "", children: "-- Select Person --" }),
+                                        deliveryPersonsList.filter(dp => dp.active).map(dp => S.jsx("option", { value: String(dp.id), children: dp.name }, dp.id))
+                                      ]
+                                    }),
+                                    S.jsx("input", {
+                                      type: "text",
+                                      value: editTripVehicleNo,
+                                      onChange: e => setEditTripVehicleNo(e.target.value),
+                                      placeholder: "Vehicle No",
+                                      style: { flex: "1 1 100px", padding: "6px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif" }
+                                    }),
+                                    S.jsx("button", {
+                                      disabled: isUpdatingTrip || !editTripDeliveryPerson,
+                                      onClick: async (e) => {
+                                        e.stopPropagation();
+                                        setIsUpdatingTrip(true);
+                                        try {
+                                          const { error } = await Or.from("trips").update({
+                                            delivery_person_id: parseInt(editTripDeliveryPerson),
+                                            vehicle_no: editTripVehicleNo.trim() || null,
+                                            name: editTripName.trim() || null
+                                          }).eq("id", t.id);
+                                          if (error) throw error;
+                                          ye("Trip details updated!");
+                                          const { data: tList } = await Or.from("trips").select("*, delivery_person_id(*)").order("created_at", { ascending: false });
+                                          if (tList) setTripsList(tList);
+                                        } catch(err) {
+                                          console.error(err);
+                                          ye("Failed to update trip.");
+                                        } finally {
+                                          setIsUpdatingTrip(false);
+                                        }
+                                      },
+                                      style: { padding: "6px 12px", background: C.primary, color: "#fff", border: "none", borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                      children: "Save"
+                                    })
+                                  ]
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 6 },
+                              children: [
+                                S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "ASSIGNED STOPS / ORDERS" }),
+                                loadingTripStops ? S.jsx("div", { style: { fontSize: 12, color: C.muted, padding: "10px 0", textAlign: "center" }, children: "Loading stops..." }) :
+                                expandedTripStops.length === 0 ? S.jsx("div", { style: { fontSize: 12, color: C.muted, padding: "10px 0", textAlign: "center" }, children: "No orders assigned to this trip." }) :
+                                expandedTripStops.map((stop, sIdx) => {
+                                  const order = stop.order_id || {};
+                                  const cust = order.customer_id || {};
+                                  return S.jsxs("div", {
+                                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", border: `1px solid ${C.border}60`, borderRadius: 8, padding: "6px 10px", background: "#fbfbfb" },
+                                    children: [
+                                      S.jsxs("div", {
+                                        style: { display: "flex", flexDirection: "column", gap: 2 },
+                                        children: [
+                                          S.jsxs("div", {
+                                            onClick: () => setAdminViewStopDetails(stop),
+                                            style: { fontSize: 12, fontWeight: 700, color: C.primary, cursor: "pointer", textDecoration: "underline" },
+                                            children: [`Stop ${sIdx + 1}: `, cust.name || "Unknown"]
+                                          }),
+                                          S.jsxs("div", { style: { fontSize: 11, color: C.muted }, children: [`Beat: ${cust.beat || "N/A"} · Value: ₹${order.total_amount || 0} · Status: `, S.jsx("span", { style: { fontWeight: 700, color: stop.status === "pending" ? C.accent : stop.status === "delivered" ? C.green : C.red }, children: stop.status.toUpperCase() })] })
+                                        ]
+                                      }),
+                                      S.jsx("button", {
+                                        onClick: async (e) => {
+                                          e.stopPropagation();
+                                          const { error } = await Or.from("trip_orders").delete().eq("id", stop.id);
+                                          if (error) {
+                                            ye("Failed to remove order.");
+                                          } else {
+                                            ye("Order removed from trip.");
+                                            const { data: stops } = await Or.from("trip_orders").select("*, order_id(*, customer_id(*))").eq("trip_id", t.id).order("stop_sequence");
+                                            setExpandedTripStops(stops || []);
+                                            // Refresh Trip Builder unassigned list
+                                            const { data: assignedOrders } = await Or.from("trip_orders").select("order_id");
+                                            const assignedSet = new Set(assignedOrders ? assignedOrders.map(x => x.order_id) : []);
+                                            const { data: confirmedOrders } = await Or.from("orders").select("*, customer_id(name,phone,beat), salesman_id(name)").eq("status", "Pending");
+                                            if (confirmedOrders) {
+                                              setUnassignedOrdersList(confirmedOrders.filter(o => !assignedSet.has(o.id)));
+                                            }
+                                          }
+                                        },
+                                        style: { background: C.redBg, color: C.red, border: "none", borderRadius: 6, padding: "4px 8px", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                        children: "Remove"
+                                      })
+                                    ]
+                                  }, stop.id);
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { background: C.bg, padding: 10, borderRadius: 8, display: "flex", flexDirection: "column", gap: 8 },
+                              children: [
+                                S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "ADD STOPS / ORDERS" }),
+                                S.jsxs("div", {
+                                  style: { display: "flex", gap: 8, alignItems: "center" },
+                                  children: [
+                                    S.jsxs("select", {
+                                      value: addOrderTripId,
+                                      onChange: e => setAddOrderTripId(e.target.value),
+                                      style: { flex: 1, padding: "6px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif" },
+                                      children: [
+                                        S.jsx("option", { value: "", children: "-- Select Order to Add --" }),
+                                        unassignedOrdersList.map(o => S.jsx("option", { value: String(o.id), children: `${o.customer_id?.name || "Unknown"} (₹${o.total_amount || 0})` }, o.id))
+                                      ]
+                                    }),
+                                    S.jsx("button", {
+                                      disabled: !addOrderTripId,
+                                      onClick: async (e) => {
+                                        e.stopPropagation();
+                                        try {
+                                          const nextSeq = expandedTripStops.length + 1;
+                                          const { error } = await Or.from("trip_orders").insert({
+                                            trip_id: t.id,
+                                            order_id: parseInt(addOrderTripId),
+                                            stop_sequence: nextSeq,
+                                            status: "pending"
+                                          });
+                                          if (error) throw error;
+                                          ye("Order added to trip!");
+                                          setAddOrderTripId("");
+                                          const { data: stops } = await Or.from("trip_orders").select("*, order_id(*, customer_id(*))").eq("trip_id", t.id).order("stop_sequence");
+                                          setExpandedTripStops(stops || []);
+                                          const { data: assignedOrders } = await Or.from("trip_orders").select("order_id");
+                                          const assignedSet = new Set(assignedOrders ? assignedOrders.map(x => x.order_id) : []);
+                                          const { data: confirmedOrders } = await Or.from("orders").select("*, customer_id(name,phone,beat), salesman_id(name)").eq("status", "Pending");
+                                          if (confirmedOrders) {
+                                            setUnassignedOrdersList(confirmedOrders.filter(o => !assignedSet.has(o.id)));
+                                          }
+                                        } catch(err) {
+                                          console.error(err);
+                                          ye("Failed to add order.");
+                                        }
+                                      },
+                                      style: { padding: "6px 12px", background: C.accent, color: "#fff", border: "none", borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                      children: "+ Add"
+                                    })
+                                  ]
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${C.border}60`, paddingTop: 10, marginTop: 4 },
+                              children: [
+                                S.jsx("button", {
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    setDeleteConfirm({
+                                      type: "trip",
+                                      name: `Trip #${t.id}`,
+                                      onConfirm: async () => {
+                                        await Or.from("trip_orders").delete().eq("trip_id", t.id);
+                                        const { error } = await Or.from("trips").delete().eq("id", t.id);
+                                        if (error) {
+                                          ye("Failed to delete trip.");
+                                        } else {
+                                          ye("Trip deleted and orders unassigned!");
+                                          setExpandedTripId(null);
+                                          const { data: tList } = await Or.from("trips").select("*, delivery_person_id(*)").order("created_at", { ascending: false });
+                                          if (tList) setTripsList(tList);
+                                          const { data: assignedOrders } = await Or.from("trip_orders").select("order_id");
+                                          const assignedSet = new Set(assignedOrders ? assignedOrders.map(x => x.order_id) : []);
+                                          const { data: confirmedOrders } = await Or.from("orders").select("*, customer_id(name,phone,beat), salesman_id(name)").eq("status", "Pending");
+                                          if (confirmedOrders) {
+                                            setUnassignedOrdersList(confirmedOrders.filter(o => !assignedSet.has(o.id)));
+                                          }
+                                        }
+                                      }
+                                    });
+                                  },
+                                  style: { padding: "6px 12px", background: C.redBg, color: C.red, border: "none", borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                  children: "Delete Trip"
+                                }),
+                                t.status === "draft" ? S.jsx("button", {
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    handleActivateTrip(t.id);
+                                  },
+                                  style: { padding: "6px 12px", background: C.accent, color: "#fff", border: "none", borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                                  children: "Activate Trip"
+                                }) : null
+                              ]
+                            })
+                          ]
+                        }) : null
+                      ]
+                    }, t.id);
+                  })
+                ]
               })
             ]
           })
@@ -4550,8 +6280,23 @@ _Contact us to place your order!_`;
             style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:22,padding:"28px 24px 24px",zIndex:100,boxShadow:"0 16px 48px rgba(0,0,0,0.28)",textAlign:"center",fontFamily:"'Outfit', sans-serif"},
             children:[
               S.jsx("div",{style:{fontSize:34,marginBottom:8},children:"🔐"}),
-              S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:4},children:authTarget==="admin"?"Admin Access":"Salesman Access"}),
+              S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:4},children:authTarget==="admin"?"Admin Access":authTarget==="salesman"?"Salesman Access":"Delivery Access"}),
               S.jsx("div",{style:{fontSize:13,color:C.muted,marginBottom:22},children:"Enter 4-digit PIN to continue"}),
+              authTarget==="delivery"&&S.jsxs("div",{
+                style:{marginBottom:14},
+                children:[
+                  S.jsx("div",{style:{fontSize:12,fontWeight:600,color:C.muted,marginBottom:5,textAlign:"left"},children:"Select Your Name *"}),
+                  S.jsxs("select",{
+                    value:deliveryPersonSelId,
+                    onChange:e=>setDeliveryPersonSelId(e.target.value),
+                    style:{width:"100%",padding:"8px 10px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:13,fontWeight:600,color:C.text,outline:"none",fontFamily:"'Outfit', sans-serif"},
+                    children:[
+                      S.jsx("option",{value:"",children:"-- Select Your Name --"}),
+                      deliveryPersonsList.filter(dp=>dp.active).map(dp=>S.jsx("option",{value:String(dp.id),children:dp.name},dp.id))
+                    ]
+                  })
+                ]
+              }),
               authTarget==="salesman"&&S.jsxs("div",{
                 style:{marginBottom:14},
                 children:[
@@ -4784,6 +6529,160 @@ _Contact us to place your order!_`;
                     children: "Cancel"
                   })
                 ]
+              })
+            ]
+          })
+        ]
+      }),
+      adminViewStopDetails && S.jsxs("div", {
+        style: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 },
+        onClick: () => setAdminViewStopDetails(null),
+        children: [
+          S.jsxs("div", {
+            onClick: e => e.stopPropagation(),
+            style: { background: "#fff", borderRadius: 16, width: "100%", maxWidth: 500, padding: 24, boxShadow: "0 15px 35px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", gap: 16, fontFamily: "'Outfit', sans-serif" },
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}60`, paddingBottom: 12 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: (adminViewStopDetails.order_id?.customer_id?.name || "Unknown Customer") }),
+                      S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", marginTop: 2 }, children: `Stop Status: ${adminViewStopDetails.status}` })
+                    ]
+                  }),
+                  S.jsx("button", {
+                    onClick: () => setAdminViewStopDetails(null),
+                    style: { background: "none", border: "none", fontSize: 20, color: C.muted, cursor: "pointer", padding: 4 },
+                    children: "×"
+                  })
+                ]
+              }),
+              S.jsxs("div", {
+                style: { display: "flex", flexDirection: "column", gap: 12, fontSize: 13, color: C.text },
+                children: [
+                  S.jsxs("div", {
+                    style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: `${C.bg}`, padding: 12, borderRadius: 8 },
+                    children: [
+                      S.jsxs("div", {
+                        children: [
+                          S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted }, children: "VISIT TIME" }),
+                          S.jsx("div", { style: { fontWeight: 600, marginTop: 2 }, children: adminViewStopDetails.delivered_at ? new Date(adminViewStopDetails.delivered_at).toLocaleString("en-IN") : "N/A" })
+                        ]
+                      }),
+                      S.jsxs("div", {
+                        children: [
+                          S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted }, children: "DELIVERY STATUS" }),
+                          S.jsx("div", { style: { fontWeight: 700, color: adminViewStopDetails.status === "delivered" ? C.green : adminViewStopDetails.status === "partial" ? C.accent : adminViewStopDetails.status === "failed" ? C.red : C.muted, marginTop: 2 }, children: adminViewStopDetails.status.toUpperCase() })
+                        ]
+                      })
+                    ]
+                  }),
+                  adminViewStopDetails.status !== "pending" && S.jsxs("div", {
+                    style: { display: "flex", flexDirection: "column", gap: 8, border: `1px solid ${C.border}60`, padding: 12, borderRadius: 8 },
+                    children: [
+                      S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "PAYMENT INFORMATION" }),
+                      S.jsxs("div", {
+                        style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 },
+                        children: [
+                          S.jsxs("div", {
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "Payment Mode" }),
+                              S.jsx("div", { style: { fontWeight: 600, fontSize: 13.5 }, children: adminViewStopDetails.payment_mode || "N/A" })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "Bill Amount" }),
+                              S.jsxs("div", { style: { fontWeight: 700, fontSize: 13.5, color: C.text }, children: ["₹", adminViewStopDetails.order_id?.total_amount || 0] })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "Collected Amount" }),
+                              S.jsxs("div", { style: { fontWeight: 700, fontSize: 13.5, color: C.green }, children: ["₹", adminViewStopDetails.payment_collected || 0] })
+                            ]
+                          })
+                        ]
+                      }),
+                      (adminViewStopDetails.order_id?.payment_mode === "Cheque" || (adminViewStopDetails.order_id?.payment_mode && adminViewStopDetails.order_id.payment_mode.includes("Cheque"))) && S.jsxs("div", {
+                        style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, borderTop: `1px solid ${C.border}40`, paddingTop: 8, marginTop: 4 },
+                        children: [
+                          S.jsxs("div", {
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "Cheque No" }),
+                              S.jsx("div", { style: { fontWeight: 600 }, children: adminViewStopDetails.order_id?.cheque_no || "N/A" })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "Cheque Bank" }),
+                              S.jsx("div", { style: { fontWeight: 600 }, children: adminViewStopDetails.order_id?.cheque_bank || "N/A" })
+                            ]
+                          })
+                        ]
+                      }),
+                      adminViewStopDetails.notes && S.jsxs("div", {
+                        style: { borderTop: `1px solid ${C.border}40`, paddingTop: 8, marginTop: 4 },
+                        children: [
+                          S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "Notes / Reason" }),
+                          S.jsx("div", { style: { fontWeight: 600, color: C.red }, children: adminViewStopDetails.notes })
+                        ]
+                      })
+                    ]
+                  }),
+                  (adminViewStopDetails.status === "delivered" || adminViewStopDetails.status === "partial") && S.jsxs("div", {
+                    style: { display: "flex", flexDirection: "column", gap: 6 },
+                    children: [
+                      S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "ITEMS SUMMARY" }),
+                      S.jsxs("div", {
+                        style: { maxHeight: 150, overflowY: "auto", border: `1px solid ${C.border}60`, borderRadius: 8 },
+                        children: [
+                          S.jsxs("table", {
+                            style: { width: "100%", borderCollapse: "collapse", fontSize: 11.5, textAlign: "left" },
+                            children: [
+                              S.jsx("thead", {
+                                children: S.jsxs("tr", {
+                                  style: { background: `${C.bg}`, borderBottom: `1px solid ${C.border}60` },
+                                  children: [
+                                    S.jsx("th", { style: { padding: "6px 8px", fontWeight: 700 }, children: "Item" }),
+                                    S.jsx("th", { style: { padding: "6px 8px", fontWeight: 700, textAlign: "center" }, children: "Ordered" }),
+                                    S.jsx("th", { style: { padding: "6px 8px", fontWeight: 700, textAlign: "center" }, children: "Delivered" }),
+                                    S.jsx("th", { style: { padding: "6px 8px", fontWeight: 700, textAlign: "center", color: C.red }, children: "Returned" })
+                                  ]
+                                })
+                              }),
+                              S.jsx("tbody", {
+                                children: (() => {
+                                  const items = adminViewStopDetails.order_id?.delivered_items || adminViewStopDetails.order_id?.items || [];
+                                  return items.map((item, idx) => {
+                                    const ordQty = item.qty || 0;
+                                    const delQty = item.delivered_qty !== undefined ? item.delivered_qty : ordQty;
+                                    const retQty = ordQty - delQty;
+                                    return S.jsxs("tr", {
+                                      style: { borderBottom: `1px solid ${C.border}30` },
+                                      children: [
+                                        S.jsx("td", { style: { padding: "6px 8px", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, children: item.name }),
+                                        S.jsx("td", { style: { padding: "6px 8px", textAlign: "center" }, children: ordQty }),
+                                        S.jsx("td", { style: { padding: "6px 8px", textAlign: "center", color: delQty < ordQty ? C.accent : "inherit" }, children: delQty }),
+                                        S.jsx("td", { style: { padding: "6px 8px", textAlign: "center", fontWeight: retQty > 0 ? 700 : "normal", color: retQty > 0 ? C.red : "inherit" }, children: retQty })
+                                      ]
+                                    }, idx);
+                                  });
+                                })()
+                              })
+                            ]
+                          })
+                        ]
+                      })
+                    ]
+                  })
+                ]
+              }),
+              S.jsx("button", {
+                onClick: () => setAdminViewStopDetails(null),
+                style: { width: "100%", padding: "10px 0", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                children: "Close"
               })
             ]
           })

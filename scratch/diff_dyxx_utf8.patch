@@ -1,0 +1,264 @@
+﻿diff --git a/dist/assets/index-DYXXu0wA.js b/dist/assets/index-DYXXu0wA.js
+index 4e3007c..24a4faf 100644
+--- a/dist/assets/index-DYXXu0wA.js
++++ b/dist/assets/index-DYXXu0wA.js
+@@ -773,6 +773,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
+     if (search.includes("view=admin")) return "admin";
+     if (search.includes("view=salesman")) return "salesman";
+     if (search.includes("view=customer")) return "customer";
++    if (search.includes("view=delivery") || p.startsWith("/delivery")) return "delivery";
+     if (host.includes("admin")) return "admin";
+     if (host.includes("salesman")) return "salesman";
+     if (host.includes("customer") || host.includes("order")) return "customer";
+@@ -822,6 +823,8 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
+   const [custOrders, setCustOrders] = ge.useState([]);
+   const [showCustOrders, setShowCustOrders] = ge.useState(!1);
+   const [showCustProfile, setShowCustProfile] = ge.useState(!1);
++  const [deliveryOrders, setDeliveryOrders] = ge.useState([]);
++  const [deliveryTab, setDeliveryTab] = ge.useState("active");
+   const [customCats, setCustomCats] = ge.useState(() => {
+     const defaults = ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
+     const stored = localStorage.getItem("kmart_custom_categories");
+@@ -1000,6 +1003,15 @@ ${itemsText}
+       fetchSalesmanOrders();
+     }
+   }, [r, selectedSalesman, salesmanTab]);
++  ge.useEffect(() => {
++    if (r === "delivery") {
++      const fetchDeliveryOrders = async () => {
++        const { data, error } = await Or.from("orders").select("*, customer_id(id,name,phone,beat,location), salesman_id(name)").order("created_at", { ascending: false });
++        if (!error) setDeliveryOrders(data || []);
++      };
++      fetchDeliveryOrders();
++    }
++  }, [r]);
+ 
+   // Stylesheet and Fonts
+   ge.useEffect(()=>{
+@@ -1526,7 +1538,7 @@ _Contact us to place your order!_`;
+           ]
+         })
+       }),
+-      r!=="admin"&&S.jsxs("div",{
++      r!=="admin"&&r!=="delivery"&&S.jsxs("div",{
+         style:{padding:16},
+         children:[
+           r === "salesman" && S.jsxs("div", {
+@@ -2105,6 +2117,217 @@ _Contact us to place your order!_`;
+           }) })()
+         ]
+       }),
++      r==="delivery"&&S.jsxs("div",{
++        style:{padding:16, fontFamily:"'Outfit', sans-serif"},
++        children:[
++          S.jsxs("div",{
++            style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16},
++            children:[
++              S.jsxs("div",{
++                children:[
++                  S.jsx("div",{style:{fontSize:16,fontWeight:800,color:C.text},children:"Delivery Portal"}),
++                  S.jsxs("div",{style:{fontSize:12,color:C.muted},children:[
++                    deliveryOrders.filter(x => x.status !== "Delivered" && x.status !== "Cancelled").length,
++                    " active deliveries"
++                  ]})
++                ]
++              }),
++              S.jsx("button", {
++                onClick: async () => {
++                  const { data, error } = await Or.from("orders").select("*, customer_id(id,name,phone,beat,location), salesman_id(name)").order("created_at", { ascending: false });
++                  if (!error) {
++                    setDeliveryOrders(data || []);
++                    ye("Deliveries list refreshed!");
++                  }
++                },
++                style: { background: "transparent", border: `1.5px solid ${C.primary}`, color: C.primary, borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
++                children: "Refresh ≡ƒöä"
++              })
++            ]
++          }),
++          S.jsxs("div", {
++            style: { display: "flex", gap: 8, marginBottom: 14, background: C.bg, padding: 4, borderRadius: 10 },
++            children: [
++              S.jsx("button", {
++                onClick: () => setDeliveryTab("active"),
++                style: {
++                  flex: 1,
++                  padding: "6px 12px",
++                  borderRadius: 8,
++                  border: "none",
++                  background: deliveryTab === "active" ? "#fff" : "transparent",
++                  color: deliveryTab === "active" ? C.primary : C.muted,
++                  fontSize: 12,
++                  fontWeight: 700,
++                  cursor: "pointer",
++                  boxShadow: deliveryTab === "active" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
++                  fontFamily: "'Outfit', sans-serif"
++                },
++                children: `≡ƒÜÜ Active (${deliveryOrders.filter(x => x.status !== "Delivered" && x.status !== "Cancelled").length})`
++              }),
++              S.jsx("button", {
++                onClick: () => setDeliveryTab("past"),
++                style: {
++                  flex: 1,
++                  padding: "6px 12px",
++                  borderRadius: 8,
++                  border: "none",
++                  background: deliveryTab === "past" ? "#fff" : "transparent",
++                  color: deliveryTab === "past" ? C.primary : C.muted,
++                  fontSize: 12,
++                  fontWeight: 700,
++                  cursor: "pointer",
++                  boxShadow: deliveryTab === "past" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
++                  fontFamily: "'Outfit', sans-serif"
++                },
++                children: `Γ£à Completed (${deliveryOrders.filter(x => x.status === "Delivered" || x.status === "Cancelled").length})`
++              })
++            ]
++          }),
++          (() => {
++            const filtered = deliveryOrders.filter(o => {
++              const isPast = o.status === "Delivered" || o.status === "Cancelled";
++              return deliveryTab === "past" ? isPast : !isPast;
++            });
++            if (filtered.length === 0) {
++              return S.jsx("div", { style: { textAlign: "center", color: C.muted, padding: "40px 0" }, children: "No delivery orders found." });
++            }
++            return filtered.map(o => {
++              const custInfo = o.customer_id || {};
++              const coords = parseGPS(custInfo.location);
++              const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
++              return S.jsxs("div", {
++                style: { background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
++                children: [
++                  S.jsxs("div", {
++                    style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 },
++                    children: [
++                      S.jsxs("div", {
++                        children: [
++                          S.jsx("div", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: custInfo.name || "Unknown Shop" }),
++                          S.jsxs("div", { style: { fontSize: 11.5, color: C.muted, marginTop: 2 }, children: [`Beat: ${custInfo.beat || "N/A"}`] })
++                        ]
++                      }),
++                      S.jsx("span", {
++                        style: {
++                          fontSize: 10.5,
++                          fontWeight: 700,
++                          background: o.status === "Delivered" ? C.greenBg : o.status === "Cancelled" ? C.redBg : o.status === "Out for Delivery" ? "#FEF3C7" : C.accentLight,
++                          color: o.status === "Delivered" ? C.green : o.status === "Cancelled" ? C.red : o.status === "Out for Delivery" ? "#D97706" : C.accent,
++                          padding: "3px 8px",
++                          borderRadius: 6
++                        },
++                        children: o.status
++                      })
++                    ]
++                  }),
++                  custInfo.phone && S.jsxs("div", {
++                    style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 12.5 },
++                    children: [
++                      S.jsx("span", { children: "≡ƒô₧" }),
++                      S.jsx("a", {
++                        href: `tel:${custInfo.phone}`,
++                        style: { color: C.primary, fontWeight: 700, textDecoration: "underline" },
++                        children: custInfo.phone
++                      })
++                    ]
++                  }),
++                  S.jsxs("div", {
++                    style: { background: "#f8fafc", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" },
++                    children: [
++                      S.jsxs("div", {
++                        style: { display: "flex", flexDirection: "column", gap: 2 },
++                        children: [
++                          S.jsxs("div", {
++                            style: { display: "flex", alignItems: "center", gap: 6 },
++                            children: [
++                              S.jsx("span", { style: { fontSize: 12, fontWeight: 700, color: C.text }, children: "≡ƒôì GPS Status" }),
++                              coords && S.jsx("a", {
++                                href: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
++                                target: "_blank",
++                                rel: "noopener noreferrer",
++                                style: { fontSize: 11, color: C.primary, fontWeight: 700, textDecoration: "underline" },
++                                children: "≡ƒù║∩╕Å Navigate"
++                              })
++                            ]
++                          }),
++                          S.jsx("span", {
++                            style: { fontSize: 11, color: C.muted },
++                            children: coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "Not Tagged"
++                          })
++                        ]
++                      })
++                    ]
++                  }),
++                  S.jsx("div", {
++                    style: { background: C.bg, borderRadius: 8, padding: "8px 10px", marginBottom: 12 },
++                    children: S.jsx("pre", {
++                      style: { fontSize: 11.5, color: C.text, whiteSpace: "pre-wrap", margin: 0, fontFamily: "'Outfit', sans-serif", lineHeight: 1.5 },
++                      children: getOrderPreviewText(o)
++                    })
++                  }),
++                  S.jsxs("div", {
++                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
++                    children: [
++                      S.jsx("span", { style: { fontSize: 11.5, color: C.muted }, children: dateStr }),
++                      S.jsxs("div", {
++                        style: { textAlign: "right" },
++                        children: [
++                          S.jsx("div", { style: { fontSize: 10, color: C.muted, fontWeight: 500 }, children: "Total Amount" }),
++                          S.jsx("div", { style: { fontSize: 14, fontWeight: 800, color: C.primary }, children: un(o.total_amount) })
++                        ]
++                      })
++                    ]
++                  }),
++                  o.status !== "Delivered" && o.status !== "Cancelled" && S.jsxs("div", {
++                    style: { display: "flex", gap: 8, marginTop: 12, borderTop: `1px dashed ${C.border}`, paddingTop: 12 },
++                    children: [
++                      o.status !== "Out for Delivery" && S.jsx("button", {
++                        onClick: async () => {
++                          const { error } = await Or.from("orders").update({ status: "Out for Delivery" }).eq("id", o.id);
++                          if (error) ye("Failed to update status.");
++                          else {
++                            setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: "Out for Delivery" } : x));
++                            ye("Order is now Out for Delivery!");
++                          }
++                        },
++                        style: { flex: 1.5, padding: "8px 0", background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
++                        children: "≡ƒÜÜ Out for Delivery"
++                      }),
++                      S.jsx("button", {
++                        onClick: async () => {
++                          const { error } = await Or.from("orders").update({ status: "Delivered" }).eq("id", o.id);
++                          if (error) ye("Failed to update status.");
++                          else {
++                            setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: "Delivered" } : x));
++                            ye("Order delivered successfully!");
++                          }
++                        },
++                        style: { flex: 2, padding: "8px 0", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
++                        children: "Γ£à Mark Delivered"
++                      }),
++                      S.jsx("button", {
++                        onClick: async () => {
++                          if (window.confirm("Cancel this delivery?")) {
++                            const { error } = await Or.from("orders").update({ status: "Cancelled" }).eq("id", o.id);
++                            if (error) ye("Failed to update status.");
++                            else {
++                              setDeliveryOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: "Cancelled" } : x));
++                              ye("Delivery cancelled.");
++                            }
++                          }
++                        },
++                        style: { flex: 1, padding: "8px 0", background: C.redBg, color: C.red, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
++                        children: "Γ¥î Cancel"
++                      })
++                    ]
++                  })
++                ]
++              });
++            });
++          })()
++        ]
++      }),
+       r==="admin"&&se&&S.jsxs("div",{
+         style:{padding:16},
+         children:[

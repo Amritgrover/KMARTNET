@@ -9,5 +9,112 @@
   <script>(function(){const h=window.location.hostname.toLowerCase();const p=window.location.pathname.toLowerCase();let m="/manifest.webmanifest";if(h.includes("admin")||p.startsWith("/admin")){m="/manifest-admin.webmanifest"}else if(h.includes("salesman")||p.startsWith("/salesman")){m="/manifest-salesman.webmanifest"}else if(h.includes("delivery")||p.startsWith("/delivery")){m="/manifest-delivery.webmanifest"}const l=document.createElement("link");l.rel="manifest";l.href=m;document.head.appendChild(l)})()</script><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 120px); width: calc(100% - 32px); max-width: 400px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1.5px solid rgba(21, 128, 61, 0.2); border-radius: 16px; box-shadow: 0 12px 36px rgba(0,0,0,0.15); padding: 18px; z-index: 999999; font-family: 'Outfit', sans-serif; box-sizing: border-box; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; opacity: 0;">
+      <div style="display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px;">
+        <div style="background: linear-gradient(135deg, #14532d, #15803d); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(21,128,61,0.25);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-size: 15px; font-weight: 800; color: #1c1917; margin-bottom: 2px;">Install KMART App</div>
+          <div style="font-size: 12px; color: #4b5563; line-height: 1.45;">Add KMART to your home screen for offline access and the best mobile performance.</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="pwa-install-cancel" style="padding: 9px 15px; background: transparent; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 12px; font-weight: 700; color: #4b5563; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s;">Maybe Later</button>
+        <button id="pwa-install-accept" style="padding: 9px 18px; background: #15803d; border: none; border-radius: 10px; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 12px rgba(21,128,61,0.2); transition: all 0.2s;">Install Now</button>
+      </div>
+    </div>
+    <script>
+      (function() {
+        console.log("KMART PWA Install Prompter initialized.");
+        let deferredPrompt;
+        const banner = document.getElementById('pwa-install-banner');
+        const acceptBtn = document.getElementById('pwa-install-accept');
+        const cancelBtn = document.getElementById('pwa-install-cancel');
+
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (isStandalone) {
+          console.log("App is already running in standalone mode (installed).");
+          return;
+        }
+
+        // 1. Detect iOS Safari
+        const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+        if (isiOS && isSafari) {
+          console.log("iOS Safari detected. Showing custom installation instructions.");
+          if (sessionStorage.getItem('pwa-install-dismissed') === 'true') {
+            console.log("iOS install instructions were dismissed in this session.");
+            return;
+          }
+          
+          // Custom UI copy for iOS
+          const titleEl = banner.querySelector('div > div > div:first-child');
+          const descEl = banner.querySelector('div > div > div:last-child');
+          if (titleEl) titleEl.innerText = 'Add KMART to Home Screen';
+          if (descEl) descEl.innerHTML = 'Tap the Share button <span style="font-size: 14px; font-weight: bold;">⎋</span> at the bottom of Safari, scroll down, and select <strong>"Add to Home Screen"</strong>.';
+          
+          acceptBtn.style.display = 'none'; // Programmatic installation not supported in iOS
+          cancelBtn.innerText = 'Got it';
+          
+          banner.style.display = 'block';
+          setTimeout(() => {
+            banner.style.transform = 'translate(-50%, 0)';
+            banner.style.opacity = '1';
+          }, 150);
+          return;
+        }
+
+        // 2. Standard Chromium/Android PWA install flow
+        window.addEventListener('beforeinstallprompt', (e) => {
+          console.log("beforeinstallprompt event fired by browser.");
+          e.preventDefault();
+          deferredPrompt = e;
+          
+          if (sessionStorage.getItem('pwa-install-dismissed') === 'true') {
+            console.log("PWA install prompt was dismissed in this session.");
+            return;
+          }
+
+          banner.style.display = 'block';
+          setTimeout(() => {
+            banner.style.transform = 'translate(-50%, 0)';
+            banner.style.opacity = '1';
+          }, 150);
+        });
+
+        acceptBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) {
+            console.log("No deferred prompt event found.");
+            return;
+          }
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('PWA install choice outcome:', outcome);
+          hideBanner();
+          deferredPrompt = null;
+        });
+
+        cancelBtn.addEventListener('click', () => {
+          console.log("User dismissed the installation banner.");
+          hideBanner();
+          sessionStorage.setItem('pwa-install-dismissed', 'true');
+        });
+
+        function hideBanner() {
+          banner.style.transform = 'translate(-50%, 120px)';
+          banner.style.opacity = '0';
+          setTimeout(() => {
+            banner.style.display = 'none';
+          }, 450);
+        }
+      })();
+    </script>
   </body>
 </html>
