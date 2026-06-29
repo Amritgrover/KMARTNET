@@ -498,7 +498,7 @@ function b_({p:r,b:b,bKey:bKey,qty:qtyVal,onInc:s,onDec:l,onSet:h,discMap:T,setD
 function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [isOpen,setIsOpen]=ge.useState(false);
   const caseSize=parseInt(r.cs)||0;
-  const activeBatches=(r.product_batches||[]).filter(b=>b.stock>0&&b.bchcode>0);
+  const activeBatches=(r.product_batches||[]).filter(b=>b.bchcode>0);
   const marginStr=r.mrp>0?((r.mrp-r.tp)/r.mrp*100).toFixed(0):"0";
   const totalQty=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[,q])=>sum+q,0);
   const disc=parseFloat(T[r.id])||0;
@@ -5862,7 +5862,7 @@ S.jsxs("div", {
               S.jsx("div",{style:{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
               S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:18},children:ee?"✏️ Edit Product":"➕ Add New Product"}),ee&&(() => {
   const cs = parseInt(ee.cs) || 0;
-  const activeBatches = (ee.product_batches || []).filter(b => b.stock > 0 && b.bchcode > 0);
+  const activeBatches = (ee.product_batches || []).filter(b => b.bchcode > 0);
   const formatStock = (stockVal) => {
     return cs > 0 ? `${Math.floor(stockVal / cs)} Cs & ${stockVal % cs} Pcs` : `${stockVal} Pcs`;
   };
