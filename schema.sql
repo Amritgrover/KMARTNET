@@ -114,3 +114,6 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS packsize INTEGER DEFAULT 1;
 
 -- 7. Add cp (Cost Price) column to product_batches table
 ALTER TABLE product_batches ADD COLUMN IF NOT EXISTS cp NUMERIC DEFAULT 0;
+
+-- 8. Enable Supabase Realtime for product_batches table
+ALTER PUBLICATION supabase_realtime ADD TABLE product_batches;
