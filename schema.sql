@@ -108,3 +108,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_order_stock_change
 AFTER INSERT OR UPDATE OR DELETE ON orders
 FOR EACH ROW EXECUTE FUNCTION handle_order_stock_change();
+
+-- 6. Add packsize column to products table
+ALTER TABLE products ADD COLUMN IF NOT EXISTS packsize INTEGER DEFAULT 1;

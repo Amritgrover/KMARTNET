@@ -114,7 +114,14 @@
             banner.style.display = 'none';
           }, 450);
         }
-      })();
+    </script>
+    <script>
+      // Stop mouse scroll wheel from changing focused number input values
+      document.addEventListener('wheel', function(e) {
+        if (document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'number') {
+          document.activeElement.blur();
+        }
+      });
     </script>
   </body>
 </html>

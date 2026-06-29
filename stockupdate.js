@@ -145,12 +145,16 @@ async function syncStock(pool) {
       }
 
       rows.forEach(row => {
-        const stock = Math.max(0, Math.floor(row.STOCKBAL));
+        const mrp = parseFloat(row.MRP) || 0;
+        let stock = Math.max(0, Math.floor(row.STOCKBAL));
+        if (mrp <= 0) {
+          stock = 0; // Force stock to 0 for invalid/dummy batches
+        }
         batchesData.push({
           product_id: productId,
           bchcode: row.BCHCODE,
           batch: row.BATCH || '',
-          mrp: parseFloat(row.MRP) || 0,
+          mrp: mrp,
           stock: stock
         });
         productStockMap.set(productId, productStockMap.get(productId) + stock);

@@ -23,3 +23,109 @@ html, body {
   max-width: 100vw;
   overflow-x: hidden;
 }
+
+/* =========================================================
+   DESKTOP LAYOUT — Full-Width for 1920×1080+
+   ========================================================= */
+
+/* --- Tablet & small desktop (768px – 1199px) --- */
+@media (min-width: 768px) {
+
+  /* Unlock the main app wrapper from its 480px inline cap */
+  #root > div {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  /* Product catalogue grid: 3 columns */
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  /* Sticky header should stretch full width */
+    padding-right: 24px !important;
+  }
+
+
+  /* Widen bottom sheets (cart, checkout details, etc.) */
+  #root div[style*="480"] {
+    max-width: 640px !important;
+  }
+
+  /* Center and constrain the search bar */
+  #root div:has(> input[placeholder*="Search"]) {
+    max-width: 640px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* --- Full HD desktop (1200px+) --- */
+@media (min-width: 1200px) {
+
+  /* Slightly softer background for the body */
+  body {
+    background-color: #f4f5f7 !important;
+  }
+
+  /* Centered wide container */
+  #root > div {
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+    box-shadow: 0 0 40px rgba(0,0,0,0.06);
+  }
+
+  /* Header breathing room */
+  #root > div > div:first-child {
+    padding: 20px 40px !important;
+  }
+
+  /* Product grid: 4 columns */
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  /* Widen bottom sheets further on Full HD */
+  #root div[style*="480"] {
+    max-width: 800px !important;
+  }
+
+  /* Center and constrain the search bar */
+  #root div:has(> input[placeholder*="Search"]) {
+    max-width: 760px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* --- Ultra-wide (1600px+) --- */
+@media (min-width: 1600px) {
+
+  #root > div {
+    max-width: 1500px !important;
+    padding-left: 56px !important;
+    padding-right: 56px !important;
+  }
+
+  #root > div > div:first-child {
+    padding: 22px 56px !important;
+  }
+
+  /* Product grid: 5 columns */
+  .product-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 24px !important;
+  }
+
+  /* Widen bottom sheets on ultra-wide */
+  #root div[style*="480"] {
+    max-width: 960px !important;
+  }
+}
