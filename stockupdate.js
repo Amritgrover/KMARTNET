@@ -101,7 +101,7 @@ async function syncStock(pool) {
 
     // 2. Fetch stock and batch details from Vision database (Batch_master table)
     const result = await pool.request().query(`
-      SELECT ITCODE, BCHCODE, BATCH, STOCKBAL, MRP FROM Batch_master WHERE ITCODE > 0
+      SELECT ITCODE, BCHCODE, BATCH, STOCKBAL, MRP, NCPAGST FROM Batch_master WHERE ITCODE > 0
     `);
 
     if (!result.recordset || result.recordset.length === 0) {
@@ -155,7 +155,8 @@ async function syncStock(pool) {
           bchcode: row.BCHCODE,
           batch: row.BATCH || '',
           mrp: mrp,
-          stock: stock
+          stock: stock,
+          cp: parseFloat(row.NCPAGST) || 0
         });
         productStockMap.set(productId, productStockMap.get(productId) + stock);
       });

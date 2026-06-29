@@ -358,7 +358,7 @@ function b_({p:r,b:b,bKey:bKey,qty:qtyVal,onInc:s,onDec:l,onSet:h,discMap:T,setD
         style:{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:10.5,fontWeight:600,color:C.muted,marginBottom:4},
         children:[
           S.jsxs("span",{children:["Stock: ",stockStr]}),
-          r.cp>0&&S.jsxs("span",{style:{color:C.accent,fontWeight:700},children:["Cost: ₹",r.cp]})
+          (b.cp>0?b.cp:r.cp)>0&&S.jsxs("span",{style:{color:C.accent,fontWeight:700},children:["Cost: ₹",b.cp>0?b.cp:r.cp]})
         ]
       }),
       (b.stock??0)<=0&&S.jsx("div",{

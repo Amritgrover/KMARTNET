@@ -111,3 +111,6 @@ FOR EACH ROW EXECUTE FUNCTION handle_order_stock_change();
 
 -- 6. Add packsize column to products table
 ALTER TABLE products ADD COLUMN IF NOT EXISTS packsize INTEGER DEFAULT 1;
+
+-- 7. Add cp (Cost Price) column to product_batches table
+ALTER TABLE product_batches ADD COLUMN IF NOT EXISTS cp NUMERIC DEFAULT 0;
