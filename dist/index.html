@@ -6,6 +6,18 @@
     <title>KMART — Distributor Catalogue</title>
     <script type="module" crossorigin src="/assets/index-DYXXu0wA.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BiACt3m9.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+      /* Fix Leaflet map marker and pane positioning conflict with Tailwind CSS v4 */
+      .leaflet-container *, 
+      .leaflet-container *:before, 
+      .leaflet-container *:after {
+        translate: none !important;
+        rotate: none !important;
+        scale: none !important;
+      }
+    </style>
   <script>(function(){const h=window.location.hostname.toLowerCase();const p=window.location.pathname.toLowerCase();let m="/manifest.webmanifest";if(h.includes("admin")||p.startsWith("/admin")){m="/manifest-admin.webmanifest"}else if(h.includes("salesman")||p.startsWith("/salesman")){m="/manifest-salesman.webmanifest"}else if(h.includes("delivery")||p.startsWith("/delivery")){m="/manifest-delivery.webmanifest"}const l=document.createElement("link");l.rel="manifest";l.href=m;document.head.appendChild(l)})()</script><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
@@ -114,6 +126,7 @@
             banner.style.display = 'none';
           }, 450);
         }
+      })();
     </script>
     <script>
       // Stop mouse scroll wheel from changing focused number input values

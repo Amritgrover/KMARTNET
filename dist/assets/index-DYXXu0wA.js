@@ -848,7 +848,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [realtimeRefreshTick,setRealtimeRefreshTick]=ge.useState(0);
   const handleRealtimeRefresh=ge.useCallback(()=>setRealtimeRefreshTick(prev=>prev+1),[]);
   ge.useEffect(()=>{
-    const tables=["beats","brand_images","customers","delivery_persons","orders","product_batches","products","pwa_notifications","pwa_push_subscriptions","salesmen","trip_orders","trips"];
+    const tables=["beats","brand_images","customers","delivery_persons","orders","product_batches","products","pwa_notifications","salesmen","trip_orders","trips"];
     let isClosed=false;
     let debounceId=null;
     const scheduleRefresh=()=>{
@@ -1045,7 +1045,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
       }
     }
     initPush();
-  }, [selectedSalesman, selectedDeliveryPerson, cust]);
+  }, [selectedSalesman?.id, selectedDeliveryPerson?.id, cust?.id]);
   const [beatCustomers, setBeatCustomers] = ge.useState([]);
   const [salesmanTab, setSalesmanTab] = ge.useState("catalogue");
   const [salesmanOrders, setSalesmanOrders] = ge.useState([]);
@@ -3112,6 +3112,215 @@ _Contact us to place your order!_`;
                     })
                   ]
                 }),
+
+                coords ? S.jsxs("div", {
+                  key: o.id,
+                  style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 },
+                  children: [
+                    S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "CUSTOMER GPS LOCATION" }),
+                    S.jsx("div", {
+                      id: "delivery-map",
+                      ref: (el) => {
+                        if (el) {
+                          const drawRoute = async (mapInstance) => {
+                            if (!userCoords || !userCoords.lat || !userCoords.lng || !coords) return;
+                            try {
+                              const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${userCoords.lng},${userCoords.lat};${coords.lng},${coords.lat}?overview=full&geometries=geojson`);
+                              const data = await res.json();
+                              if (data.code === 'Ok' && data.routes && data.routes[0]) {
+                                const points = data.routes[0].geometry.coordinates.map(pt => [pt[1], pt[0]]);
+                                if (window._active_map_info && window._active_map_info.el === el) {
+                                  if (window._active_map_info.routeLine) {
+                                    window._active_map_info.routeLine.remove();
+                                  }
+                                  const routeLine = window.L.polyline(points, {
+                                    color: '#2563eb',
+                                    weight: 5,
+                                    opacity: 0.8,
+                                    lineJoin: 'round'
+                                  }).addTo(mapInstance);
+                                  window._active_map_info.routeLine = routeLine;
+                                  mapInstance.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+                                }
+                              } else {
+                                throw new Error("Invalid OSRM response");
+                              }
+                            } catch (e) {
+                              console.warn("OSRM route fetch failed, drawing fallback line:", e);
+                              if (window._active_map_info && window._active_map_info.el === el) {
+                                if (window._active_map_info.routeLine) {
+                                  window._active_map_info.routeLine.remove();
+                                }
+                                const fallbackLine = window.L.polyline([[userCoords.lat, userCoords.lng], [coords.lat, coords.lng]], {
+                                  color: '#3b82f6',
+                                  weight: 3,
+                                  opacity: 0.6,
+                                  dashArray: '5, 10'
+                                }).addTo(mapInstance);
+                                window._active_map_info.routeLine = fallbackLine;
+                                mapInstance.fitBounds(fallbackLine.getBounds(), { padding: [40, 40] });
+                              }
+                            }
+                          };
+
+                          if (window._active_map_info && window._active_map_info.el === el) {
+                            const mapInstance = window._active_map_info.map;
+                            if (userCoords && userCoords.lat && userCoords.lng) {
+                              if (window._active_map_info.driverMarker) {
+                                window._active_map_info.driverMarker.setLatLng([userCoords.lat, userCoords.lng]);
+                              } else {
+                                const driverMarkerHtml = `
+                                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translate(-12px, -24px);">
+                                    <div style="background-color: #3b82f6; width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+                                      <span style="font-size: 11px; font-weight: bold; color: white;">🚚</span>
+                                    </div>
+                                    <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #3b82f6; margin-top: -1px;"></div>
+                                  </div>
+                                `;
+                                const driverIcon = window.L.divIcon({
+                                  html: driverMarkerHtml,
+                                  className: '',
+                                  iconSize: [24, 30],
+                                  iconAnchor: [12, 30],
+                                  popupAnchor: [0, -30]
+                                });
+                                const marker = window.L.marker([userCoords.lat, userCoords.lng], { icon: driverIcon })
+                                  .addTo(mapInstance)
+                                  .bindPopup("<b>Your Location</b>");
+                                window._active_map_info.driverMarker = marker;
+                                drawRoute(mapInstance);
+                              }
+                            } else {
+                              if (window._active_map_info.driverMarker) {
+                                window._active_map_info.driverMarker.remove();
+                                window._active_map_info.driverMarker = null;
+                              }
+                            }
+                            return;
+                          }
+
+                          if (window._active_map_info) {
+                            try {
+                              window._active_map_info.map.remove();
+                            } catch (e) {
+                              console.error(e);
+                            }
+                            window._active_map_info = null;
+                          }
+                          if (!window.L) {
+                            el.innerHTML = "<div style='padding: 20px; text-align: center; color: red;'>Map library not loaded.</div>";
+                            return;
+                          }
+                          try {
+                            const map = window.L.map(el, {
+                              zoomControl: true,
+                              zoomAnimation: true,
+                              fadeAnimation: true,
+                              markerZoomAnimation: true
+                            }).setView([coords.lat, coords.lng], 15);
+                            window._active_map_info = { map: map, el: el, stopId: o.id, driverMarker: null, routeLine: null };
+                            window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                              maxZoom: 19,
+                              attribution: '© OpenStreetMap'
+                            }).addTo(map);
+                            const LocateControl = window.L.Control.extend({
+                              options: { position: 'topleft' },
+                              onAdd: function (mapInstance) {
+                                const container = window.L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-custom-locate');
+                                container.style.backgroundColor = 'white';
+                                container.style.width = '30px';
+                                container.style.height = '30px';
+                                container.style.display = 'flex';
+                                container.style.alignItems = 'center';
+                                container.style.justifyContent = 'center';
+                                container.style.cursor = 'pointer';
+                                container.style.borderRadius = '4px';
+                                container.title = "Locate driver position";
+                                container.innerHTML = `
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="8"></circle>
+                                    <circle cx="12" cy="12" r="2.5" fill="#333"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="4"></line>
+                                    <line x1="12" y1="20" x2="12" y2="23"></line>
+                                    <line x1="1" y1="12" x2="4" y2="12"></line>
+                                    <line x1="20" y1="12" x2="23" y2="12"></line>
+                                  </svg>
+                                `;
+                                container.onclick = function (e) {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  if (userCoords && userCoords.lat && userCoords.lng) {
+                                    mapInstance.setView([userCoords.lat, userCoords.lng], 16);
+                                  } else {
+                                    alert("Driver location not available yet.");
+                                  }
+                                };
+                                return container;
+                              }
+                            });
+                            map.addControl(new LocateControl());
+                            const customerMarkerHtml = `
+                              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translate(-12px, -24px);">
+                                <div style="background-color: #15803d; width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+                                  <span style="font-size: 11px; font-weight: bold; color: white;">🏪</span>
+                                </div>
+                                <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #15803d; margin-top: -1px;"></div>
+                              </div>
+                            `;
+                            const customerIcon = window.L.divIcon({
+                              html: customerMarkerHtml,
+                              className: '',
+                              iconSize: [24, 30],
+                              iconAnchor: [12, 30],
+                              popupAnchor: [0, -30]
+                            });
+                            window.L.marker([coords.lat, coords.lng], { icon: customerIcon })
+                              .addTo(map);
+                            if (userCoords && userCoords.lat && userCoords.lng) {
+                              const driverMarkerHtml = `
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translate(-12px, -24px);">
+                                  <div style="background-color: #3b82f6; width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-size: 11px; font-weight: bold; color: white;">🚚</span>
+                                  </div>
+                                  <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #3b82f6; margin-top: -1px;"></div>
+                                </div>
+                              `;
+                              const driverIcon = window.L.divIcon({
+                                html: driverMarkerHtml,
+                                className: '',
+                                iconSize: [24, 30],
+                                iconAnchor: [12, 30],
+                                popupAnchor: [0, -30]
+                              });
+                              window._active_map_info.driverMarker = window.L.marker([userCoords.lat, userCoords.lng], { icon: driverIcon })
+                                .addTo(map)
+                                .bindPopup("<b>Your Location</b>");
+                              drawRoute(map);
+                            }
+                            setTimeout(() => { map.invalidateSize(); }, 200);
+                          } catch (err) {
+                            console.error("Leaflet init error:", err);
+                          }
+                        } else {
+                          setTimeout(() => {
+                            if (window._active_map_info && !document.body.contains(window._active_map_info.el)) {
+                              try {
+                                if (window._active_map_info.routeLine) {
+                                  window._active_map_info.routeLine.remove();
+                                }
+                                window._active_map_info.map.remove();
+                              } catch (e) {
+                                console.error(e);
+                              }
+                              window._active_map_info = null;
+                            }
+                          }, 100);
+                        }
+                      },
+                      style: { height: 220, width: "100%", borderRadius: 10, border: `1px solid ${C.border}`, zIndex: 1 }
+                    })
+                  ]
+                }) : null,
 
                 // Actions Selectors
                 S.jsxs("div", {
