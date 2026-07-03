@@ -5212,6 +5212,108 @@ _Contact us to place your order!_`;
                               })
                             ]
                           }),
+                          selectedUnassignedOrders.length > 0 && S.jsxs("div", {
+                            style: { display: "flex", flexDirection: "column", gap: 6, margin: "10px 0", padding: "10px 0", borderTop: `1px dashed ${C.border}`, borderBottom: `1px dashed ${C.border}` },
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }, children: "ARRANGE STOP SEQUENCE (DRAG OR CLICK ARROWS)" }),
+                              selectedUnassignedOrders.map((orderId, idx) => {
+                                const o = unassignedOrdersList.find(x => x.id === orderId);
+                                if (!o) return null;
+                                const custName = o.customer_id?.name || "Unknown Shop";
+                                const beat = o.customer_id?.beat || "N/A";
+                                return S.jsxs("div", {
+                                  draggable: true,
+                                  onDragStart: (e) => {
+                                    e.dataTransfer.setData("text/plain", idx);
+                                  },
+                                  onDragOver: (e) => e.preventDefault(),
+                                  onDrop: (e) => {
+                                    e.preventDefault();
+                                    const fromIdx = parseInt(e.dataTransfer.getData("text/plain"));
+                                    const toIdx = idx;
+                                    if (fromIdx !== toIdx) {
+                                      const newList = [...selectedUnassignedOrders];
+                                      const [moved] = newList.splice(fromIdx, 1);
+                                      newList.splice(toIdx, 0, moved);
+                                      setSelectedUnassignedOrders(newList);
+                                    }
+                                  },
+                                  style: {
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "8px 10px",
+                                    background: "#f8fafc",
+                                    border: `1px solid ${C.border}`,
+                                    borderRadius: 8,
+                                    cursor: "grab",
+                                    fontSize: 12.5
+                                  },
+                                  children: [
+                                    S.jsxs("div", {
+                                      style: { display: "flex", alignItems: "center", gap: 8 },
+                                      children: [
+                                        S.jsxs("span", { style: { fontWeight: 800, color: C.primary, minWidth: 20 }, children: [idx + 1, "."] }),
+                                        S.jsxs("div", {
+                                          children: [
+                                            S.jsx("div", { style: { fontWeight: 700, color: C.text }, children: custName }),
+                                            S.jsxs("div", { style: { fontSize: 10, color: C.muted }, children: ["Beat: ", beat] })
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    S.jsxs("div", {
+                                      style: { display: "flex", alignItems: "center", gap: 6 },
+                                      children: [
+                                        S.jsx("button", {
+                                          onClick: (e) => {
+                                            e.stopPropagation();
+                                            if (idx > 0) {
+                                              const newList = [...selectedUnassignedOrders];
+                                              const [moved] = newList.splice(idx, 1);
+                                              newList.splice(idx - 1, 0, moved);
+                                              setSelectedUnassignedOrders(newList);
+                                            }
+                                          },
+                                          disabled: idx === 0,
+                                          style: {
+                                            border: "none",
+                                            background: "none",
+                                            cursor: idx === 0 ? "not-allowed" : "pointer",
+                                            padding: 4,
+                                            opacity: idx === 0 ? 0.3 : 0.8,
+                                            fontSize: 14
+                                          },
+                                          children: "▲"
+                                        }),
+                                        S.jsx("button", {
+                                          onClick: (e) => {
+                                            e.stopPropagation();
+                                            if (idx < selectedUnassignedOrders.length - 1) {
+                                              const newList = [...selectedUnassignedOrders];
+                                              const [moved] = newList.splice(idx, 1);
+                                              newList.splice(idx + 1, 0, moved);
+                                              setSelectedUnassignedOrders(newList);
+                                            }
+                                          },
+                                          disabled: idx === selectedUnassignedOrders.length - 1,
+                                          style: {
+                                            border: "none",
+                                            background: "none",
+                                            cursor: idx === selectedUnassignedOrders.length - 1 ? "not-allowed" : "pointer",
+                                            padding: 4,
+                                            opacity: idx === selectedUnassignedOrders.length - 1 ? 0.3 : 0.8,
+                                            fontSize: 14
+                                          },
+                                          children: "▼"
+                                        })
+                                      ]
+                                    })
+                                  ]
+                                }, orderId);
+                              })
+                            ]
+                          }),
                           S.jsxs("div", {
                             style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 10, borderTop: `1px solid ${C.border}60` },
                             children: [
