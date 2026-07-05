@@ -990,7 +990,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
-  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
+  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [brandBeingEdited, setBrandBeingEdited] = ge.useState(null);const [editBrandNameInput, setEditBrandNameInput] = ge.useState("");const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
@@ -5040,12 +5040,55 @@ _Contact us to place your order!_`;
                         children: [
                           logoUrl ? S.jsx("img", { src: logoUrl, style: { width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: `1px solid ${C.border}`} }) 
                                   : S.jsx("div", { style: { width: 36, height: 36, borderRadius: "50%", background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: C.primary }, children: b.charAt(0).toUpperCase() }),
-                          S.jsx("span", { style: { fontWeight: 700, color: C.text, fontSize: 13.5 }, children: b })
+                          brandBeingEdited === b ? S.jsxs("div", {
+                            style: { display: "flex", alignItems: "center", gap: 6 },
+                            children: [
+                              S.jsx("input", {
+                                value: editBrandNameInput,
+                                onChange: (e) => setEditBrandNameInput(e.target.value),
+                                style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, fontSize: 12.5, outline: "none", width: 140, fontFamily: "'Outfit', sans-serif" }
+                              }),
+                              S.jsx("button", {
+                                onClick: async () => {
+                                  const newName = editBrandNameInput.trim();
+                                  if (!newName) { ye("Brand name cannot be empty."); return; }
+                                  if (newName === b) { setBrandBeingEdited(null); return; }
+                                  
+                                  const foundBI = brandImages.find(bi => bi.brand === b);
+                                  if (foundBI) {
+                                    const { error: err1 } = await Or.from("brand_images").update({ brand: newName }).eq("brand", b);
+                                    if (err1) { ye("Failed to update brand image name: " + err1.message); return; }
+                                  }
+                                  const { error: err2 } = await Or.from("products").update({ brand: newName }).eq("brand", b);
+                                  if (err2) { ye("Failed to update products brand name: " + err2.message); return; }
+                                  
+                                  setBrandBeingEdited(null);
+                                  await ue();
+                                  ye("Brand name updated successfully!");
+                                },
+                                style: { border: "none", background: "none", color: C.green, fontSize: 14, cursor: "pointer", fontWeight: "bold" },
+                                children: "✓"
+                              }),
+                              S.jsx("button", {
+                                onClick: () => setBrandBeingEdited(null),
+                                style: { border: "none", background: "none", color: C.red, fontSize: 14, cursor: "pointer", fontWeight: "bold" },
+                                children: "✗"
+                              })
+                            ]
+                          }) : S.jsx("span", { style: { fontWeight: 700, color: C.text, fontSize: 13.5 }, children: b })
                         ]
                       }),
                       S.jsxs("div", {
                         style: { display: "flex", alignItems: "center", gap: 10 },
                         children: [
+                          brandBeingEdited !== b && S.jsx("button", {
+                            onClick: () => {
+                              setBrandBeingEdited(b);
+                              setEditBrandNameInput(b);
+                            },
+                            style: { background: "none", border: "none", color: C.primary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                            children: "Edit"
+                          }),
                           S.jsxs("label", {
                             style: { display: "inline-flex", alignItems: "center", gap: 4, background: C.primaryLight, color: C.primary, padding: "5px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
                             children: [
@@ -5078,15 +5121,20 @@ _Contact us to place your order!_`;
                               })
                             ]
                           }),
-                          logoUrl && S.jsx("button", {
-                            onClick: async () => {
-                              const { error } = await Or.from("brand_images").delete().eq("brand", b);
-                              if (error) {
-                                ye("Failed to delete: " + error.message);
-                              } else {
-                                setBrandImages(prev => prev.filter(x => x.brand !== b));
-                                ye(`Deleted logo for "${b}"`);
-                              }
+                          S.jsx("button", {
+                            onClick: () => {
+                              setDeleteConfirm({
+                                type: "brand",
+                                name: b,
+                                onConfirm: async () => {
+                                  const { error: err1 } = await Or.from("brand_images").delete().eq("brand", b);
+                                  if (err1) { ye("Failed to delete brand logo: " + err1.message); return; }
+                                  const { error: err2 } = await Or.from("products").update({ brand: null }).eq("brand", b);
+                                  if (err2) { ye("Failed to clear brand from products: " + err2.message); return; }
+                                  await ue();
+                                  ye(`Brand "${b}" deleted successfully!`);
+                                }
+                              });
                             },
                             style: { background: "none", border: "none", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
                             children: "Delete"
