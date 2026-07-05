@@ -1446,8 +1446,14 @@ ${itemsText}
           if (error) throw error;
           if (trips && trips.length > 0) {
             const trip = trips[0];
-            setActiveTrip(trip);
-            localStorage.setItem("kmart_offline_active_trip_" + selectedDeliveryPerson.id, JSON.stringify(trip));
+            let seqIndex = trip.id;
+            try {
+              const { count } = await Or.from("trips").select("id", { count: "exact", head: true }).lte("id", trip.id);
+              if (count !== null) seqIndex = count;
+            } catch(e) {}
+            const tripWithSeq = { ...trip, seqIndex };
+            setActiveTrip(tripWithSeq);
+            localStorage.setItem("kmart_offline_active_trip_" + selectedDeliveryPerson.id, JSON.stringify(tripWithSeq));
             
             // Load stops
             const { data: stops, error: stopsErr } = await Or.from("trip_orders")
@@ -2970,7 +2976,7 @@ _Contact us to place your order!_`;
                   children: [
                     S.jsxs("div", {
                       children: [
-                        S.jsxs("div", { style: { fontSize: 15, fontWeight: 800, color: C.text }, children: ["Trip #", activeTrip.id] }),
+                        S.jsxs("div", { style: { fontSize: 15, fontWeight: 800, color: C.text }, children: ["Trip #", activeTrip.seqIndex || activeTrip.id] }),
                         S.jsxs("div", { style: { fontSize: 12, color: C.muted, marginTop: 2 }, children: ["Vehicle: ", activeTrip.vehicle_no || "N/A"] }),
                         S.jsxs("div", { style: { fontSize: 11, color: C.muted, marginTop: 1 }, children: ["Stops: ", completedCount, "/", tripStops.length, " Completed"] })
                       ]
@@ -5695,6 +5701,7 @@ S.jsxs("div", {
                 style: { display: "flex", flexDirection: "column", gap: 12 },
                 children: [
                   tripsList.length === 0 ? S.jsx("div", { style: { textAlign: "center", padding: "40px 0", color: C.muted, fontSize: 13.5 }, children: "No trips found." }) : tripsList.map(t => {
+                    const tripIndex = [...tripsList].reverse().findIndex(x => x.id === t.id) + 1;
                     const dpName = t.delivery_person_id?.name || "Unassigned";
                     const formattedDate = new Date(t.trip_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
                     
@@ -5737,7 +5744,7 @@ S.jsxs("div", {
                                 S.jsxs("div", {
                                   style: { display: "flex", alignItems: "center", gap: 8 },
                                   children: [
-                                    S.jsxs("span", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: ["Trip #", t.id, t.name ? `: ${t.name}` : ""] }),
+                                    S.jsxs("span", { style: { fontWeight: 800, fontSize: 14, color: C.text }, children: ["Trip #", tripIndex, t.name ? `: ${t.name}` : ""] }),
                                     S.jsx("span", {
                                       style: { fontSize: 10, fontWeight: 700, color: statusColor, background: statusBg, padding: "2px 6px", borderRadius: 4 },
                                       children: t.status.toUpperCase()
@@ -6009,7 +6016,7 @@ S.jsxs("div", {
                                     e.stopPropagation();
                                     setDeleteConfirm({
                                       type: "trip",
-                                      name: `Trip #${t.id}`,
+                                      name: `Trip #${[...tripsList].reverse().findIndex(x => x.id === t.id) + 1}`,
                                       onConfirm: async () => {
                                         await Or.from("trip_orders").delete().eq("trip_id", t.id);
                                         const { error } = await Or.from("trips").delete().eq("id", t.id);
