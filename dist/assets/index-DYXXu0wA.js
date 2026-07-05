@@ -4023,88 +4023,114 @@ _Contact us to place your order!_`;
                   })
                 ]
               }),
-               S.jsx("div", {
-                 style: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 },
+              S.jsx("div", {
+                 style: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 },
                  children: dbBeats.map(b => {
+                   const customerCount = beatCustomers.filter(c => {
+                     if (b === "Others") {
+                       return c.beat === "Others" || !c.beat;
+                     }
+                     return c.beat === b;
+                   }).length;
+
                    if (beatBeingEdited === b) {
                      return S.jsxs("div", {
-                       style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", background: "#fff", border: `1.5px solid ${C.primary}`, borderRadius: 20, fontSize: 12.5 },
+                       style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1.5px solid ${C.primary}`, borderRadius: 12, padding: "10px 14px", marginBottom: 2 },
                        children: [
-                         S.jsx("input", {
-                           value: editBeatNameInput,
-                           onChange: e => setEditBeatNameInput(e.target.value),
-                           style: { border: "none", outline: "none", fontSize: 12, width: 100, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif" },
-                           autoFocus: true
+                         S.jsxs("div", {
+                           style: { display: "flex", alignItems: "center", gap: 8 },
+                           children: [
+                             S.jsx("input", {
+                               value: editBeatNameInput,
+                               onChange: e => setEditBeatNameInput(e.target.value),
+                               style: { padding: "6px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, outline: "none", width: 140, fontWeight: 600, color: C.text, fontFamily: "'Outfit', sans-serif" },
+                               autoFocus: true
+                             }),
+                             S.jsx("button", {
+                               onClick: async () => {
+                                 const newName = editBeatNameInput.trim();
+                                 if (!newName) { ye("Beat name cannot be empty."); return; }
+                                 if (newName === b) { setBeatBeingEdited(null); return; }
+                                 if (dbBeats.includes(newName)) { ye("Beat name already exists."); return; }
+
+                                 const { error: err1 } = await Or.from("beats").update({ name: newName }).eq("name", b);
+                                 if (err1) { ye("Failed to rename beat: " + err1.message); return; }
+
+                                 const { error: err2 } = await Or.from("customers").update({ beat: newName }).eq("beat", b);
+                                 if (err2) { ye("Failed to update customers beat: " + err2.message); return; }
+
+                                 setDbBeats(prev => {
+                                   const updated = prev.map(x => x === b ? newName : x);
+                                   localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
+                                   return updated;
+                                 });
+                                 
+                                 setBeatBeingEdited(null);
+                                 ye("Beat renamed successfully!");
+                               },
+                               style: { border: "none", background: "none", color: C.green, fontSize: 16, fontWeight: "bold", cursor: "pointer" },
+                               children: "✓"
+                             }),
+                             S.jsx("button", {
+                               onClick: () => setBeatBeingEdited(null),
+                               style: { border: "none", background: "none", color: C.red, fontSize: 16, fontWeight: "bold", cursor: "pointer" },
+                               children: "✗"
+                             })
+                           ]
                          }),
-                         S.jsx("button", {
-                           onClick: async () => {
-                             const newName = editBeatNameInput.trim();
-                             if (!newName) { ye("Beat name cannot be empty."); return; }
-                             if (newName === b) { setBeatBeingEdited(null); return; }
-                             if (dbBeats.includes(newName)) { ye("Beat name already exists."); return; }
-
-                             const { error: err1 } = await Or.from("beats").update({ name: newName }).eq("name", b);
-                             if (err1) { ye("Failed to rename beat: " + err1.message); return; }
-
-                             const { error: err2 } = await Or.from("customers").update({ beat: newName }).eq("beat", b);
-                             if (err2) { ye("Failed to update customers beat: " + err2.message); return; }
-
-                             setDbBeats(prev => {
-                               const updated = prev.map(x => x === b ? newName : x);
-                               localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
-                               return updated;
-                             });
-                             
-                             setBeatBeingEdited(null);
-                             ye("Beat renamed successfully!");
-                           },
-                           style: { border: "none", background: "none", color: C.green, fontSize: 13, fontWeight: "bold", cursor: "pointer" },
-                           children: "✓"
-                         }),
-                         S.jsx("button", {
-                           onClick: () => setBeatBeingEdited(null),
-                           style: { border: "none", background: "none", color: C.red, fontSize: 13, fontWeight: "bold", cursor: "pointer" },
-                           children: "✗"
+                         S.jsx("div", {
+                           style: { fontSize: 11.5, color: C.muted, fontWeight: 500 },
+                           children: "Renaming..."
                          })
                        ]
                      }, b);
                    }
 
-                   return S.jsxs("span", {
-                     style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, fontSize: 12.5, color: C.text, fontWeight: 600 },
+                   return S.jsxs("div", {
+                     style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "10px 14px", marginBottom: 2 },
                      children: [
-                       S.jsx("span", { children: b }),
-                       S.jsx("button", {
-                         onClick: () => {
-                           setBeatBeingEdited(b);
-                           setEditBeatNameInput(b);
-                         },
-                         style: { border: "none", background: "none", color: C.primary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", padding: "0 2px" },
-                         children: "Edit"
+                       S.jsxs("div", {
+                         children: [
+                           S.jsx("div", { style: { fontWeight: 700, color: C.text, fontSize: 13.5 }, children: b }),
+                           S.jsxs("div", { style: { fontSize: 11.5, color: C.muted, marginTop: 2 }, children: [customerCount, " customers registered"] })
+                         ]
                        }),
-                       b !== "Others" && S.jsx("button", {
-                         onClick: () => {
-                           setDeleteConfirm({
-                             type: "beat",
-                             name: b,
-                             onConfirm: async () => {
-                               const { error: err1 } = await Or.from("beats").delete().eq("name", b);
-                               if (err1) { ye("Failed to delete beat: " + err1.message); return; }
+                       S.jsxs("div", {
+                         style: { display: "flex", alignItems: "center", gap: 10 },
+                         children: [
+                           S.jsx("button", {
+                             onClick: () => {
+                               setBeatBeingEdited(b);
+                               setEditBeatNameInput(b);
+                             },
+                             style: { background: C.greenBg, color: C.green, border: "none", borderRadius: 6, padding: "5px 12px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                             children: "Edit"
+                           }),
+                           b !== "Others" && S.jsx("button", {
+                             onClick: () => {
+                               setDeleteConfirm({
+                                 type: "beat",
+                                 name: b,
+                                 onConfirm: async () => {
+                                   const { error: err1 } = await Or.from("beats").delete().eq("name", b);
+                                   if (err1) { ye("Failed to delete beat: " + err1.message); return; }
 
-                               const { error: err2 } = await Or.from("customers").update({ beat: "Others" }).eq("beat", b);
-                               if (err2) { ye("Failed to update customers beat: " + err2.message); return; }
+                                   const { error: err2 } = await Or.from("customers").update({ beat: "Others" }).eq("beat", b);
+                                   if (err2) { ye("Failed to update customers beat: " + err2.message); return; }
 
-                               setDbBeats(prev => {
-                                 const updated = prev.filter(x => x !== b);
-                                 localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
-                                 return updated;
+                                   setDbBeats(prev => {
+                                     const updated = prev.filter(x => x !== b);
+                                     localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
+                                     return updated;
+                                   });
+                                   ye(`Beat "${b}" deleted successfully!`);
+                                 }
                                });
-                               ye(`Beat "${b}" deleted successfully!`);
-                             }
-                           });
-                         },
-                         style: { border: "none", background: "none", color: C.red, fontSize: 13, fontWeight: 800, cursor: "pointer", padding: "0 2px" },
-                         children: "×"
+                             },
+                             style: { background: C.redBg, color: C.red, border: "none", borderRadius: 6, padding: "5px 12px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                             children: "Delete"
+                           })
+                         ]
                        })
                      ]
                    }, b);
