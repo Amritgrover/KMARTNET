@@ -1196,6 +1196,8 @@ ${itemsText}
           const beatsNames = bList.map(b => b.name);
           localStorage.setItem("kmart_offline_beats", JSON.stringify(beatsNames));
           setDbBeats(beatsNames);
+          setSelectedBeat(prev => beatsNames.includes(prev) ? prev : beatsNames[0] || "Others");
+          setAdminCustBeat(prev => beatsNames.includes(prev) ? prev : beatsNames[0] || "Others");
         }
       } catch (e) {
         const cached = localStorage.getItem("kmart_offline_beats");
@@ -4069,6 +4071,10 @@ _Contact us to place your order!_`;
                                    localStorage.setItem("kmart_offline_customers", JSON.stringify(updated));
                                    return updated;
                                  });
+                                 setSelectedBeat(prev => prev === b ? newName : prev);
+                                 setAdminCustBeat(prev => prev === b ? newName : prev);
+                                 setAdminBeatFilter(prev => prev === b ? newName : prev);
+                                 setAdminOrderBeatFilter(prev => prev === b ? newName : prev);
                                  setBeatBeingEdited(null);
                                  ye("Beat renamed successfully!");
                                },
@@ -4132,6 +4138,10 @@ _Contact us to place your order!_`;
                                  localStorage.setItem("kmart_offline_customers", JSON.stringify(updated));
                                  return updated;
                                });
+                               setSelectedBeat(prev => prev === b ? "Others" : prev);
+                               setAdminCustBeat(prev => prev === b ? "Others" : prev);
+                               setAdminBeatFilter(prev => prev === b ? "All" : prev);
+                               setAdminOrderBeatFilter(prev => prev === b ? "all" : prev);
                                ye(`Beat "${b}" deleted successfully!`);
                                  }
                                });
