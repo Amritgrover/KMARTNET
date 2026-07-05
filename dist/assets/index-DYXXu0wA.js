@@ -4053,11 +4053,7 @@ _Contact us to place your order!_`;
                                  if (newName === b) { setBeatBeingEdited(null); return; }
                                  if (dbBeats.includes(newName)) { ye("Beat name already exists."); return; }
 
-                                 const { error: err1 } = await Or.from("beats").insert({ name: newName });
-                             if (!err1) {
-                               const { error: errDel } = await Or.from("beats").delete().eq("name", b);
-                               if (errDel) console.error(errDel);
-                             }
+                                 const { error: err1 } = await Or.from("beats").update({ name: newName }).eq("name", b);
                                  if (err1) { ye("Failed to rename beat: " + err1.message); return; }
 
                                  const { error: err2 } = await Or.from("customers").update({ beat: newName }).eq("beat", b);
