@@ -5064,6 +5064,11 @@ _Contact us to place your order!_`;
                                   
                                   setBrandBeingEdited(null);
                                   await ue();
+                                  setCustomBrands(prev => {
+                                    const updated = prev.map(x => x === b ? newName : x);
+                                    localStorage.setItem("kmart_custom_brands", JSON.stringify(updated));
+                                    return updated;
+                                  });
                                   ye("Brand name updated successfully!");
                                 },
                                 style: { border: "none", background: "none", color: C.green, fontSize: 14, cursor: "pointer", fontWeight: "bold" },
@@ -5132,6 +5137,11 @@ _Contact us to place your order!_`;
                                   const { error: err2 } = await Or.from("products").update({ brand: null }).eq("brand", b);
                                   if (err2) { ye("Failed to clear brand from products: " + err2.message); return; }
                                   await ue();
+                                  setCustomBrands(prev => {
+                                    const updated = prev.filter(x => x !== b);
+                                    localStorage.setItem("kmart_custom_brands", JSON.stringify(updated));
+                                    return updated;
+                                  });
                                   ye(`Brand "${b}" deleted successfully!`);
                                 }
                               });
