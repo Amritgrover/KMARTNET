@@ -777,7 +777,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     if (search.includes("view=admin")) return "admin";
     if (search.includes("view=salesman")) return "salesman";
     if (search.includes("view=customer")) return "customer";
-    if (search.includes("view=delivery") || p.startsWith("/delivery")) return "delivery";
+    if (search.includes("view=delivery") || p.startsWith("/delivery") || host.includes("delivery")) return "delivery";
     if (host.includes("admin")) return "admin";
     if (host.includes("salesman")) return "salesman";
     if (host.includes("customer") || host.includes("order")) return "customer";
