@@ -4064,7 +4064,11 @@ _Contact us to place your order!_`;
                                    localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
                                    return updated;
                                  });
-                                 
+                                 setBeatCustomers(prev => {
+                                   const updated = prev.map(c => c.beat === b ? { ...c, beat: newName } : c);
+                                   localStorage.setItem("kmart_offline_customers", JSON.stringify(updated));
+                                   return updated;
+                                 });
                                  setBeatBeingEdited(null);
                                  ye("Beat renamed successfully!");
                                },
@@ -4119,11 +4123,16 @@ _Contact us to place your order!_`;
                                    if (err2) { ye("Failed to update customers beat: " + err2.message); return; }
 
                                    setDbBeats(prev => {
-                                     const updated = prev.filter(x => x !== b);
-                                     localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
-                                     return updated;
-                                   });
-                                   ye(`Beat "${b}" deleted successfully!`);
+                                 const updated = prev.filter(x => x !== b);
+                                 localStorage.setItem("kmart_offline_beats", JSON.stringify(updated));
+                                 return updated;
+                               });
+                               setBeatCustomers(prev => {
+                                 const updated = prev.map(c => c.beat === b ? { ...c, beat: "Others" } : c);
+                                 localStorage.setItem("kmart_offline_customers", JSON.stringify(updated));
+                                 return updated;
+                               });
+                               ye(`Beat "${b}" deleted successfully!`);
                                  }
                                });
                              },
