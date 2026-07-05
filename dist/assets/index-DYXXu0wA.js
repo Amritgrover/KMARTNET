@@ -1448,10 +1448,8 @@ ${itemsText}
             const trip = trips[0];
             let seqIndex = trip.id;
             try {
-              const { data: oldestData } = await Or.from("trips").select("id").order("id", { ascending: true }).limit(1);
-              const oldestId = oldestData && oldestData.length > 0 ? oldestData[0].id : 1;
               const { count } = await Or.from("trips").select("id", { count: "exact", head: true }).lte("id", trip.id);
-              seqIndex = oldestId + ((count || 1) - 1);
+              if (count !== null) seqIndex = count;
             } catch(e) {}
             const tripWithSeq = { ...trip, seqIndex };
             setActiveTrip(tripWithSeq);
@@ -5703,9 +5701,7 @@ S.jsxs("div", {
                 style: { display: "flex", flexDirection: "column", gap: 12 },
                 children: [
                   tripsList.length === 0 ? S.jsx("div", { style: { textAlign: "center", padding: "40px 0", color: C.muted, fontSize: 13.5 }, children: "No trips found." }) : tripsList.map(t => {
-                    const oldestTrip = tripsList[tripsList.length - 1];
-                    const oldestId = oldestTrip ? oldestTrip.id : 1;
-                    const tripIndex = oldestId + [...tripsList].reverse().findIndex(x => x.id === t.id);
+                    const tripIndex = [...tripsList].reverse().findIndex(x => x.id === t.id) + 1;
                     const dpName = t.delivery_person_id?.name || "Unassigned";
                     const formattedDate = new Date(t.trip_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
                     
@@ -6020,7 +6016,7 @@ S.jsxs("div", {
                                     e.stopPropagation();
                                     setDeleteConfirm({
                                       type: "trip",
-                                      name: `Trip #${(tripsList[tripsList.length - 1] ? tripsList[tripsList.length - 1].id : 1) + [...tripsList].reverse().findIndex(x => x.id === t.id)}`,
+                                      name: `Trip #${[...tripsList].reverse().findIndex(x => x.id === t.id) + 1}`,
                                       onConfirm: async () => {
                                         await Or.from("trip_orders").delete().eq("trip_id", t.id);
                                         const { error } = await Or.from("trips").delete().eq("id", t.id);
