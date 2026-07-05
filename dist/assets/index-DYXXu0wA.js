@@ -990,7 +990,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
-  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [orderToDelete, setOrderToDelete] = ge.useState(null);const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
+  const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
@@ -4655,41 +4655,7 @@ _Contact us to place your order!_`;
                   null
                 ]
               }),
-              orderToDelete && S.jsxs("div", {
-                style: { background: "#FEF2F2", border: `1px solid ${C.red}33`, borderRadius: 10, padding: "10px 12px", marginBottom: 14 },
-                children: [
-                  S.jsxs("div", {
-                    style: { fontSize: 12, fontWeight: 600, color: C.red, marginBottom: 8 },
-                    children: [`Delete order for "${orderToDelete.customer_id && typeof orderToDelete.customer_id === "object" ? orderToDelete.customer_id.name : "Unknown Customer"}"?`]
-                  }),
-                  S.jsxs("div", {
-                    style: { display: "flex", gap: 10 },
-                    children: [
-                      S.jsx("button", {
-                        onClick: async () => {
-                          const { data, error } = await Or.from("orders").delete().eq("id", orderToDelete.id).select();
-                          if (error) {
-                            ye("Failed to delete order: " + error.message);
-                          } else if (!data || data.length === 0) {
-                            ye("Failed to delete order (database policy blocked the delete).");
-                          } else {
-                            setAdminOrders(prev => prev.filter(x => x.id !== orderToDelete.id));
-                            ye("Order deleted successfully.");
-                          }
-                          setOrderToDelete(null);
-                        },
-                        style: { background: C.red, color: "#fff", border: "none", borderRadius: 6, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
-                        children: "Yes, Delete"
-                      }),
-                      S.jsx("button", {
-                        onClick: () => setOrderToDelete(null),
-                        style: { background: "transparent", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
-                        children: "Cancel"
-                      })
-                    ]
-                  })
-                ]
-              }),
+
               S.jsxs("div", {
                 style: { display: "flex", gap: 8, marginBottom: 14, background: C.bg, padding: 4, borderRadius: 10 },
                 children: [
@@ -4947,7 +4913,23 @@ _Contact us to place your order!_`;
                               children: o.status
                             }),
                             S.jsx("button", {
-                              onClick: () => setOrderToDelete(o),
+                              onClick: () => {
+                                setDeleteConfirm({
+                                  type: "order for",
+                                  name: o.customer_id && typeof o.customer_id === "object" ? o.customer_id.name : "Unknown Customer",
+                                  onConfirm: async () => {
+                                    const { data, error } = await Or.from("orders").delete().eq("id", o.id).select();
+                                    if (error) {
+                                      ye("Failed to delete order: " + error.message);
+                                    } else if (!data || data.length === 0) {
+                                      ye("Failed to delete order (database policy blocked the delete).");
+                                    } else {
+                                      setAdminOrders(prev => prev.filter(x => x.id !== o.id));
+                                      ye("Order deleted successfully.");
+                                    }
+                                  }
+                                });
+                              },
                               style: {
                                 background: C.redBg,
                                 color: C.red,
