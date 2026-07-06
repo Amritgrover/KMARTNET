@@ -152,7 +152,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
                   }),
                   (hasTiers || r.customer_price > 0) && S.jsx("span", {
                     style: { fontSize: "12px", color: "#707970", textDecoration: "line-through", fontWeight: "500" },
-                    children: un(r.mrp)
+                    children: ["MRP ", un(r.mrp)]
                   })
                 ]
               }),
