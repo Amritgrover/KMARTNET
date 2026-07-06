@@ -3221,7 +3221,8 @@ _Contact us to place your order!_`;
                                   S.jsxs("span", { style: { color: C.text, fontWeight: 500 }, children: [item.qty, "x ", item.product_name] }),
                                   S.jsx("span", { style: { color: C.primary, fontWeight: 600 }, children: un(item.total_value) })
                                 ]
-                              }, idx)),
+                              })
+                            )),
                             o.expiry_credit_amount > 0 && S.jsxs("div", {
                               style: { display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, color: C.green, background: C.greenBg, padding: "4px 8px", borderRadius: 4, marginTop: 2 },
                               children: [
