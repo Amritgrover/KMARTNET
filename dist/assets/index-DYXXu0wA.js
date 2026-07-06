@@ -917,9 +917,44 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [ie, ke] = ge.useState("");
   const ye=ge.useCallback(j=>{ke(j),setTimeout(()=>ke(""),2400)},[]);
   const [realtimeRefreshTick,setRealtimeRefreshTick]=ge.useState(0);
+  const viewRef = ge.useRef(r);
+  const beatCustomersRef = ge.useRef(beatCustomers);
+  ge.useEffect(() => {
+    viewRef.current = r;
+  }, [r]);
+  ge.useEffect(() => {
+    beatCustomersRef.current = beatCustomers;
+  }, [beatCustomers]);
+
+  const playNotificationSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      osc.start(ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch (e) {
+      console.warn("AudioContext error:", e);
+    }
+  };
+
+  ge.useEffect(() => {
+    if (r === "admin" && "Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, [r]);
+
   const handleRealtimeRefresh=ge.useCallback(()=>setRealtimeRefreshTick(prev=>prev+1),[]);
   ge.useEffect(()=>{
-    const tables=["beats","brand_images","customers","delivery_persons","orders","product_batches","products","pwa_notifications","salesmen","trip_orders","trips"];
+    const tables=["beats","brand_images","customers","delivery_persons","product_batches","products","pwa_notifications","salesmen","trip_orders","trips"];
     let isClosed=false;
     let debounceId=null;
     const scheduleRefresh=()=>{
@@ -931,6 +966,36 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
     tables.forEach(table=>{
       channel.on("postgres_changes",{event:"*",schema:"public",table},scheduleRefresh);
     });
+
+    // Register orders separately to show notifications on insert
+    channel.on("postgres_changes",{event:"INSERT",schema:"public",table:"orders"},async (payload)=>{
+      scheduleRefresh();
+      if (viewRef.current === "admin") {
+        let customerName = "A customer";
+        try {
+          const custId = payload.new.customer_id;
+          const matched = beatCustomersRef.current.find(c => c.id === custId);
+          if (matched) {
+            customerName = matched.name;
+          } else {
+            const { data } = await Or.from("customers").select("name").eq("id", custId).single();
+            if (data) customerName = data.name;
+          }
+        } catch (err) {
+          console.error("Error looking up customer for notification:", err);
+        }
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("New Order Received", {
+            body: `A new order has been received from ${customerName}.`,
+            icon: "/assets/logo.png"
+          });
+        }
+        playNotificationSound();
+      }
+    });
+    channel.on("postgres_changes",{event:"UPDATE",schema:"public",table:"orders"},scheduleRefresh);
+    channel.on("postgres_changes",{event:"DELETE",schema:"public",table:"orders"},scheduleRefresh);
+
     channel.subscribe(status=>{
       if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("KMART realtime subscription issue:",status);
     });
