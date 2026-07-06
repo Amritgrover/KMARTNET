@@ -294,7 +294,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
       })),
 
       // Add to Basket Button
-      r.stock <= 0 && a === 0 ? S.jsxs("button", {
+      r.stock <= 0 && a === 0 ? S.jsx("button", {
         disabled: true,
         style: {
           background: "#a1a1aa",
@@ -312,10 +312,7 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
           marginTop: "12px",
           fontFamily: "'Outfit', sans-serif"
         },
-        children: [
-          S.jsx("span", { style: { fontSize: "14px" }, children: "🚫" }),
-          "Out of Stock"
-        ]
+        children: "Out of Stock"
       }) : S.jsxs("button", {
         onClick: () => { if(a === 0) s(); else if(o) o(); },
         style: {
