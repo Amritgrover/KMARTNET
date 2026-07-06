@@ -963,7 +963,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [driverCoords, setDriverCoords] = ge.useState(null);
   const [driverInfo, setDriverInfo] = ge.useState(null);
   const [distanceText, setDistanceText] = ge.useState("Calculating...");
-  const customerMapRef = ge.useRef(null);
+
 
   ge.useEffect(() => {
     if (r !== "customer" || !viewingTracking) {
@@ -1030,62 +1030,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     }
   }, [r, viewingTracking, custCoords, driverCoords]);
 
-  ge.useEffect(() => {
-    if (r === "customer" && viewingTracking && window.L && document.getElementById("customer-tracking-map")) {
-      if (customerMapRef.current) {
-        customerMapRef.current.remove();
-        customerMapRef.current = null;
-      }
-      
-      const initialLat = driverCoords ? driverCoords.lat : (custCoords ? custCoords.lat : 31.634);
-      const initialLng = driverCoords ? driverCoords.lng : (custCoords ? custCoords.lng : 74.872);
-      
-      const map = L.map("customer-tracking-map", { zoomControl: true }).setView([initialLat, initialLng], 14);
-      customerMapRef.current = map;
-      
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors"
-      }).addTo(map);
-      
-      const markersGroup = [];
-      
-      if (custCoords) {
-        const custMarker = L.marker([custCoords.lat, custCoords.lng], {
-          icon: L.divIcon({
-            html: '<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🏪</div>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-          })
-        }).addTo(map).bindPopup("<b>Your Store</b>");
-        markersGroup.push([custCoords.lat, custCoords.lng]);
-      }
-      
-      if (driverCoords) {
-        const driverMarker = L.marker([driverCoords.lat, driverCoords.lng], {
-          icon: L.divIcon({
-            html: '<div style="font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🚚</div>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-          })
-        }).addTo(map).bindPopup("<b>Delivery Driver</b>");
-        markersGroup.push([driverCoords.lat, driverCoords.lng]);
-      }
-      
-      if (custCoords && driverCoords) {
-        L.polyline([[custCoords.lat, custCoords.lng], [driverCoords.lat, driverCoords.lng]], {
-          color: C.accent,
-          weight: 3.5,
-          dashArray: "6, 6"
-        }).addTo(map);
-      }
-      
-      if (markersGroup.length > 0) {
-        map.fitBounds(markersGroup, { padding: [50, 50] });
-      }
-      
-      setTimeout(() => { map.invalidateSize(); }, 200);
-    }
-  }, [r, viewingTracking, custCoords, driverCoords]);
+
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371e3;
@@ -2777,8 +2722,81 @@ _Contact us to place your order!_`;
               S.jsx("div", {
                 style: { borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden", position: "relative", marginBottom: 16 },
                 children: S.jsx("div", {
-                  id: "customer-tracking-map",
-                  style: { height: 350, width: "100%" }
+                  style: { height: 350, width: "100%" },
+                  ref: (el) => {
+                    if (el) {
+                      if (window._active_customer_tracking_map) {
+                        try {
+                          window._active_customer_tracking_map.remove();
+                        } catch (e) {
+                          console.error("Map cleanup error:", e);
+                        }
+                        window._active_customer_tracking_map = null;
+                      }
+
+                      if (!window.L) return;
+                      try {
+                        const initialLat = driverCoords ? driverCoords.lat : (custCoords ? custCoords.lat : 31.634);
+                        const initialLng = driverCoords ? driverCoords.lng : (custCoords ? custCoords.lng : 74.872);
+
+                        const map = window.L.map(el, { zoomControl: true }).setView([initialLat, initialLng], 14);
+                        window._active_customer_tracking_map = map;
+
+                        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                          attribution: "© OpenStreetMap contributors"
+                        }).addTo(map);
+
+                        const markersGroup = [];
+
+                        if (custCoords) {
+                          window.L.marker([custCoords.lat, custCoords.lng], {
+                            icon: window.L.divIcon({
+                              html: '<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🏪</div>',
+                              iconSize: [30, 30],
+                              iconAnchor: [15, 15]
+                            })
+                          }).addTo(map).bindPopup("<b>Your Store</b>");
+                          markersGroup.push([custCoords.lat, custCoords.lng]);
+                        }
+
+                        if (driverCoords) {
+                          window.L.marker([driverCoords.lat, driverCoords.lng], {
+                            icon: window.L.divIcon({
+                              html: '<div style="font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🚚</div>',
+                              iconSize: [30, 30],
+                              iconAnchor: [15, 15]
+                            })
+                          }).addTo(map).bindPopup("<b>Delivery Driver</b>");
+                          markersGroup.push([driverCoords.lat, driverCoords.lng]);
+                        }
+
+                        if (custCoords && driverCoords) {
+                          window.L.polyline([[custCoords.lat, custCoords.lng], [driverCoords.lat, driverCoords.lng]], {
+                            color: C.accent,
+                            weight: 3.5,
+                            dashArray: "6, 6"
+                          }).addTo(map);
+                        }
+
+                        if (markersGroup.length > 0) {
+                          map.fitBounds(markersGroup, { padding: [50, 50] });
+                        }
+
+                        setTimeout(() => { map.invalidateSize(); }, 200);
+                      } catch (err) {
+                        console.error("Tracking map init error:", err);
+                      }
+                    } else {
+                      if (window._active_customer_tracking_map) {
+                        try {
+                          window._active_customer_tracking_map.remove();
+                        } catch (e) {
+                          console.error("Map remove error:", e);
+                        }
+                        window._active_customer_tracking_map = null;
+                      }
+                    }
+                  }
                 })
               }),
               S.jsxs("div", {
