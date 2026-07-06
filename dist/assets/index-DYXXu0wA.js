@@ -4922,6 +4922,14 @@ _Contact us to place your order!_`;
                 const filteredSalesmanOrders = adminOrders.filter(x => {
                   if (!x.salesman_id) return false;
                   if (selectedSalesmanFilter !== "all" && (x.salesman_id && typeof x.salesman_id === "object" ? x.salesman_id.name : "") !== selectedSalesmanFilter) return false;
+                  if (adminOrderBeatFilter !== "all") {
+                    const cb = x.customer_id && typeof x.customer_id === "object" ? x.customer_id.beat : null;
+                    if (adminOrderBeatFilter === "Others") {
+                      if (cb && cb !== "Others") return false;
+                    } else {
+                      if (cb !== adminOrderBeatFilter) return false;
+                    }
+                  }
                   if (adminOrderDateFilter) {
                     const d = new Date(x.created_at);
                     const yyyymmdd = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -4937,16 +4945,36 @@ _Contact us to place your order!_`;
                       style: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 12px", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" },
                       children: [
                         S.jsxs("div", {
-                          style: { display: "flex", alignItems: "center", gap: 8 },
+                          style: { display: "flex", flexDirection: "column", gap: 8 },
                           children: [
-                            S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted }, children: "Filter by Salesman" }),
-                            S.jsxs("select", {
-                              value: selectedSalesmanFilter,
-                              onChange: e => setSelectedSalesmanFilter(e.target.value),
-                              style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12.5, fontWeight: 700, color: C.primary, outline: "none", fontFamily: "'Outfit', sans-serif", cursor: "pointer" },
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 8 },
                               children: [
-                                S.jsx("option", { value: "all", children: "All Salesmen" }),
-                                salesmenList.map(s => S.jsx("option", { value: s.name, children: s.name }, s.id))
+                                S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted, minWidth: 128 }, children: "Filter by Salesman" }),
+                                S.jsxs("select", {
+                                  value: selectedSalesmanFilter,
+                                  onChange: e => setSelectedSalesmanFilter(e.target.value),
+                                  style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12.5, fontWeight: 700, color: C.primary, outline: "none", fontFamily: "'Outfit', sans-serif", cursor: "pointer" },
+                                  children: [
+                                    S.jsx("option", { value: "all", children: "All Salesmen" }),
+                                    salesmenList.map(s => S.jsx("option", { value: s.name, children: s.name }, s.id))
+                                  ]
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 8 },
+                              children: [
+                                S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted, minWidth: 128 }, children: "Filter by Beat" }),
+                                S.jsxs("select", {
+                                  value: adminOrderBeatFilter,
+                                  onChange: e => setAdminOrderBeatFilter(e.target.value),
+                                  style: { padding: "4px 8px", borderRadius: 6, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12.5, fontWeight: 700, color: C.primary, outline: "none", fontFamily: "'Outfit', sans-serif", cursor: "pointer" },
+                                  children: [
+                                    S.jsx("option", { value: "all", children: "All Beats" }),
+                                    dbBeats.map(b => S.jsx("option", { value: b, children: b }, b))
+                                  ]
+                                })
                               ]
                             })
                           ]
@@ -5005,6 +5033,14 @@ _Contact us to place your order!_`;
                 }
                 if (!x.salesman_id) return false;
                 if (selectedSalesmanFilter !== "all" && (x.salesman_id && typeof x.salesman_id === "object" ? x.salesman_id.name : "") !== selectedSalesmanFilter) return false;
+                if (adminOrderBeatFilter !== "all") {
+                  const cb = x.customer_id && typeof x.customer_id === "object" ? x.customer_id.beat : null;
+                  if (adminOrderBeatFilter === "Others") {
+                    if (cb && cb !== "Others") return false;
+                  } else {
+                    if (cb !== adminOrderBeatFilter) return false;
+                  }
+                }
                 if (adminOrderDateFilter) {
                   const d = new Date(x.created_at);
                   const yyyymmdd = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
