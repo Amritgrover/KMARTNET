@@ -172,6 +172,40 @@ async function syncStock(pool) {
     if (upsertErr) throw upsertErr;
     log('✅ Synchronized product batches to Supabase.');
 
+    // 4b. Find and delete obsolete batches that no longer exist in Vision SQL
+    log('Checking for obsolete batches in Supabase...');
+    const { data: dbBatches, error: fetchBatchesErr } = await supabase
+      .from('product_batches')
+      .select('product_id, bchcode');
+
+    if (fetchBatchesErr) {
+      log(`⚠️ Failed to fetch existing batches for cleanup: ${fetchBatchesErr.message}`);
+    } else if (dbBatches) {
+      const activeKeys = new Set(batchesData.map(b => `${b.product_id}_${b.bchcode}`));
+      const obsoleteBatches = dbBatches.filter(b => !activeKeys.has(`${b.product_id}_${b.bchcode}`));
+      
+      if (obsoleteBatches.length > 0) {
+        log(`🗑️ Found ${obsoleteBatches.length} obsolete batches to delete.`);
+        const deleteChunkSize = 20;
+        for (let i = 0; i < obsoleteBatches.length; i += deleteChunkSize) {
+          const chunk = obsoleteBatches.slice(i, i + deleteChunkSize);
+          await Promise.all(chunk.map(async (ob) => {
+            const { error: delErr } = await supabase
+              .from('product_batches')
+              .delete()
+              .eq('product_id', ob.product_id)
+              .eq('bchcode', ob.bchcode);
+            if (delErr) {
+              log(`❌ Failed to delete obsolete batch (prod: ${ob.product_id}, bch: ${ob.bchcode}): ${delErr.message}`);
+            }
+          }));
+        }
+        log(`✅ Deleted obsolete batches.`);
+      } else {
+        log('No obsolete batches found.');
+      }
+    }
+
     // 5. Update main product stock and MRP in Supabase (chunked updates to avoid identity column constraints)
     const productsUpdateData = Array.from(productStockMap.entries()).map(([id, stock]) => {
       const mrp = productMrpMap.get(id);
