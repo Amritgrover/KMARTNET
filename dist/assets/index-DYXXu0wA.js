@@ -917,40 +917,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [ie, ke] = ge.useState("");
   const ye=ge.useCallback(j=>{ke(j),setTimeout(()=>ke(""),2400)},[]);
   const [realtimeRefreshTick,setRealtimeRefreshTick]=ge.useState(0);
-  const viewRef = ge.useRef(r);
-  const beatCustomersRef = ge.useRef(beatCustomers);
-  ge.useEffect(() => {
-    viewRef.current = r;
-  }, [r]);
-  ge.useEffect(() => {
-    beatCustomersRef.current = beatCustomers;
-  }, [beatCustomers]);
 
-  const playNotificationSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      osc.start(ctx.currentTime);
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.stop(ctx.currentTime + 0.4);
-    } catch (e) {
-      console.warn("AudioContext error:", e);
-    }
-  };
-
-  ge.useEffect(() => {
-    if (r === "admin" && "Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, [r]);
 
   const handleRealtimeRefresh=ge.useCallback(()=>setRealtimeRefreshTick(prev=>prev+1),[]);
   ge.useEffect(()=>{
@@ -1300,6 +1267,40 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
     initPush();
   }, [selectedSalesman?.id, selectedDeliveryPerson?.id, cust?.id]);
   const [beatCustomers, setBeatCustomers] = ge.useState([]);
+  const viewRef = ge.useRef(r);
+  const beatCustomersRef = ge.useRef(beatCustomers);
+  ge.useEffect(() => {
+    viewRef.current = r;
+  }, [r]);
+  ge.useEffect(() => {
+    beatCustomersRef.current = beatCustomers;
+  }, [beatCustomers]);
+
+  const playNotificationSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      osc.start(ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch (e) {
+      console.warn("AudioContext error:", e);
+    }
+  };
+
+  ge.useEffect(() => {
+    if (r === "admin" && "Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, [r]);
   const [salesmanTab, setSalesmanTab] = ge.useState("catalogue");
   const [salesmanOrders, setSalesmanOrders] = ge.useState([]);
 
