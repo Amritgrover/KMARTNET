@@ -637,6 +637,11 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
 }function a_({p:r,onEdit:a,onDelete:s}){
   const wholesaleMargin = r.tp > 0 && r.cp > 0 ? ((r.tp - r.cp) / r.tp * 100).toFixed(0) : null;
   const retailMargin = r.mrp > 0 && r.tp > 0 ? ((r.mrp - r.tp) / r.mrp * 100).toFixed(0) : null;
+  const cs = parseInt(r.cs) || 0;
+  const activeBatches = (r.product_batches || []).filter(b => b.bchcode > 0);
+  const formatStock = (stockVal) => {
+    return cs > 0 ? `${Math.floor(stockVal / cs)} Cs & ${stockVal % cs} Pcs` : `${stockVal} Pcs`;
+  };
   
   return S.jsxs("div",{
     style:{background:"#fff",borderRadius:14,padding:"16px 16px",border:`1px solid ${C.border}`,marginBottom:12,display:"flex",flexDirection:"column",gap:12,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"},
@@ -653,7 +658,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
                 children:[
                   S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.text,lineHeight:1.25,marginBottom:3,wordBreak:"break-word"},children:r.name}),
                   S.jsxs("div",{style:{fontSize:12.5,color:C.muted,fontWeight:500,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"},children:[
-                    getCleanCat(r.cat)," · ",r.unit,
+                    getCleanCat(r.cat)," · ",r.unit, r.cs && ` · Case Size: ${r.cs} units`,
                     r.vision_product_id&&S.jsxs("span",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,whiteSpace:"nowrap"},children:["Vision ID: ",r.vision_product_id]})
                   ]})
                 ]
@@ -670,25 +675,80 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
         ]
       }),
       r.desc&&S.jsx("div",{style:{fontSize:12,color:C.accent,background:C.accentLight,padding:"6px 10px",borderRadius:8,fontStyle:"italic",fontWeight:500},children:r.desc}),
-      S.jsxs("div",{
-        style:{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:10,background:C.bg,padding:12,borderRadius:10},
-        children:[
+      (activeBatches.length > 0 ? S.jsx("div", {
+        style: { display: "flex", flexDirection: "column", gap: 10 },
+        children: activeBatches.map(b => {
+          const bCp = b.cp > 0 ? b.cp : r.cp;
+          const bTp = b.tp > 0 ? b.tp : r.tp;
+          const bMrp = b.mrp > 0 ? b.mrp : r.mrp;
+          const bMargin = bTp > 0 && bCp > 0 ? ((bTp - bCp) / bTp * 100).toFixed(0) : null;
+          return S.jsxs("div", {
+            style: { border: `1.5px solid ${C.border}`, borderRadius: 12, padding: 12, background: "#f8fafc" },
+            children: [
+              S.jsx("div", {
+                style: { fontWeight: 700, fontSize: 12.5, color: C.primary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 },
+                children: `📦 Batch: ${b.batch || "Default"} (MRP: ${un(bMrp)})`
+              }),
+              S.jsxs("div", {
+                style: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, background: C.bg, padding: 10, borderRadius: 8 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Cost (CP)" }),
+                      S.jsx("div", { style: { fontSize: 12.5, fontWeight: 700, color: C.text }, children: bCp ? un(bCp) : "—" })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Wholesale (TP)" }),
+                      S.jsxs("div", {
+                        style: { fontSize: 12.5, fontWeight: 700, color: C.primary, display: "flex", alignItems: "center", gap: 4 },
+                        children: [
+                          un(bTp),
+                          bMargin !== null && S.jsx("span", {
+                            style: { fontSize: 8.5, fontWeight: 700, background: C.greenBg, color: C.green, padding: "1px 4px", borderRadius: 4 },
+                            children: `+${bMargin}%`
+                          })
+                        ]
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Retail MRP" }),
+                      S.jsx("div", { style: { fontSize: 12.5, fontWeight: 700, color: C.text }, children: un(bMrp) })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Stock" }),
+                      S.jsx("div", { style: { fontSize: 12.5, fontWeight: 800, color: C.green }, children: formatStock(b.stock) })
+                    ]
+                  })
+                ]
+              })
+            ]
+          }, b.id || b.bchcode);
+        })
+      }) : S.jsxs("div", {
+        style: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, background: C.bg, padding: 12, borderRadius: 10 },
+        children: [
           S.jsxs("div", {
             children: [
-              S.jsx("div", {style:{fontSize:10.5,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.3}, children:"💰 Cost (CP)"}),
-              S.jsx("div", {style:{fontSize:13.5,fontWeight:700,color:C.text}, children: r.cp ? un(r.cp) : "—"})
+              S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "💰 Cost (CP)" }),
+              S.jsx("div", { style: { fontSize: 13.5, fontWeight: 700, color: C.text }, children: r.cp ? un(r.cp) : "—" })
             ]
           }),
           S.jsxs("div", {
             children: [
-              S.jsx("div", {style:{fontSize:10.5,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.3}, children:"🏷️ Wholesale (TP)"}),
+              S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "🏷️ Wholesale (TP)" }),
               S.jsxs("div", {
-                style:{fontSize:13.5,fontWeight:700,color:C.primary,display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}, 
-                children:[
+                style: { fontSize: 13.5, fontWeight: 700, color: C.primary, display: "flex", alignItems: "center", gap: 4 },
+                children: [
                   un(r.tp),
                   wholesaleMargin !== null && S.jsx("span", {
-                    style:{fontSize:9,fontWeight:700,background:C.greenBg,color:C.green,padding:"1px 4px",borderRadius:4,whiteSpace:"nowrap"},
-                    children:`+${wholesaleMargin}% margin`
+                    style: { fontSize: 9, fontWeight: 700, background: C.greenBg, color: C.green, padding: "1px 4px", borderRadius: 4 },
+                    children: `+${wholesaleMargin}% margin`
                   })
                 ]
               })
@@ -696,56 +756,45 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
           }),
           S.jsxs("div", {
             children: [
-              S.jsx("div", {style:{fontSize:10.5,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.3}, children:"🛒 Retail MRP"}),
-              S.jsx("div", {
-                style:{fontSize:13.5,fontWeight:700,color:C.text}, 
-                children: un(r.mrp)
-              })
+              S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "🛒 Retail MRP" }),
+              S.jsx("div", { style: { fontSize: 13.5, fontWeight: 700, color: C.text }, children: un(r.mrp) })
             ]
           }),
           S.jsxs("div", {
             children: [
-              S.jsx("div", {style:{fontSize:10.5,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.3}, children:"📦 Case Size"}),
-              S.jsx("div", {style:{fontSize:13.5,fontWeight:700,color:C.text}, children: r.cs ? `${r.cs} units` : "—"})
+              S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "📦 Stock" }),
+              S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.green }, children: formatStock(r.stock) })
             ]
           })
         ]
-      }),(()=> {
-        const cs = parseInt(r.cs) || 0;
-        const activeBatches = (r.product_batches || []).filter(b => b.stock > 0 && b.bchcode > 0);
-        const formatStock = (stockVal) => {
-          return cs > 0 ? `${Math.floor(stockVal / cs)} Cs & ${stockVal % cs} Pcs` : `${stockVal} Pcs`;
-        };
-        if (activeBatches.length > 0) {
-          return S.jsxs("div", {
-            style: { background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 6 },
-            children: [
-              S.jsxs("div", {
-                style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.2px solid ${C.green}22`, paddingBottom: 4, marginBottom: 2 },
-                children: [
-                  S.jsx("span", { style: { fontSize: 12, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock" }),
-                  S.jsx("span", { style: { fontSize: 13, fontWeight: 800, color: C.green }, children: formatStock(r.stock) })
-                ]
-              }),
-              activeBatches.map(b => (
-                S.jsxs("div", {
-                  key: b.id || b.bchcode,
-                  style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5 },
-                  children: [
-                    S.jsxs("span", { style: { color: C.text, fontWeight: 600 }, children: [b.batch ? `Batch: ${b.batch}` : "Default Batch", b.mrp > 0 ? ` (MRP: ₹${b.mrp})` : ""] }),
-                    S.jsx("span", { style: { color: C.green, fontWeight: 700 }, children: formatStock(b.stock) })
-                  ]
-                })
-              ))
-            ]
-          });
-        }
-        const stockVal = typeof r.stock === "number" ? r.stock : 0;
+      })),
+      (() => {
+        const totalStock = typeof r.stock === "number" ? r.stock : 0;
         return S.jsxs("div", {
-          style: { background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+          style: { background: C.greenBg, border: `1px solid ${C.green}33`, borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 6 },
           children: [
-            S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock" }),
-            S.jsx("span", { style: { fontSize: 13.5, fontWeight: 800, color: C.green }, children: cs > 0 ? `${Math.floor(stockVal / cs)} Cases & ${stockVal % cs} Pcs` : `${stockVal} Pcs` })
+            S.jsxs("div", {
+              style: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+              children: [
+                S.jsx("span", { style: { fontSize: 12.5, fontWeight: 700, color: C.muted }, children: "Current Warehouse Stock (Total)" }),
+                S.jsx("span", { style: { fontSize: 13.5, fontWeight: 800, color: C.green }, children: formatStock(totalStock) })
+              ]
+            }),
+            activeBatches.length > 0 && S.jsxs("div", {
+              style: { borderTop: `1px dashed ${C.green}33`, paddingTop: 6, display: "flex", flexDirection: "column", gap: 4 },
+              children: [
+                S.jsx("div", { style: { fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.3 }, children: "Batch Stock Summary" }),
+                activeBatches.map(b => (
+                  S.jsxs("div", {
+                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11 },
+                    children: [
+                      S.jsxs("span", { style: { color: C.text, fontWeight: 600 }, children: [b.batch ? `Batch: ${b.batch}` : "Default Batch", b.mrp > 0 ? ` (MRP: ₹${b.mrp})` : ""] }),
+                      S.jsx("span", { style: { color: C.green, fontWeight: 700 }, children: formatStock(b.stock) })
+                    ]
+                  }, b.id || b.bchcode)
+                ))
+              ]
+            })
           ]
         });
       })(),
