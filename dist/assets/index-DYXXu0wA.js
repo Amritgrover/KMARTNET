@@ -3493,7 +3493,20 @@ _Contact us to place your order!_`;
 
             return S.jsxs("div", {
               children: [
-                // Top Header Card
+                S.jsxs("div", {
+                  style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 10, cursor: "pointer" },
+                  onClick: () => setActiveStopOrder(null),
+                  children: [
+                    S.jsx("button", {
+                      style: { background: "none", border: "none", fontSize: 20, cursor: "pointer", color: C.primary, padding: "0px 4px 4px 0px" },
+                      children: "←"
+                    }),
+                    S.jsx("span", {
+                      style: { fontSize: 13.5, fontWeight: 700, color: C.primary },
+                      children: "Back to Route Stops"
+                    })
+                  ]
+                }),
                 S.jsxs("div", {
                   style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14 },
                   children: [
