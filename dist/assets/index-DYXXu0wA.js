@@ -3017,7 +3017,7 @@ _Contact us to place your order!_`;
               })
             ]
           }),
-          (r!=="salesman"||salesmanTab==="catalogue")&&S.jsxs("div",{
+          (!viewingTracking && (r!=="salesman"||salesmanTab==="catalogue"))&&S.jsxs("div",{
             style:{fontSize:12,color:C.muted,marginBottom:12,fontWeight:500},
             children:[
               Ue.length,
