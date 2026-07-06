@@ -86,9 +86,9 @@ html, body {
     padding: 20px 40px !important;
   }
 
-  /* Product grid: 4 columns */
+  /* Product grid: 3 columns */
   .product-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px !important;
   }
 
@@ -118,9 +118,9 @@ html, body {
     padding: 22px 56px !important;
   }
 
-  /* Product grid: 5 columns */
+  /* Product grid: 3 columns */
   .product-grid {
-    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 24px !important;
   }
 
