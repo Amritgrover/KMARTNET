@@ -968,6 +968,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [expiryQty, setExpiryQty] = ge.useState("");
   const [expiryPrice, setExpiryPrice] = ge.useState("");
   const [deductExpiryCredit, setDeductExpiryCredit] = ge.useState(true);
+  const [upiTransactionId, setUpiTransactionId] = ge.useState("");
 
 
   ge.useEffect(() => {
@@ -1119,6 +1120,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
       setExpiryQty("");
       setExpiryPrice("");
       setDeductExpiryCredit(true);
+      setUpiTransactionId("");
     }
   }, [activeStopOrder]);
 
@@ -3197,7 +3199,7 @@ _Contact us to place your order!_`;
                                 })
                               ]
                             }),
-                            o.payment_mode && S.jsxs("span", { style: { fontSize: 11, fontWeight: 700, color: C.text }, children: ["Mode: ", o.payment_mode] })
+                            o.payment_mode && S.jsxs("span", { style: { fontSize: 11, fontWeight: 700, color: C.text }, children: ["Mode: ", o.payment_mode, o.upi_transaction_id && ` (Txn: ${o.upi_transaction_id})`] })
                           ]
                         }),
                         
@@ -4046,7 +4048,7 @@ _Contact us to place your order!_`;
                     S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "COLLECT PAYMENT" }),
                     S.jsxs("div", {
                       style: { display: "flex", gap: 8 },
-                      children: ["Cash", "Cheque", "Credit", "Partial Credit"].map(mode => (
+                      children: ["Cash", "Cheque", "UPI", "Credit", "Partial Credit"].map(mode => (
                         S.jsx("button", {
                           key: mode,
                           onClick: () => {
@@ -4073,7 +4075,7 @@ _Contact us to place your order!_`;
                         S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "COLLECTION MODE" }),
                         S.jsxs("div", {
                           style: { display: "flex", gap: 8 },
-                          children: ["Cash", "Cheque"].map(mode => (
+                          children: ["Cash", "Cheque", "UPI"].map(mode => (
                             S.jsx("button", {
                               key: mode,
                               onClick: () => setPartialCreditMode(mode),
@@ -4126,7 +4128,52 @@ _Contact us to place your order!_`;
                           ]
                         })
                       ]
-                    })
+                    }),
+
+                    (paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI")) && (() => {
+                      const payVal = Number(collectedAmount) || 0;
+                      const orderIdStr = orderObj.id || "N/A";
+                      const upiUrl = `upi://pay?pa=gpay-12201744894@okbizaxis&pn=Kartar%20Singh%20And%20Sons&am=${payVal}&tn=Order%20%23${orderIdStr}&cu=INR`;
+                      const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUrl)}`;
+                      
+                      return S.jsxs("div", {
+                        style: { display: "flex", flexDirection: "column", gap: 10, borderTop: `1px dashed ${C.border}`, paddingTop: 12, marginTop: 4 },
+                        children: [
+                          S.jsxs("div", {
+                            style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: C.bg, padding: 12, borderRadius: 10 },
+                            children: [
+                              S.jsx("div", { style: { fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 2 }, children: "SCAN TO PAY" }),
+                              S.jsx("img", {
+                                src: qrImgUrl,
+                                alt: "UPI QR Code",
+                                style: { width: 160, height: 160, background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}` }
+                              }),
+                              S.jsxs("div", {
+                                style: { textAlign: "center", fontSize: 11, fontWeight: 600, color: C.text, marginTop: 4 },
+                                children: [
+                                  S.jsx("div", { style: { color: C.primary, fontWeight: 800 }, children: "Kartar Singh And Sons" }),
+                                  S.jsxs("div", { style: { fontSize: 10, color: C.muted, marginTop: 1 }, children: ["UPI ID: ", S.jsx("code", { children: "gpay-12201744894@okbizaxis" })] }),
+                                  S.jsxs("div", { style: { fontSize: 12, fontWeight: 800, color: C.accent, marginTop: 3 }, children: ["Amount: ", un(payVal)] })
+                                ]
+                              })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { display: "flex", flexDirection: "column", gap: 4 },
+                            children: [
+                              S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "UPI TRANSACTION ID (12-DIGIT UTR)" }),
+                              S.jsx("input", {
+                                type: "text",
+                                placeholder: "e.g. 123456789012",
+                                value: upiTransactionId,
+                                onChange: e => setUpiTransactionId(e.target.value.replace(/\D/g, '').substring(0, 12)),
+                                style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                              })
+                            ]
+                          })
+                        ]
+                      });
+                    })()
                   ]
                 }),
 
@@ -4156,7 +4203,8 @@ _Contact us to place your order!_`;
                       delivered_at: new Date().toISOString(),
                       status: finalStatus === "Skipped" ? "Cancelled" : "Delivered",
                       expiry_credit_amount: finalStatus !== "Skipped" && deductExpiryCredit ? totalExpiryCredit : 0,
-                      expiry_returns: finalStatus !== "Skipped" && expiryReturns.length > 0 ? expiryReturns : null
+                      expiry_returns: finalStatus !== "Skipped" && expiryReturns.length > 0 ? expiryReturns : null,
+                      upi_transaction_id: finalStatus !== "Skipped" && isUpi ? upiTransactionId : null
                     };
 
                     const stopStatusMap = {
@@ -4168,6 +4216,9 @@ _Contact us to place your order!_`;
                     if (expiryReturns.length > 0) {
                       const returnSummary = expiryReturns.map(x => `${x.qty}x ${x.product_name} (₹${x.total_value})`).join(", ");
                       finalNotes = `[Expiry Returns: ${returnSummary}] ${finalNotes}`.trim();
+                    }
+                    if (isUpi && upiTransactionId) {
+                      finalNotes = `[UPI Txn: ${upiTransactionId}] ${finalNotes}`.trim();
                     }
                     const stop_update = {
                       status: stopStatusMap[finalStatus] || "delivered",
@@ -7677,6 +7728,13 @@ S.jsxs("div", {
                               S.jsx("div", { style: { fontWeight: 600 }, children: adminViewStopDetails.order_id?.cheque_bank || "N/A" })
                             ]
                           })
+                        ]
+                      }),
+                      (adminViewStopDetails.order_id?.payment_mode === "UPI" || (adminViewStopDetails.order_id?.payment_mode && adminViewStopDetails.order_id.payment_mode.includes("UPI"))) && S.jsxs("div", {
+                        style: { display: "flex", flexDirection: "column", gap: 2, borderTop: `1px solid ${C.border}40`, paddingTop: 8, marginTop: 4 },
+                        children: [
+                          S.jsx("div", { style: { fontSize: 11, color: C.muted }, children: "UPI Transaction ID / UTR" }),
+                          S.jsx("div", { style: { fontWeight: 600, fontSize: 13 }, children: adminViewStopDetails.order_id?.upi_transaction_id || "N/A" })
                         ]
                       }),
                       adminViewStopDetails.notes && S.jsxs("div", {
