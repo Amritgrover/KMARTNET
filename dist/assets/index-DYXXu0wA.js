@@ -1191,7 +1191,7 @@ ${itemsText}
       }
 
       try {
-        const { data: bList } = await Or.from("beats").select("*").order("name");
+        const { data: bList } = await Or.from("beats").select("*").order("sequence_number", { ascending: true }).order("name", { ascending: true });
         if (bList) {
           const beatsNames = bList.map(b => b.name);
           localStorage.setItem("kmart_offline_beats", JSON.stringify(beatsNames));
@@ -1321,6 +1321,26 @@ ${itemsText}
       ye("Failed to create trip.");
     } finally {
       setIsCreatingTrip(!1);
+    }
+  };
+
+  const handleMoveBeat = async (beatName, direction) => {
+    const idx = dbBeats.indexOf(beatName);
+    if (idx === -1) return;
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= dbBeats.length) return;
+    const newList = [...dbBeats];
+    const [moved] = newList.splice(idx, 1);
+    newList.splice(targetIdx, 0, moved);
+    setDbBeats(newList);
+    localStorage.setItem("kmart_offline_beats", JSON.stringify(newList));
+    try {
+      for (let i = 0; i < newList.length; i++) {
+        const name = newList[i];
+        await Or.from("beats").update({ sequence_number: i + 1 }).eq("name", name);
+      }
+    } catch(err) {
+      console.error("Failed to save beat sequence changes:", err);
     }
   };
 
@@ -4033,7 +4053,7 @@ _Contact us to place your order!_`;
               }),
               S.jsx("div", {
                  style: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 },
-                 children: dbBeats.map(b => {
+                 children: dbBeats.map((b, idx) => {
                    const customerCount = beatCustomers.filter(c => {
                      if (b === "Others") {
                        return c.beat === "Others" || !c.beat;
@@ -4113,10 +4133,33 @@ _Contact us to place your order!_`;
                        }),
                        S.jsxs("div", {
                          style: { display: "flex", alignItems: "center", gap: 10 },
-                         children: [
-                           S.jsx("button", {
-                             onClick: () => {
-                               setBeatBeingEdited(b);
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", gap: 4, marginRight: 6 },
+                              children: [
+                                S.jsx("button", {
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    handleMoveBeat(b, "up");
+                                  },
+                                  disabled: idx === 0,
+                                  style: { border: "none", background: "none", cursor: idx === 0 ? "not-allowed" : "pointer", opacity: idx === 0 ? 0.3 : 0.8, fontSize: 13, padding: "2px 4px" },
+                                  children: "▲"
+                                }),
+                                S.jsx("button", {
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    handleMoveBeat(b, "down");
+                                  },
+                                  disabled: idx === dbBeats.length - 1,
+                                  style: { border: "none", background: "none", cursor: idx === dbBeats.length - 1 ? "not-allowed" : "pointer", opacity: idx === dbBeats.length - 1 ? 0.3 : 0.8, fontSize: 13, padding: "2px 4px" },
+                                  children: "▼"
+                                })
+                              ]
+                            }),
+                            S.jsx("button", {
+                              onClick: () => {
+                                setBeatBeingEdited(b);
                                setEditBeatNameInput(b);
                              },
                              style: { background: C.greenBg, color: C.green, border: "none", borderRadius: 6, padding: "5px 12px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
