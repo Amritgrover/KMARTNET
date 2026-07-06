@@ -960,6 +960,132 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [nonDeliveryReason, setNonDeliveryReason] = ge.useState("Shop Closed");
   const [otherReasonText, setOtherReasonText] = ge.useState("");
   const lastDriverUploadTimeRef = ge.useRef(0);
+  const [driverCoords, setDriverCoords] = ge.useState(null);
+  const [driverInfo, setDriverInfo] = ge.useState(null);
+  const [distanceText, setDistanceText] = ge.useState("Calculating...");
+  const customerMapRef = ge.useRef(null);
+
+  ge.useEffect(() => {
+    if (r !== "customer" || !viewingTracking) {
+      setDriverCoords(null);
+      setDriverInfo(null);
+      return;
+    }
+    let active = true;
+    let intervalId;
+    
+    const fetchLocation = async () => {
+      try {
+        const { data: stopData, error: stopError } = await Or.from("trip_orders")
+          .select("trip_id(*, delivery_person_id(*))")
+          .eq("order_id", viewingTracking.id)
+          .single();
+        
+        if (stopError) {
+          console.error("Error fetching stop/driver info:", stopError);
+          return;
+        }
+        
+        if (stopData && stopData.trip_id && stopData.trip_id.delivery_person_id) {
+          const driver = stopData.trip_id.delivery_person_id;
+          if (active) {
+            setDriverInfo(driver);
+            if (driver.location) {
+              const parts = driver.location.split(',');
+              if (parts.length === 2) {
+                const lat = parseFloat(parts[0]);
+                const lng = parseFloat(parts[1]);
+                setDriverCoords({ lat, lng });
+              }
+            } else {
+              setDriverCoords(null);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Fetch location error:", e);
+      }
+    };
+    
+    fetchLocation();
+    intervalId = setInterval(fetchLocation, 60000);
+    
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [r, viewingTracking]);
+
+  const custCoords = r === "customer" && cust ? parseGPS(cust.location) : null;
+  ge.useEffect(() => {
+    if (r === "customer" && viewingTracking && custCoords && driverCoords) {
+      const dist = getDistance(custCoords.lat, custCoords.lng, driverCoords.lat, driverCoords.lng);
+      if (dist < 1000) {
+        setDistanceText(`${dist.toFixed(0)}m away`);
+      } else {
+        setDistanceText(`${(dist / 1000).toFixed(1)} km away`);
+      }
+    } else {
+      setDistanceText("Location not available yet");
+    }
+  }, [r, viewingTracking, custCoords, driverCoords]);
+
+  ge.useEffect(() => {
+    if (r === "customer" && viewingTracking && window.L && document.getElementById("customer-tracking-map")) {
+      if (customerMapRef.current) {
+        customerMapRef.current.remove();
+        customerMapRef.current = null;
+      }
+      
+      const initialLat = driverCoords ? driverCoords.lat : (custCoords ? custCoords.lat : 31.634);
+      const initialLng = driverCoords ? driverCoords.lng : (custCoords ? custCoords.lng : 74.872);
+      
+      const map = L.map("customer-tracking-map", { zoomControl: true }).setView([initialLat, initialLng], 14);
+      customerMapRef.current = map;
+      
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors"
+      }).addTo(map);
+      
+      const markersGroup = [];
+      
+      if (custCoords) {
+        const custMarker = L.marker([custCoords.lat, custCoords.lng], {
+          icon: L.divIcon({
+            html: '<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🏪</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          })
+        }).addTo(map).bindPopup("<b>Your Store</b>");
+        markersGroup.push([custCoords.lat, custCoords.lng]);
+      }
+      
+      if (driverCoords) {
+        const driverMarker = L.marker([driverCoords.lat, driverCoords.lng], {
+          icon: L.divIcon({
+            html: '<div style="font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🚚</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          })
+        }).addTo(map).bindPopup("<b>Delivery Driver</b>");
+        markersGroup.push([driverCoords.lat, driverCoords.lng]);
+      }
+      
+      if (custCoords && driverCoords) {
+        L.polyline([[custCoords.lat, custCoords.lng], [driverCoords.lat, driverCoords.lng]], {
+          color: C.accent,
+          weight: 3.5,
+          dashArray: "6, 6"
+        }).addTo(map);
+      }
+      
+      if (markersGroup.length > 0) {
+        map.fitBounds(markersGroup, { padding: [50, 50] });
+      }
+      
+      setTimeout(() => { map.invalidateSize(); }, 200);
+    }
+  }, [r, viewingTracking, custCoords, driverCoords]);
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371e3;
@@ -2629,197 +2755,73 @@ _Contact us to place your order!_`;
               ]
             });
           })(),
-          r === "customer" && viewingTracking && (() => {
-            const [driverCoords, setDriverCoords] = ge.useState(null);
-            const [driverInfo, setDriverInfo] = ge.useState(null);
-            const [distanceText, setDistanceText] = ge.useState("Calculating...");
-            
-            ge.useEffect(() => {
-              let active = true;
-              let intervalId;
-              
-              const fetchLocation = async () => {
-                try {
-                  const { data: stopData, error: stopError } = await Or.from("trip_orders")
-                    .select("trip_id(*, delivery_person_id(*))")
-                    .eq("order_id", viewingTracking.id)
-                    .single();
-                  
-                  if (stopError) {
-                    console.error("Error fetching stop/driver info:", stopError);
-                    return;
-                  }
-                  
-                  if (stopData && stopData.trip_id && stopData.trip_id.delivery_person_id) {
-                    const driver = stopData.trip_id.delivery_person_id;
-                    if (active) {
-                      setDriverInfo(driver);
-                      if (driver.location) {
-                        const parts = driver.location.split(',');
-                        if (parts.length === 2) {
-                          const lat = parseFloat(parts[0]);
-                          const lng = parseFloat(parts[1]);
-                          setDriverCoords({ lat, lng });
-                        }
-                      } else {
-                        setDriverCoords(null);
-                      }
-                    }
-                  }
-                } catch (e) {
-                  console.error("Fetch location error:", e);
-                }
-              };
-              
-              fetchLocation();
-              intervalId = setInterval(fetchLocation, 60000);
-              
-              return () => {
-                active = false;
-                clearInterval(intervalId);
-              };
-            }, [viewingTracking]);
-            
-            const custCoords = parseGPS(cust.location);
-            ge.useEffect(() => {
-              if (custCoords && driverCoords) {
-                const dist = getDistance(custCoords.lat, custCoords.lng, driverCoords.lat, driverCoords.lng);
-                if (dist < 1000) {
-                  setDistanceText(`${dist.toFixed(0)}m away`);
-                } else {
-                  setDistanceText(`${(dist / 1000).toFixed(1)} km away`);
-                }
-              } else {
-                setDistanceText("Location not available yet");
-              }
-            }, [custCoords, driverCoords]);
-            
-            const mapRef = ge.useRef(null);
-            ge.useEffect(() => {
-              if (window.L && document.getElementById("customer-tracking-map")) {
-                if (mapRef.current) {
-                  mapRef.current.remove();
-                  mapRef.current = null;
-                }
-                
-                const initialLat = driverCoords ? driverCoords.lat : (custCoords ? custCoords.lat : 31.634);
-                const initialLng = driverCoords ? driverCoords.lng : (custCoords ? custCoords.lng : 74.872);
-                
-                const map = L.map("customer-tracking-map", { zoomControl: true }).setView([initialLat, initialLng], 14);
-                mapRef.current = map;
-                
-                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                  attribution: "© OpenStreetMap contributors"
-                }).addTo(map);
-                
-                const markersGroup = [];
-                
-                if (custCoords) {
-                  const custMarker = L.marker([custCoords.lat, custCoords.lng], {
-                    icon: L.divIcon({
-                      html: '<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🏪</div>',
-                      iconSize: [30, 30],
-                      iconAnchor: [15, 15]
-                    })
-                  }).addTo(map).bindPopup("<b>Your Store</b>");
-                  markersGroup.push([custCoords.lat, custCoords.lng]);
-                }
-                
-                if (driverCoords) {
-                  const driverMarker = L.marker([driverCoords.lat, driverCoords.lng], {
-                    icon: L.divIcon({
-                      html: '<div style="font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">🚚</div>',
-                      iconSize: [30, 30],
-                      iconAnchor: [15, 15]
-                    })
-                  }).addTo(map).bindPopup("<b>Delivery Driver</b>");
-                  markersGroup.push([driverCoords.lat, driverCoords.lng]);
-                }
-                
-                if (custCoords && driverCoords) {
-                  L.polyline([[custCoords.lat, custCoords.lng], [driverCoords.lat, driverCoords.lng]], {
-                    color: C.accent,
-                    weight: 3.5,
-                    dashArray: "6, 6"
-                  }).addTo(map);
-                }
-                
-                if (markersGroup.length > 0) {
-                  map.fitBounds(markersGroup, { padding: [50, 50] });
-                }
-                
-                setTimeout(() => { map.invalidateSize(); }, 200);
-              }
-            }, [custCoords, driverCoords]);
-            
-            return S.jsxs("div", {
-              style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
-              children: [
-                S.jsxs("div", {
-                  style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 16, borderBottom: `1px solid ${C.border}`, paddingBottom: 12 },
-                  children: [
-                    S.jsx("button", {
-                      onClick: () => setViewingTracking(null),
-                      style: { background: "none", border: "none", fontSize: 20, cursor: "pointer", color: C.primary, padding: "0px 8px 4px 0px" },
-                      children: "←"
-                    }),
-                    S.jsxs("div", {
-                      children: [
-                        S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Track Order" }),
-                        S.jsxs("div", { style: { fontSize: 11, color: C.muted, fontWeight: 600, marginTop: 2 }, children: ["Order #", viewingTracking.id, " · Dispatched"] })
-                      ]
-                    })
-                  ]
-                }),
-                S.jsx("div", {
-                  style: { borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden", position: "relative", marginBottom: 16 },
-                  children: S.jsx("div", {
-                    id: "customer-tracking-map",
-                    style: { height: 350, width: "100%" }
+          r === "customer" && viewingTracking && S.jsxs("div", {
+            style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
+            children: [
+              S.jsxs("div", {
+                style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 16, borderBottom: `1px solid ${C.border}`, paddingBottom: 12 },
+                children: [
+                  S.jsx("button", {
+                    onClick: () => setViewingTracking(null),
+                    style: { background: "none", border: "none", fontSize: 20, cursor: "pointer", color: C.primary, padding: "0px 8px 4px 0px" },
+                    children: "←"
+                  }),
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "Track Order" }),
+                      S.jsxs("div", { style: { fontSize: 11, color: C.muted, fontWeight: 600, marginTop: 2 }, children: ["Order #", viewingTracking.id, " · Dispatched"] })
+                    ]
                   })
-                }),
-                S.jsxs("div", {
-                  style: { background: C.bg, borderRadius: 12, padding: 14 },
-                  children: [
-                    S.jsxs("div", {
-                      style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}50`, paddingBottom: 10, marginBottom: 10 },
-                      children: [
-                        S.jsxs("div", {
-                          children: [
-                            S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Delivery Executive" }),
-                            S.jsx("div", { style: { fontSize: 14, fontWeight: 700, color: C.text, marginTop: 2 }, children: driverInfo ? driverInfo.name : "Assigning..." })
-                          ]
-                        }),
-                        driverInfo && driverInfo.phone && S.jsxs("a", {
-                          href: `tel:${driverInfo.phone}`,
-                          style: { display: "flex", alignItems: "center", gap: 6, background: C.greenBg, color: C.green, textDecoration: "none", padding: "6px 12px", borderRadius: 8, fontSize: 12.5, fontWeight: 700 },
-                          children: [
-                            S.jsx("span", { children: "📞" }),
-                            "Call"
-                          ]
-                        })
-                      ]
-                    }),
-                    S.jsxs("div", {
-                      style: { display: "flex", justifyContent: "space-between", alignItems: "center" },
-                      children: [
-                        S.jsxs("div", {
-                          children: [
-                            S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Estimated Distance" }),
-                            S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.accent, marginTop: 2 }, children: distanceText })
-                          ]
-                        }),
-                        S.jsx("div", {
-                          style: { background: C.accentLight, color: C.accent, padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700 },
-                          children: "Live Updates"
-                        })
-                      ]
-                    })
-                  ]
+                ]
+              }),
+              S.jsx("div", {
+                style: { borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden", position: "relative", marginBottom: 16 },
+                children: S.jsx("div", {
+                  id: "customer-tracking-map",
+                  style: { height: 350, width: "100%" }
                 })
-              ]
-            });
-          })(),
+              }),
+              S.jsxs("div", {
+                style: { background: C.bg, borderRadius: 12, padding: 14 },
+                children: [
+                  S.jsxs("div", {
+                    style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}50`, paddingBottom: 10, marginBottom: 10 },
+                    children: [
+                      S.jsxs("div", {
+                        children: [
+                          S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Delivery Executive" }),
+                          S.jsx("div", { style: { fontSize: 14, fontWeight: 700, color: C.text, marginTop: 2 }, children: driverInfo ? driverInfo.name : "Assigning..." })
+                        ]
+                      }),
+                      driverInfo && driverInfo.phone && S.jsxs("a", {
+                        href: `tel:${driverInfo.phone}`,
+                        style: { display: "flex", alignItems: "center", gap: 6, background: C.greenBg, color: C.green, textDecoration: "none", padding: "6px 12px", borderRadius: 8, fontSize: 12.5, fontWeight: 700 },
+                        children: [
+                          S.jsx("span", { children: "📞" }),
+                          "Call"
+                        ]
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    style: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+                    children: [
+                      S.jsxs("div", {
+                        children: [
+                          S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Estimated Distance" }),
+                          S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.accent, marginTop: 2 }, children: distanceText })
+                        ]
+                      }),
+                      S.jsx("div", {
+                        style: { background: C.accentLight, color: C.accent, padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700 },
+                        children: "Live Updates"
+                      })
+                    ]
+                  })
+                ]
+              })
+            ]
+          }),
           r==="customer"&&cust&&!viewingTracking&&(() => {
             const coords = parseGPS(cust.location);
             return S.jsxs("div", {
