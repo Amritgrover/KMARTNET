@@ -3910,7 +3910,7 @@ _Contact us to place your order!_`;
                                   onChange: e => {
                                     const prodId = e.target.value;
                                     setSelectedExpiryProduct(prodId);
-                                    const p = productsList.find(x => String(x.id) === prodId);
+                                    const p = s.find(x => String(x.id) === prodId);
                                     if (p) {
                                       setExpiryPrice(String(p.tp || 0));
                                     } else {
@@ -3920,7 +3920,7 @@ _Contact us to place your order!_`;
                                   style: { width: "100%", padding: "5px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
                                   children: [
                                     S.jsx("option", { value: "", children: "Choose Product..." }),
-                                    productsList.map(p => S.jsx("option", { value: p.id, children: `${p.brand ? p.brand + ' - ' : ''}${p.name}` }, p.id))
+                                    s.map(p => S.jsx("option", { value: p.id, children: `${p.brand ? p.brand + ' - ' : ''}${p.name}` }, p.id))
                                   ]
                                 })
                               ]
@@ -3964,7 +3964,7 @@ _Contact us to place your order!_`;
                                   alert("Please select a product and enter a valid quantity/price.");
                                   return;
                                 }
-                                const p = productsList.find(x => String(x.id) === prodId);
+                                const p = s.find(x => String(x.id) === prodId);
                                 if (!p) return;
                                 
                                 const newItem = {
