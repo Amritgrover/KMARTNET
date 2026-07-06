@@ -963,6 +963,11 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [driverCoords, setDriverCoords] = ge.useState(null);
   const [driverInfo, setDriverInfo] = ge.useState(null);
   const [distanceText, setDistanceText] = ge.useState("Calculating...");
+  const [expiryReturns, setExpiryReturns] = ge.useState([]);
+  const [selectedExpiryProduct, setSelectedExpiryProduct] = ge.useState("");
+  const [expiryQty, setExpiryQty] = ge.useState("");
+  const [expiryPrice, setExpiryPrice] = ge.useState("");
+  const [deductExpiryCredit, setDeductExpiryCredit] = ge.useState(true);
 
 
   ge.useEffect(() => {
@@ -1109,6 +1114,11 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
       setChequeBank("");
       setNonDeliveryReason("Shop Closed");
       setOtherReasonText("");
+      setExpiryReturns([]);
+      setSelectedExpiryProduct("");
+      setExpiryQty("");
+      setExpiryPrice("");
+      setDeductExpiryCredit(true);
     }
   }, [activeStopOrder]);
 
@@ -1119,13 +1129,17 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     return sum + (dQty * itemPrice * (1 - itemDiscount/100));
   }, 0) : 0;
 
+  const totalExpiryCredit = expiryReturns.reduce((sum, item) => sum + (Number(item.total_value) || 0), 0);
+
   ge.useEffect(() => {
     if (deliveryStatusOption === "Skipped") {
       setCollectedAmount("0");
     } else {
-      setCollectedAmount(String(Math.round(deliveredSubtotal)));
+      const baseAmt = Math.round(deliveredSubtotal);
+      const credit = deductExpiryCredit ? totalExpiryCredit : 0;
+      setCollectedAmount(String(Math.max(0, baseAmt - credit)));
     }
-  }, [deliveredSubtotal, deliveryStatusOption]);
+  }, [deliveredSubtotal, deliveryStatusOption, expiryReturns, deductExpiryCredit]);
   const [customCats, setCustomCats] = ge.useState(() => {
     const defaults = ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
     const stored = localStorage.getItem("kmart_custom_categories");
@@ -3167,6 +3181,58 @@ _Contact us to place your order!_`;
                         })
                       ]
                     }),
+                    o.delivery_status && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 6, background: C.bg, borderRadius: 8, padding: "10px 12px", marginBottom: 10, border: `1px solid ${C.border}` },
+                      children: [
+                        S.jsxs("div", {
+                          style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.border}50`, paddingBottom: 6 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", alignItems: "center", gap: 6 },
+                              children: [
+                                S.jsx("span", { style: { fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "Delivery Status" }),
+                                S.jsx("span", {
+                                  style: { fontSize: 10, fontWeight: 700, background: o.delivery_status === "Delivered" ? C.greenBg : C.redBg, color: o.delivery_status === "Delivered" ? C.green : C.red, padding: "1px 5px", borderRadius: 4 },
+                                  children: o.delivery_status
+                                })
+                              ]
+                            }),
+                            o.payment_mode && S.jsxs("span", { style: { fontSize: 11, fontWeight: 700, color: C.text }, children: ["Mode: ", o.payment_mode] })
+                          ]
+                        }),
+                        
+                        S.jsxs("div", {
+                          style: { display: "flex", justifyContent: "space-between", fontSize: 12 },
+                          children: [
+                            S.jsxs("span", { style: { color: C.muted, fontWeight: 500 }, children: ["Order Total: ", un(o.total_amount)] }),
+                            S.jsxs("span", { style: { fontWeight: 700, color: C.primary }, children: ["Collected: ", un(o.collected_amount)] })
+                          ]
+                        }),
+
+                        o.expiry_returns && o.expiry_returns.length > 0 && S.jsxs("div", {
+                          style: { borderTop: `1px dashed ${C.border}`, paddingTop: 6, marginTop: 4, display: "flex", flexDirection: "column", gap: 4 },
+                          children: [
+                            S.jsx("div", { style: { fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase" }, children: "📦 Expiry Returns" }),
+                            o.expiry_returns.map((item, idx) => (
+                              S.jsxs("div", {
+                                key: idx,
+                                style: { display: "flex", justifyContent: "space-between", fontSize: 11 },
+                                children: [
+                                  S.jsxs("span", { style: { color: C.text, fontWeight: 500 }, children: [item.qty, "x ", item.product_name] }),
+                                  S.jsx("span", { style: { color: C.primary, fontWeight: 600 }, children: un(item.total_value) })
+                                ]
+                              }, idx)),
+                            o.expiry_credit_amount > 0 && S.jsxs("div", {
+                              style: { display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, color: C.green, background: C.greenBg, padding: "4px 8px", borderRadius: 4, marginTop: 2 },
+                              children: [
+                                S.jsx("span", { children: "Expiry Credit Applied" }),
+                                S.jsxs("span", { children: ["-", un(o.expiry_credit_amount)] })
+                              ]
+                            })
+                          ]
+                        })
+                      ]
+                    }),
                     S.jsxs("div", {
                       style: { display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px 12px" },
                       children: [
@@ -3822,6 +3888,156 @@ _Contact us to place your order!_`;
                   ]
                 }),
 
+                // Expiry Returns Card
+                deliveryStatusOption !== "Skipped" && S.jsxs("div", {
+                  style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", flexDirection: "column", gap: 12 },
+                  children: [
+                    S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "📦 EXPIRY RETURNS" }),
+                    
+                    S.jsxs("div", {
+                      style: { background: C.bg, borderRadius: 10, padding: 10, display: "flex", flexDirection: "column", gap: 8 },
+                      children: [
+                        S.jsxs("div", {
+                          style: { display: "flex", gap: 8 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { flex: 2, display: "flex", flexDirection: "column", gap: 3 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "SELECT PRODUCT" }),
+                                S.jsxs("select", {
+                                  value: selectedExpiryProduct,
+                                  onChange: e => {
+                                    const prodId = e.target.value;
+                                    setSelectedExpiryProduct(prodId);
+                                    const p = productsList.find(x => String(x.id) === prodId);
+                                    if (p) {
+                                      setExpiryPrice(String(p.tp || 0));
+                                    } else {
+                                      setExpiryPrice("");
+                                    }
+                                  },
+                                  style: { width: "100%", padding: "5px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
+                                  children: [
+                                    S.jsx("option", { value: "", children: "Choose Product..." }),
+                                    productsList.map(p => S.jsx("option", { value: p.id, children: `${p.brand ? p.brand + ' - ' : ''}${p.name}` }, p.id))
+                                  ]
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { flex: 1, display: "flex", flexDirection: "column", gap: 3 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "QTY" }),
+                                S.jsx("input", {
+                                  type: "number",
+                                  value: expiryQty,
+                                  onChange: e => setExpiryQty(e.target.value),
+                                  style: { width: "100%", padding: "5px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 700, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                                })
+                              ]
+                            })
+                          ]
+                        }),
+                        
+                        S.jsxs("div", {
+                          style: { display: "flex", gap: 8, alignItems: "flex-end" },
+                          children: [
+                            S.jsxs("div", {
+                              style: { flex: 1, display: "flex", flexDirection: "column", gap: 3 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "PRICE PER UNIT (₹)" }),
+                                S.jsx("input", {
+                                  type: "number",
+                                  value: expiryPrice,
+                                  onChange: e => setExpiryPrice(e.target.value),
+                                  style: { width: "100%", padding: "5px 8px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 700, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                                })
+                              ]
+                            }),
+                            S.jsx("button", {
+                              onClick: () => {
+                                const prodId = selectedExpiryProduct;
+                                const qty = parseInt(expiryQty) || 0;
+                                const price = parseFloat(expiryPrice) || 0;
+                                if (!prodId || qty <= 0 || price < 0) {
+                                  alert("Please select a product and enter a valid quantity/price.");
+                                  return;
+                                }
+                                const p = productsList.find(x => String(x.id) === prodId);
+                                if (!p) return;
+                                
+                                const newItem = {
+                                  product_id: p.id,
+                                  product_name: `${p.brand ? p.brand + ' - ' : ''}${p.name}`,
+                                  qty,
+                                  price,
+                                  total_value: qty * price
+                                };
+                                setExpiryReturns(prev => [...prev, newItem]);
+                                setSelectedExpiryProduct("");
+                                setExpiryQty("");
+                                setExpiryPrice("");
+                              },
+                              style: { padding: "6px 12px", background: C.primary, color: "#fff", border: "none", borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", height: 29 },
+                              children: "➕ Add"
+                            })
+                          ]
+                        })
+                      ]
+                    }),
+                    
+                    expiryReturns.length > 0 && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 6, border: `1.5px solid ${C.border}`, borderRadius: 8, overflow: "hidden" },
+                      children: [
+                        S.jsx("div", {
+                          style: { display: "grid", gridTemplateColumns: "2fr 1fr 1.2fr 0.5fr", background: C.bg, padding: "6px 8px", fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" },
+                          children: [
+                            S.jsx("span", { children: "Product" }),
+                            S.jsx("span", { style: { textAlign: "center" }, children: "Qty" }),
+                            S.jsx("span", { style: { textAlign: "right" }, children: "Total" }),
+                            S.jsx("span", {})
+                          ]
+                        }),
+                        expiryReturns.map((item, index) => (
+                          S.jsxs("div", {
+                            key: index,
+                            style: { display: "grid", gridTemplateColumns: "2fr 1fr 1.2fr 0.5fr", alignItems: "center", padding: "6px 8px", fontSize: 11.5, borderTop: `1px solid ${C.border}` },
+                            children: [
+                              S.jsx("span", { style: { fontWeight: 600, color: C.text }, children: item.product_name }),
+                              S.jsx("span", { style: { textAlign: "center", fontWeight: 700, color: C.text }, children: item.qty }),
+                              S.jsx("span", { style: { textAlign: "right", fontWeight: 700, color: C.primary }, children: un(item.total_value) }),
+                              S.jsx("button", {
+                                onClick: () => setExpiryReturns(prev => prev.filter((_, i) => i !== index)),
+                                style: { background: "none", border: "none", color: C.red, cursor: "pointer", fontSize: 14, display: "flex", justifyContent: "center" },
+                                children: "×"
+                              })
+                            ]
+                          })
+                        ))
+                      ]
+                    }),
+                    
+                    expiryReturns.length > 0 && S.jsxs("div", {
+                      style: { display: "flex", justifyContent: "space-between", alignItems: "center", background: C.greenBg, border: `1.2px solid ${C.green}30`, borderRadius: 10, padding: "10px 12px" },
+                      children: [
+                        S.jsxs("label", {
+                          style: { display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: C.green },
+                          children: [
+                            S.jsx("input", {
+                              type: "checkbox",
+                              checked: deductExpiryCredit,
+                              onChange: e => setDeductExpiryCredit(e.target.checked),
+                              style: { width: 14, height: 14, cursor: "pointer" }
+                            }),
+                            "Deduct from current collection"
+                          ]
+                        }),
+                        S.jsxs("span", { style: { fontSize: 13, fontWeight: 800, color: C.green }, children: ["Total: ", un(totalExpiryCredit)] })
+                      ]
+                    })
+                  ]
+                }),
+
                 // Payment Collection Card
                 deliveryStatusOption !== "Skipped" && S.jsxs("div", {
                   style: { background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", flexDirection: "column", gap: 12 },
@@ -3837,9 +4053,11 @@ _Contact us to place your order!_`;
                             if (mode === "Credit") {
                               setCollectedAmount("0");
                             } else if (mode === "Partial Credit") {
-                              setCollectedAmount(String(Math.round(deliveredSubtotal / 2)));
+                              const credit = deductExpiryCredit ? totalExpiryCredit : 0;
+                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal / 2) - credit)));
                             } else {
-                              setCollectedAmount(String(Math.round(deliveredSubtotal)));
+                              const credit = deductExpiryCredit ? totalExpiryCredit : 0;
+                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal) - credit)));
                             }
                           },
                           style: { flex: 1, padding: "8px 0", background: paymentMode === mode ? C.primary : C.bg, color: paymentMode === mode ? "#fff" : C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
@@ -3935,7 +4153,9 @@ _Contact us to place your order!_`;
                       cheque_bank: finalStatus !== "Skipped" && isCheque ? chequeBank : null,
                       non_delivery_reason: finalReason,
                       delivered_at: new Date().toISOString(),
-                      status: finalStatus === "Skipped" ? "Cancelled" : "Delivered"
+                      status: finalStatus === "Skipped" ? "Cancelled" : "Delivered",
+                      expiry_credit_amount: finalStatus !== "Skipped" && deductExpiryCredit ? totalExpiryCredit : 0,
+                      expiry_returns: finalStatus !== "Skipped" && expiryReturns.length > 0 ? expiryReturns : null
                     };
 
                     const stopStatusMap = {
@@ -3943,11 +4163,16 @@ _Contact us to place your order!_`;
                       "Partial": "partial",
                       "Skipped": "failed"
                     };
+                    let finalNotes = finalReason || "";
+                    if (expiryReturns.length > 0) {
+                      const returnSummary = expiryReturns.map(x => `${x.qty}x ${x.product_name} (₹${x.total_value})`).join(", ");
+                      finalNotes = `[Expiry Returns: ${returnSummary}] ${finalNotes}`.trim();
+                    }
                     const stop_update = {
                       status: stopStatusMap[finalStatus] || "delivered",
                       payment_collected: finalStatus !== "Skipped" ? amt : 0,
                       payment_mode: finalStatus !== "Skipped" ? resolvedPaymentMode : null,
-                      notes: finalReason || null,
+                      notes: finalNotes || null,
                       delivered_at: new Date().toISOString()
                     };
 
