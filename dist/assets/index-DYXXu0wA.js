@@ -187,10 +187,10 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
       }),
 
       // Divider
-      S.jsx("div", { style: { borderTop: "1px solid #edeeed", margin: "14px 0 10px 0" } }),
+      (r.stock > 0 || a > 0) && S.jsx("div", { style: { borderTop: "1px solid #edeeed", margin: "14px 0 10px 0" } }),
 
       // Selectors
-      caseSize > 0 ? S.jsxs("div", {
+      (r.stock > 0 || a > 0) && (caseSize > 0 ? S.jsxs("div", {
         style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "100%" },
         children: [
           // Cases Selector
@@ -291,10 +291,32 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
             ]
           })
         ]
-      }),
+      })),
 
       // Add to Basket Button
-      S.jsxs("button", {
+      r.stock <= 0 && a === 0 ? S.jsxs("button", {
+        disabled: true,
+        style: {
+          background: "#a1a1aa",
+          color: "#ffffff",
+          border: "none",
+          borderRadius: "12px",
+          padding: "12px 16px",
+          fontSize: "13.5px",
+          fontWeight: "700",
+          cursor: "not-allowed",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          marginTop: "12px",
+          fontFamily: "'Outfit', sans-serif"
+        },
+        children: [
+          S.jsx("span", { style: { fontSize: "14px" }, children: "🚫" }),
+          "Out of Stock"
+        ]
+      }) : S.jsxs("button", {
         onClick: () => { if(a === 0) s(); else if(o) o(); },
         style: {
           background: "#0f522b",
@@ -548,7 +570,10 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
                   S.jsx("span",{style:{fontSize:12,fontWeight:800,color:C.green},children:`${totalQty} Pcs`}),
                   S.jsx("span",{style:{fontSize:10,color:C.green},children:"✏️"})
                 ]
-              }):S.jsxs("div",{
+              }):r.stock <= 0 ? S.jsx("div",{
+                style:{background:"#a1a1aa",borderRadius:8,padding:"6px 12px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"not-allowed"},
+                children:S.jsx("span",{style:{fontSize:12,fontWeight:700,color:"#fff"},children:"Out of Stock"})
+              }) : S.jsxs("div",{
                 style:{background:C.primary,borderRadius:8,padding:"6px 12px",display:"flex",alignItems:"center",justifyContent:"center"},
                 children:[
                   S.jsx("span",{style:{fontSize:12,fontWeight:700,color:"#fff"},children:"+ Add"})
