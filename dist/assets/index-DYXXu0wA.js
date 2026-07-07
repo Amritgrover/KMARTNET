@@ -370,7 +370,7 @@ function b_({p:r,b:b,bKey:bKey,qty:qtyVal,onInc:s,onDec:l,onSet:h,discMap:T,setD
         style:{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,fontWeight:700},
         children:[
           S.jsxs("span",{style:{color:C.text},children:[b.batch==="Default"?"Default Batch":`Batch: ${b.batch}`]}),
-          S.jsxs("span",{style:{color:C.primary},children:["MRP: ₹",b.mrp," | TP: ",un(r.tp*(1-(T&&T[r.id]?parseFloat(T[r.id])||0:0)/100))]})
+          S.jsxs("span",{style:{color:C.primary},children:["MRP: ₹",b.mrp," | TP: ",un((b.tp>0?b.tp:r.tp)*(1-(T&&T[r.id]?parseFloat(T[r.id])||0:0)/100))]})
         ]
       }),
       S.jsxs("div",{
@@ -521,7 +521,13 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const marginStr=r.mrp>0?((r.mrp-r.tp)/r.mrp*100).toFixed(0):"0";
   const totalQty=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[,q])=>sum+q,0);
   const disc=parseFloat(T[r.id])||0;
-  const totalVal=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[,q])=>sum+r.tp*q*(1-disc/100),0);
+  const totalVal=Object.entries(a).filter(([k,q])=>(k===String(r.id)||k.startsWith(`${r.id}_`))&&q>0).reduce((sum,[k,q])=>{
+    const parts=k.split("_");
+    const bchcode=parts.length===2?parseInt(parts[1]):0;
+    const batch=(r.product_batches||[]).find(b=>b.bchcode===bchcode);
+    const bTp=(batch&&batch.tp>0)?batch.tp:r.tp;
+    return sum+bTp*q*(1-disc/100);
+  },0);
 
   return S.jsxs(S.Fragment,{
     children:[
@@ -1957,8 +1963,13 @@ ${itemsText}
       const price=(me.tier2_min_qty>0&&he>=me.tier2_min_qty)?(me.tier2_price*scaleRatio):base;
       return j+price*he
     }
+    let batchTp=me.tp;
+    if(bchcode>0&&me.product_batches){
+      const batch=me.product_batches.find(b=>b.bchcode===bchcode);
+      if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
+    }
     const disc=parseFloat(T[prodId])||0;
-    return j+me.tp*he*(1-disc/100)
+    return j+batchTp*he*(1-disc/100)
   },0),[v,s,T,r]),
   Ot=ge.useMemo(()=>Object.values(v).reduce((j,J)=>j+J,0),[v]),
   Nn=ge.useCallback((j,J)=>{
@@ -2101,7 +2112,12 @@ ${itemsText}
         const scaleRatio=ce.mrp>0?(batchMrp/ce.mrp):1,base=ce.customer_price>0?(ce.customer_price*scaleRatio):batchMrp,price=(ce.tier2_min_qty>0&&me>=ce.tier2_min_qty)?(ce.tier2_price*scaleRatio):base,lineTotal=price*me;
         return`• ${displayName} (${ce.unit}) × ${me} @ ₹${price} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}`
       }
-      const yt=T[prodId],disc=parseFloat(yt)||0,discountedPrice=ce.tp*(1-disc/100),at=yt&&yt!=="0"?`  |  Disc: ${yt}%`:"";
+      let batchTp=ce.tp;
+      if(bchcode>0&&ce.product_batches){
+        const batch=ce.product_batches.find(b=>b.bchcode===bchcode);
+        if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
+      }
+      const yt=T[prodId],disc=parseFloat(yt)||0,discountedPrice=batchTp*(1-disc/100),at=yt&&yt!=="0"?`  |  Disc: ${yt}%`:"";
       const lineTotal=discountedPrice*me;
       return`• ${displayName} (${ce.unit}) × ${me} @ ₹${discountedPrice.toFixed(discountedPrice%1===0?0:2)} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}${at}`
     }).filter(Boolean),
@@ -2226,7 +2242,12 @@ _via KMART_`
         price = (p.tier2_min_qty > 0 && qty >= p.tier2_min_qty) ? (p.tier2_price * scaleRatio) : base;
       } else {
         const disc = parseFloat(T[p.id]) || 0;
-        price = p.tp * (1 - disc / 100);
+        let batchTp = p.tp;
+        if (bchcode > 0 && p.product_batches) {
+          const batch = p.product_batches.find(b => b.bchcode === bchcode);
+          if (batch && batch.tp > 0) batchTp = parseFloat(batch.tp);
+        }
+        price = batchTp * (1 - disc / 100);
       }
       return {
         id: p.id,
@@ -6950,7 +6971,12 @@ S.jsxs("div", {
                 }
                 const displayName = batchName ? `${he.name} (${batchName})` : he.name;
                 const scaleRatio = he.mrp > 0 ? (batchMrp / he.mrp) : 1;
-                const priceVal = r==="customer"?((he.tier2_min_qty>0&&J>=he.tier2_min_qty)?(he.tier2_price*scaleRatio):(he.customer_price>0?(he.customer_price*scaleRatio):batchMrp)):he.tp*(1-(parseFloat(T[prodId])||0)/100);
+                let batchTp=he.tp;
+                if(bchcode>0&&he.product_batches){
+                  const batch=he.product_batches.find(b=>b.bchcode===bchcode);
+                  if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
+                }
+                const priceVal = r==="customer"?((he.tier2_min_qty>0&&J>=he.tier2_min_qty)?(he.tier2_price*scaleRatio):(he.customer_price>0?(he.customer_price*scaleRatio):batchMrp)):batchTp*(1-(parseFloat(T[prodId])||0)/100);
                 return he?S.jsxs("div",{
                   style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`},
                   children:[
@@ -7037,7 +7063,14 @@ S.jsxs("div", {
                         }),
                         S.jsx("div",{
                           style:{fontSize:14,fontWeight:800,color:C.primary,minWidth:52,textAlign:"right"},
-                          children:un(r==="customer"?((he.tier2_min_qty>0&&J>=he.tier2_min_qty)?he.tier2_price:(he.customer_price>0?he.customer_price:batchMrp))*J:he.tp*J*(1-(parseFloat(T[prodId])||0)/100))
+                          children:un(r==="customer"?((he.tier2_min_qty>0&&J>=he.tier2_min_qty)?he.tier2_price:(he.customer_price>0?he.customer_price:batchMrp))*J:( (()=>{
+                            let batchTp=he.tp;
+                            if(bchcode>0&&he.product_batches){
+                              const batch=he.product_batches.find(b=>b.bchcode===bchcode);
+                              if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
+                            }
+                            return batchTp;
+                          })() )*J*(1-(parseFloat(T[prodId])||0)/100))
                         })
                       ]
                     })
@@ -7953,7 +7986,12 @@ S.jsxs("div", {
                         displayPrice = (p.tier2_min_qty > 0 && item.qty >= p.tier2_min_qty) ? p.tier2_price : base;
                       } else {
                         const disc = parseFloat(item.discount) || 0;
-                        displayPrice = p.tp * (1 - disc / 100);
+                        let batchTp = p.tp;
+                        if (item.bchcode > 0 && p.product_batches) {
+                          const batch = p.product_batches.find(b => b.bchcode === item.bchcode);
+                          if (batch && batch.tp > 0) batchTp = parseFloat(batch.tp);
+                        }
+                        displayPrice = batchTp * (1 - disc / 100);
                       }
                     }
                     displayPrice = Math.round(displayPrice * 100) / 100;
@@ -8144,7 +8182,12 @@ S.jsxs("div", {
                                 price = (p.tier2_min_qty > 0 && item.qty >= p.tier2_min_qty) ? p.tier2_price : base;
                               } else {
                                 const disc = parseFloat(item.discount) || 0;
-                                price = p.tp * (1 - disc / 100);
+                                let batchTp = p.tp;
+                                if (item.bchcode > 0 && p.product_batches) {
+                                  const batch = p.product_batches.find(b => b.bchcode === item.bchcode);
+                                  if (batch && batch.tp > 0) batchTp = parseFloat(batch.tp);
+                                }
+                                price = batchTp * (1 - disc / 100);
                               }
                             }
                             price = Math.round(price * 100) / 100;
@@ -8174,7 +8217,12 @@ S.jsxs("div", {
                                 price = (p.tier2_min_qty > 0 && item.qty >= p.tier2_min_qty) ? p.tier2_price : base;
                               } else {
                                 const disc = parseFloat(item.discount) || 0;
-                                price = p.tp * (1 - disc / 100);
+                                let batchTp = p.tp;
+                                if (item.bchcode > 0 && p.product_batches) {
+                                  const batch = p.product_batches.find(b => b.bchcode === item.bchcode);
+                                  if (batch && batch.tp > 0) batchTp = parseFloat(batch.tp);
+                                }
+                                price = batchTp * (1 - disc / 100);
                               }
                             }
                             price = Math.round(price * 100) / 100;
