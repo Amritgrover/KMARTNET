@@ -903,6 +903,10 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
     return localStorage.getItem("kmart_customer_name") || "";
   });
   const [custSearchQuery, setCustSearchQuery] = ge.useState("");
+  const [showAddCustomerModal, setShowAddCustomerModal] = ge.useState(false);
+  const [tempCustName, setTempCustName] = ge.useState("");
+  const [tempCustPhone, setTempCustPhone] = ge.useState("");
+  const [tempCustLoc, setTempCustLoc] = ge.useState("");
   ge.useEffect(() => {
     localStorage.setItem("kmart_cart", JSON.stringify(v));
   }, [v]);
@@ -2708,14 +2712,21 @@ _Contact us to place your order!_`;
                   S.jsx("select",{
                     value:selectedCustomerId,
                     onChange:j=>{
-                      setSelectedCustomerId(j.target.value);
-                      if(j.target.value!==""&&j.target.value!=="new"){
-                        const match=beatCustomers.find(c2=>String(c2.id)===j.target.value);
-                        if(match)H(match.name);
-                      }else if(j.target.value==="new"){
+                      if (j.target.value === "new") {
+                        setTempCustName("");
+                        setTempCustPhone("");
+                        setTempCustLoc("");
+                        setShowAddCustomerModal(true);
+                        setSelectedCustomerId("");
                         H("");
-                      }else{
-                        H("");
+                      } else {
+                        setSelectedCustomerId(j.target.value);
+                        if (j.target.value !== "") {
+                          const match = beatCustomers.find(c2 => String(c2.id) === j.target.value);
+                          if (match) H(match.name);
+                        } else {
+                          H("");
+                        }
                       }
                       setNeErr(!1);
                     },
@@ -2796,22 +2807,7 @@ _Contact us to place your order!_`;
                   ]
                 });
               })(),
-              selectedCustomerId==="new"&&S.jsxs(S.Fragment,{
-                children:[
-                  S.jsx("input",{
-                    value:z,
-                    onChange:j=>{H(j.target.value);setNewCustomerName(j.target.value);setNeErr(!1);},
-                    placeholder:"Enter new customer / shop name…",
-                    style:{...pl,marginTop:10,border:neErr && !z.trim()?`1.5px solid ${C.red}`:`1.5px solid ${C.border}`,background:neErr && !z.trim()?C.redBg:"#fff",padding:"8px 12px",borderRadius:8,width:"100%",fontSize:13.5,fontWeight:500,boxSizing:"border-box"}
-                  }),
-                  S.jsx("input",{
-                    value:newCustomerPhone,
-                    onChange:j=>{setNewCustomerPhone(j.target.value);setNeErr(!1);},
-                    placeholder:"Enter new customer phone number…",
-                    style:{...pl,marginTop:8,border:neErr && !newCustomerPhone.trim()?`1.5px solid ${C.red}`:`1.5px solid ${C.border}`,background:neErr && !newCustomerPhone.trim()?C.redBg:"#fff",padding:"8px 12px",borderRadius:8,width:"100%",fontSize:13.5,fontWeight:500,boxSizing:"border-box"}
-                  })
-                ]
-              })
+              null
             ]
           }),
           r==="customer"&&cust&&!viewingTracking&&S.jsxs("div",{
@@ -6929,12 +6925,21 @@ S.jsxs("div", {
                       S.jsxs("select", {
                         value: selectedCustomerId,
                         onChange: e => {
-                          setSelectedCustomerId(e.target.value);
-                          if (e.target.value !== "new" && e.target.value !== "") {
-                            const match = beatCustomers.find(c => String(c.id) === e.target.value);
-                            if (match) H(match.name);
-                          } else {
+                          if (e.target.value === "new") {
+                            setTempCustName("");
+                            setTempCustPhone("");
+                            setTempCustLoc("");
+                            setShowAddCustomerModal(true);
+                            setSelectedCustomerId("");
                             H("");
+                          } else {
+                            setSelectedCustomerId(e.target.value);
+                            if (e.target.value !== "") {
+                              const match = beatCustomers.find(c => String(c.id) === e.target.value);
+                              if (match) H(match.name);
+                            } else {
+                              H("");
+                            }
                           }
                           setNeErr(!1);
                         },
@@ -6952,47 +6957,7 @@ S.jsxs("div", {
                       })
                     ]
                   }),
-                  selectedCustomerId === "new" && S.jsxs(S.Fragment, {
-                    children: [
-                      S.jsxs("div", {
-                        style: { marginBottom: 12 },
-                        children: [
-                          S.jsx("label", {
-                            style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
-                            children: "New Customer Name *"
-                          }),
-                          S.jsx("input", {
-                            value: newCustomerName,
-                            onChange: e => {
-                              setNewCustomerName(e.target.value);
-                              H(e.target.value);
-                              setNeErr(!1);
-                            },
-                            placeholder: "e.g. Verma Grocery Store",
-                            style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${neErr && !newCustomerName ? C.red : C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
-                          })
-                        ]
-                      }),
-                      S.jsxs("div", {
-                        style: { marginBottom: 14 },
-                        children: [
-                          S.jsx("label", {
-                            style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
-                            children: "New Customer Phone *"
-                          }),
-                          S.jsx("input", {
-                            value: newCustomerPhone,
-                            onChange: e => {
-                              setNewCustomerPhone(e.target.value);
-                              setNeErr(!1);
-                            },
-                            placeholder: "e.g. 9876543210",
-                            style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${neErr && !newCustomerPhone.trim() ? C.red : C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
-                          })
-                        ]
-                      })
-                    ]
-                  })
+                  null
                 ]
               }),
               Object.entries(v).filter(([,j])=>j>0).map(([j,J])=>{
@@ -7988,6 +7953,120 @@ S.jsxs("div", {
                     onClick: () => setDeleteConfirm(null),
                     style: { flex: 1, padding: "10px 0", background: C.bg, color: C.muted, border: "none", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
                     children: "Cancel"
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      showAddCustomerModal && S.jsxs(S.Fragment, {
+        children: [
+          S.jsx(xr, { zIndex: 19000, onClick: () => { setShowAddCustomerModal(false); setSelectedCustomerId(""); } }),
+          S.jsxs("div", {
+            style: { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "calc(100% - 32px)", maxWidth: 360, background: "#fff", borderRadius: 22, padding: "28px 24px 24px", zIndex: 20000, boxShadow: "0 16px 48px rgba(0,0,0,0.28)", fontFamily: "'Outfit', sans-serif" },
+            children: [
+              S.jsx("div", { style: { fontSize: 17, fontWeight: 800, color: C.text, marginBottom: 18 }, children: "＋ Add New Customer" }),
+              S.jsxs("div", {
+                style: { display: "flex", flexDirection: "column", gap: 14 },
+                children: [
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("label", { style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" }, children: "Shop / Customer Name *" }),
+                      S.jsx("input", {
+                        value: tempCustName,
+                        onChange: e => setTempCustName(e.target.value),
+                        placeholder: "e.g. Verma Grocery Store",
+                        style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("label", { style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" }, children: "Phone Number" }),
+                      S.jsx("input", {
+                        value: tempCustPhone,
+                        onChange: e => setTempCustPhone(e.target.value),
+                        placeholder: "e.g. 9876543210",
+                        style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 500, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" }
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    children: [
+                      S.jsx("label", { style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" }, children: "GPS Coordinates" }),
+                      S.jsxs("div", {
+                        style: { display: "flex", alignItems: "center", gap: 8 },
+                        children: [
+                          S.jsx("button", {
+                            onClick: () => {
+                              if (!navigator.geolocation) {
+                                ye("Geolocation not supported by browser.");
+                                return;
+                              }
+                              navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                  setTempCustLoc(`POINT(${pos.coords.longitude} ${pos.coords.latitude})`);
+                                  ye("GPS coordinates fetched successfully!");
+                                },
+                                (err) => {
+                                  ye("Failed to get GPS. Please enable location permissions.");
+                                }
+                              );
+                            },
+                            style: { padding: "8px 12px", background: tempCustLoc ? C.bg : C.primary, color: tempCustLoc ? C.text : "#fff", border: tempCustLoc ? `1.5px solid ${C.border}` : "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                            children: tempCustLoc ? "🔄 Re-fetch GPS" : "📍 Get GPS Coordinates"
+                          }),
+                          S.jsx("span", {
+                            style: { fontSize: 11.5, color: tempCustLoc ? C.green : C.muted, fontWeight: 700 },
+                            children: tempCustLoc ? "Tagged" : "Not Tagged"
+                          })
+                        ]
+                      }),
+                      tempCustLoc && S.jsx("div", {
+                        style: { fontSize: 11, color: C.muted, marginTop: 4, fontStyle: "italic" },
+                        children: tempCustLoc
+                      })
+                    ]
+                  }),
+                  S.jsxs("div", {
+                    style: { display: "flex", gap: 8, marginTop: 12 },
+                    children: [
+                      S.jsx("button", {
+                        onClick: async () => {
+                          if (!tempCustName.trim()) {
+                            ye("Customer name is required.");
+                            return;
+                          }
+                          try {
+                            const payload = {
+                              name: tempCustName.trim(),
+                              phone: tempCustPhone.trim() || ("salesman-" + Date.now()),
+                              beat: selectedBeat
+                            };
+                            if (tempCustLoc) payload.location = tempCustLoc;
+                            const { data: inserted, error } = await Or.from("customers").insert(payload).select().single();
+                            if (error) throw error;
+                            
+                            setBeatCustomers(prev => [...prev, inserted].sort((a, b) => a.name.localeCompare(b.name)));
+                            setSelectedCustomerId(String(inserted.id));
+                            H(inserted.name);
+                            setShowAddCustomerModal(false);
+                            ye("Customer saved successfully!");
+                          } catch (err) {
+                            ye("Failed to save customer.");
+                            console.error(err);
+                          }
+                        },
+                        style: { flex: 1, padding: "11px", background: C.primary, color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                        children: "Save"
+                      }),
+                      S.jsx("button", {
+                        onClick: () => { setShowAddCustomerModal(false); setSelectedCustomerId(""); },
+                        style: { flex: 1, padding: "11px", background: "#fff", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
+                        children: "Cancel"
+                      })
+                    ]
                   })
                 ]
               })
