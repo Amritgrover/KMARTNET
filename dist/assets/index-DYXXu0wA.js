@@ -3133,9 +3133,8 @@ _Contact us to place your order!_`;
               if(r==="customer"){
                 const activeBatches = (j.product_batches || []).filter(b => b.stock > 0 && b.bchcode > 0).sort((a, b) => a.bchcode - b.bchcode);
                 const fifoBatch = activeBatches[0] || null;
-                const scaleRatio = fifoBatch ? (fifoBatch.mrp / j.mrp) : 1;
-                const batchCustomerPrice = fifoBatch ? (j.customer_price > 0 ? (j.customer_price * scaleRatio) : fifoBatch.mrp) : j.customer_price;
-                const batchTier2Price = fifoBatch ? (j.tier2_price > 0 ? (j.tier2_price * scaleRatio) : 0) : j.tier2_price;
+                const batchCustomerPrice = fifoBatch ? ((fifoBatch.tp > 0 ? fifoBatch.tp : j.tp)) : j.tp;
+                const batchTier2Price = 0;
                 const batchStock = fifoBatch ? fifoBatch.stock : 0;
                 const batchBchcode = fifoBatch ? fifoBatch.bchcode : 0;
                 const scaledProduct = {
