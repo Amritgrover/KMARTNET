@@ -4413,10 +4413,7 @@ _Contact us to place your order!_`;
                           return;
                         }
                       }
-                      if (isCheque && (!chequeNo.trim() || !chequeBank.trim())) {
-                        ye("Please enter Cheque Number and Bank Name.");
-                        return;
-                      }
+                      // Cheque details are optional
                       if (isUpi && !upiTransactionId.trim()) {
                         ye("Please enter UPI Transaction ID.");
                         return;
