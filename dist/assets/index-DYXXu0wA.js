@@ -2277,16 +2277,16 @@ _via KMART_`
           batchMrp = parseFloat(batch.mrp) || p.mrp;
         }
       }
+      let batchTp = p.tp;
+      if (bchcode > 0 && p.product_batches) {
+        const batch = p.product_batches.find(b => b.bchcode === bchcode);
+        if (batch && batch.tp > 0) batchTp = parseFloat(batch.tp);
+      }
       let price = batchMrp;
       if (r === "customer") {
         price = p.tier2_min_qty > 0 ? ((qty >= p.tier2_min_qty) ? batchTp : (batchTp * 1.02)) : batchTp;
       } else {
         const disc = parseFloat(T[p.id]) || 0;
-        let batchTp = p.tp;
-        if (bchcode > 0 && p.product_batches) {
-          const batch = p.product_batches.find(b => b.bchcode === bchcode);
-          if (batch && batch.tp > 0) batchTp = parseFloat(batch.tp);
-        }
         price = batchTp * (1 - disc / 100);
       }
       return {
