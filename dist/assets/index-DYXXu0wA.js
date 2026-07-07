@@ -67,8 +67,9 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
   const basePrice = r.customer_price > 0 ? r.customer_price : r.mrp;
   const activePrice = (r.tier2_min_qty > 0 && a >= r.tier2_min_qty) ? r.tier2_price : basePrice;
   const hasTiers = r.tier2_min_qty > 0;
-  const marginVal = r.mrp > 0 ? ((r.mrp - activePrice) / r.mrp * 100) : null;
-  const marginStr = marginVal !== null ? (marginVal % 1 === 0 ? marginVal.toFixed(0) : marginVal.toFixed(1)) : null;
+  const tpVal = r.tp > 0 ? r.tp : r.mrp;
+  const marginVal = r.mrp > 0 ? ((r.mrp - tpVal) / r.mrp * 100) : null;
+  const marginStr = marginVal !== null ? (marginVal > 0 ? (marginVal % 1 === 0 ? marginVal.toFixed(0) : marginVal.toFixed(1)) : null) : null;
 
   return S.jsxs("div", {
     style: {
@@ -102,6 +103,24 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
           zIndex: 1
         },
         children: [`${marginStr}% Margin`]
+      }),
+
+      // Margin Badge for Customer (Capsule Pill style)
+      viewMode === "customer" && marginStr !== null && S.jsxs("div", {
+        style: {
+          position: "absolute",
+          top: 10,
+          right: 10,
+          background: "#ffb03a",
+          color: "#5e3b00",
+          fontSize: "11px",
+          fontWeight: "700",
+          padding: "4px 10px",
+          borderRadius: "20px",
+          boxShadow: "0 2px 6px rgba(254,178,61,0.25)",
+          zIndex: 1
+        },
+        children: [`${marginStr}% margin`]
       }),
 
       // Top Row (Image & Info)
@@ -3146,7 +3165,8 @@ _Contact us to place your order!_`;
                   customer_price: batchCustomerPrice,
                   tier2_price: batchTier2Price,
                   stock: batchStock,
-                  bchcode: batchBchcode
+                  bchcode: batchBchcode,
+                  tp: batchTp
                 };
                 const cartKey = `${j.id}_${batchBchcode}`;
                 return S.jsx(t_,{
