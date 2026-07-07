@@ -6382,7 +6382,7 @@ _Contact us to place your order!_`;
                               S.jsxs("div", {
                                 children: [
                                   S.jsxs("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: ["SELECTED STOPS: ", selectedUnassignedOrders.length] }),
-                                  S.jsxs("div", { style: { fontSize: 14, fontWeight: 800, color: C.primary, marginTop: 1 }, children: ["Total Value: ", un(unassignedOrdersList.filter(o => selectedUnassignedOrders.includes(o.id)).reduce((sum, o) => sum + (o.total_amount || 0), 0))] })
+                                  S.jsxs("div", { style: { fontSize: 14, fontWeight: 800, color: C.primary, marginTop: 1 }, children: ["Total Value: ", un(Math.round(unassignedOrdersList.filter(o => selectedUnassignedOrders.includes(o.id)).reduce((sum, o) => sum + (o.total_amount || 0), 0)))] })
                                 ]
                               }),
                               S.jsx("button", {
@@ -6514,7 +6514,7 @@ S.jsxs("div", {
                                         S.jsxs("span", { style: { fontWeight: 800, fontSize: 13, color: C.text }, children: [groupName, " (", groupOrders.length, ")"] })
                                       ]
                                     }),
-                                    S.jsx("span", { style: { fontWeight: 800, fontSize: 12.5, color: C.primary }, children: un(groupTotalVal) })
+                                    S.jsx("span", { style: { fontWeight: 800, fontSize: 12.5, color: C.primary }, children: un(Math.round(groupTotalVal)) })
                                   ]
                                 }),
                                 S.jsx("div", {
@@ -6552,7 +6552,7 @@ S.jsxs("div", {
                                         S.jsxs("div", {
                                           style: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 },
                                           children: [
-                                            S.jsx("div", { style: { fontWeight: 700, color: C.primary }, children: un(o.total_amount) }),
+                                            S.jsx("div", { style: { fontWeight: 700, color: C.primary }, children: un(Math.round(o.total_amount)) }),
                                             S.jsx("button", {
                                               onClick: async (e) => {
                                                 e.stopPropagation();
