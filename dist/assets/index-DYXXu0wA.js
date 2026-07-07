@@ -1043,6 +1043,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [custNameInput, setCustNameInput] = ge.useState("");
   const [custPhoneInput, setCustPhoneInput] = ge.useState("");
   const [custBeatInput, setCustBeatInput] = ge.useState("Chohla Sahib");
+  const [custLocInput, setCustLocInput] = ge.useState("");
   const [custOrders, setCustOrders] = ge.useState([]);
   const [showCustOrders, setShowCustOrders] = ge.useState(!1);
   const [showCustProfile, setShowCustProfile] = ge.useState(!1);
@@ -2043,7 +2044,9 @@ ${itemsText}
       H(cObj.name);
       ye(`Welcome back, ${cObj.name}!`)
     }else{
-      const{data:inserted,error:insErr}=await Or.from("customers").insert({name,phone,beat:custBeatInput}).select().single();
+      const payload = { name, phone, beat: custBeatInput };
+      if (custLocInput) payload.location = custLocInput;
+      const{data:inserted,error:insErr}=await Or.from("customers").insert(payload).select().single();
       if(insErr){ye("Failed to register. Phone might be registered.");return}
       localStorage.setItem("kmart_customer",JSON.stringify(inserted));
       setCust(inserted);
@@ -7596,7 +7599,7 @@ S.jsxs("div", {
                 ]
               }),
               S.jsxs("div",{
-                style:{textAlign:"left",marginBottom:24},
+                style:{textAlign:"left",marginBottom:16},
                 children:[
                   S.jsx("div",{style:{fontSize:12,fontWeight:600,color:C.muted,marginBottom:5},children:"Area (Beat) *"}),
                   S.jsx("select",{
@@ -7605,6 +7608,36 @@ S.jsxs("div", {
                     style:{width:"100%",padding:"10px 12px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:14,fontFamily:"'Outfit', sans-serif",outline:"none",background:"#fff",cursor:"pointer"},
                     children:dbBeats.map(b=>S.jsx("option",{value:b,children:b},b))
                   })
+                ]
+              }),
+              S.jsxs("div",{
+                style:{textAlign:"left",marginBottom:24},
+                children:[
+                  S.jsx("div",{style:{fontSize:12,fontWeight:600,color:C.muted,marginBottom:5},children:"GPS Location"}),
+                  S.jsxs("div",{
+                    style:{display:"flex",alignItems:"center",gap:8},
+                    children:[
+                      S.jsx("button",{
+                        onClick:()=>{
+                          if(!navigator.geolocation){ye("Geolocation not supported by browser.");return}
+                          navigator.geolocation.getCurrentPosition(
+                            pos=>{
+                              setCustLocInput(`POINT(${pos.coords.longitude} ${pos.coords.latitude})`);
+                              ye("GPS coordinates fetched successfully!");
+                            },
+                            err=>{ye("Failed to get GPS. Check browser permissions.")}
+                          );
+                        },
+                        style:{padding:"8px 12px",background:custLocInput?C.bg:C.primary,color:custLocInput?C.text:"#fff",border:custLocInput?`1.5px solid ${C.border}`:"none",borderRadius:8,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
+                        children:custLocInput?"🔄 Re-fetch GPS":"📍 Tag GPS Location"
+                      }),
+                      S.jsx("span",{
+                        style:{fontSize:11.5,color:custLocInput?C.green:C.muted,fontWeight:700},
+                        children:custLocInput?"Tagged":"Not Tagged"
+                      })
+                    ]
+                  }),
+                  custLocInput && S.jsx("div",{style:{fontSize:10,color:C.muted,marginTop:4,fontStyle:"italic"},children:custLocInput})
                 ]
               }),
               S.jsx("button",{
