@@ -1059,6 +1059,10 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [partialCreditMode, setPartialCreditMode] = ge.useState("Cash");
   const [collectedAmount, setCollectedAmount] = ge.useState("");
   const [chequeNo, setChequeNo] = ge.useState("");
+  const [splitCash, setSplitCash] = ge.useState("");
+  const [splitCheque, setSplitCheque] = ge.useState("");
+  const [splitUpi, setSplitUpi] = ge.useState("");
+  const [splitCredit, setSplitCredit] = ge.useState("");
   const [chequeBank, setChequeBank] = ge.useState("");
   const [nonDeliveryReason, setNonDeliveryReason] = ge.useState("Shop Closed");
   const [otherReasonText, setOtherReasonText] = ge.useState("");
@@ -3461,8 +3465,14 @@ _Contact us to place your order!_`;
           selectedDeliveryPerson && activeTrip && !activeStopOrder && (() => {
             const completedCount = tripStops.filter(s => s.status !== "pending").length;
             const cashToday = tripStops.reduce((sum, s) => {
-              if ((s.status === "delivered" || s.status === "partial") && (s.payment_mode === "Cash" || s.payment_mode === "Partial Credit (Cash)")) {
-                return sum + (s.payment_collected || 0);
+              if (s.status === "delivered" || s.status === "partial") {
+                if (s.payment_mode === "Cash" || s.payment_mode === "Partial Credit (Cash)") {
+                  return sum + (s.payment_collected || 0);
+                }
+                if (s.payment_mode && s.payment_mode.startsWith("Split")) {
+                  const m = s.payment_mode.match(/Cash:\s*₹([\d.]+)/);
+                  if (m) return sum + (Number(m[1]) || 0);
+                }
               }
               return sum;
             }, 0);
@@ -4183,7 +4193,7 @@ _Contact us to place your order!_`;
                     S.jsx("div", { style: { fontSize: 13, fontWeight: 700, color: C.muted }, children: "COLLECT PAYMENT" }),
                     S.jsxs("div", {
                       style: { display: "flex", gap: 8 },
-                      children: ["Cash", "Cheque", "UPI", "Credit", "Partial Credit"].map(mode => (
+                      children: ["Cash", "Cheque", "UPI", "Credit", "Partial Credit", "Split"].map(mode => (
                         S.jsx("button", {
                           key: mode,
                           onClick: () => {
@@ -4222,7 +4232,80 @@ _Contact us to place your order!_`;
                       ]
                     }),
 
-                    paymentMode !== "Credit" && S.jsxs("div", {
+                    paymentMode === "Split" && S.jsxs("div", {
+                      style: { display: "flex", flexDirection: "column", gap: 10 },
+                      children: [
+                        S.jsxs("div", {
+                          style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+                          children: [
+                            S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 4 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "CASH AMOUNT (₹)" }),
+                                S.jsx("input", {
+                                  type: "number",
+                                  value: splitCash,
+                                  placeholder: "0",
+                                  onChange: e => setSplitCash(e.target.value),
+                                  style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 4 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "CHEQUE AMOUNT (₹)" }),
+                                S.jsx("input", {
+                                  type: "number",
+                                  value: splitCheque,
+                                  placeholder: "0",
+                                  onChange: e => setSplitCheque(e.target.value),
+                                  style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 4 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "UPI AMOUNT (₹)" }),
+                                S.jsx("input", {
+                                  type: "number",
+                                  value: splitUpi,
+                                  placeholder: "0",
+                                  onChange: e => setSplitUpi(e.target.value),
+                                  style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                                })
+                              ]
+                            }),
+                            S.jsxs("div", {
+                              style: { display: "flex", flexDirection: "column", gap: 4 },
+                              children: [
+                                S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "CREDIT AMOUNT (₹)" }),
+                                S.jsx("input", {
+                                  type: "number",
+                                  value: splitCredit,
+                                  placeholder: "0",
+                                  onChange: e => setSplitCredit(e.target.value),
+                                  style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                                })
+                              ]
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          style: { display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg, padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700 },
+                          children: [
+                            S.jsxs("span", { children: ["Collected: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0)] }),
+                            S.jsxs("span", { children: ["Credit: ₹", Number(splitCredit)||0] }),
+                            S.jsxs("span", {
+                              style: { color: Math.round(((Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0)) * 100) / 100 === Math.round((deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0)) * 100) / 100 ? C.green : C.red },
+                              children: ["Sum: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0), " / ₹", Math.round((deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0)) * 100) / 100]
+                            })
+                          ]
+                        })
+                      ]
+                    }),
+                    paymentMode !== "Credit" && paymentMode !== "Split" && S.jsxs("div", {
                       style: { display: "flex", flexDirection: "column", gap: 4 },
                       children: [
                         S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "AMOUNT COLLECTED (₹)" }),
@@ -4235,7 +4318,7 @@ _Contact us to place your order!_`;
                       ]
                     }),
 
-                    (paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque")) && S.jsxs("div", {
+                    (paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque") || (paymentMode === "Split" && Number(splitCheque) > 0)) && S.jsxs("div", {
                       style: { display: "flex", flexDirection: "column", gap: 10 },
                       children: [
                         S.jsxs("div", {
@@ -4265,8 +4348,8 @@ _Contact us to place your order!_`;
                       ]
                     }),
 
-                    (paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI")) && (() => {
-                      const payVal = Number(collectedAmount) || 0;
+                    (paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI") || (paymentMode === "Split" && Number(splitUpi) > 0)) && (() => {
+                      const payVal = paymentMode === "Split" ? (Number(splitUpi) || 0) : (Number(collectedAmount) || 0);
                       const orderIdStr = orderObj.id || "N/A";
                       const upiUrl = `upi://pay?pa=gpay-12201744894@okbizaxis&pn=Kartar%20Singh%20And%20Sons&am=${payVal}&tn=Order%20%23${orderIdStr}&cu=INR`;
                       const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUrl)}`;
@@ -4315,12 +4398,30 @@ _Contact us to place your order!_`;
                 // Submit Button
                 S.jsx("button", {
                   onClick: async () => {
-                    const amt = Number(collectedAmount) || 0;
+                    const amt = paymentMode === "Split" ? ((Number(splitCash) || 0) + (Number(splitCheque) || 0) + (Number(splitUpi) || 0)) : (Number(collectedAmount) || 0);
                     const finalStatus = deliveryStatusOption;
                     const finalReason = finalStatus === "Skipped" ? (nonDeliveryReason === "Other" ? otherReasonText : nonDeliveryReason) : "";
-                    const resolvedPaymentMode = paymentMode === "Partial Credit" ? "Partial Credit (" + partialCreditMode + ")" : paymentMode;
-                    const isCheque = paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque");
-                    const isUpi = paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI");
+                    const resolvedPaymentMode = paymentMode === "Split" ? ("Split (Cash: ₹" + (splitCash || 0) + ", Cheque: ₹" + (splitCheque || 0) + ", UPI: ₹" + (splitUpi || 0) + ", Credit: ₹" + (splitCredit || 0) + ")") : (paymentMode === "Partial Credit" ? "Partial Credit (" + partialCreditMode + ")" : paymentMode);
+                    const isCheque = paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque") || (paymentMode === "Split" && Number(splitCheque) > 0);
+                    const isUpi = paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI") || (paymentMode === "Split" && Number(splitUpi) > 0);
+                    if (finalStatus !== "Skipped") {
+                      if (paymentMode === "Split") {
+                        const netSubtotal = deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0);
+                        const sum = (Number(splitCash) || 0) + (Number(splitCheque) || 0) + (Number(splitUpi) || 0) + (Number(splitCredit) || 0);
+                        if (Math.abs(sum - netSubtotal) > 0.05) {
+                          ye("Total split sum (" + sum + ") must equal Net Subtotal (" + Math.round(netSubtotal * 100) / 100 + ")");
+                          return;
+                        }
+                      }
+                      if (isCheque && (!chequeNo.trim() || !chequeBank.trim())) {
+                        ye("Please enter Cheque Number and Bank Name.");
+                        return;
+                      }
+                      if (isUpi && !upiTransactionId.trim()) {
+                        ye("Please enter UPI Transaction ID.");
+                        return;
+                      }
+                    }
                     
                     const payload = {
                       delivery_status: finalStatus,
@@ -6595,11 +6696,24 @@ S.jsxs("div", {
                                   chequeCollected += col;
                                 } else if (mode === "UPI") {
                                   upiCollected += col;
+                                } else if (mode.startsWith("Split")) {
+                                  const cashM = mode.match(/Cash:\s*₹([\d.]+)/);
+                                  if (cashM) cashCollected += Number(cashM[1]) || 0;
+                                  const chequeM = mode.match(/Cheque:\s*₹([\d.]+)/);
+                                  if (chequeM) chequeCollected += Number(chequeM[1]) || 0;
+                                  const upiM = mode.match(/UPI:\s*₹([\d.]+)/);
+                                  if (upiM) upiCollected += Number(upiM[1]) || 0;
                                 }
 
                                 if (mode === "Credit" || mode.startsWith("Partial Credit")) {
                                   creditOutstanding += (val - col);
                                   creditBillsCount += 1;
+                                } else if (mode.startsWith("Split")) {
+                                  const creditM = mode.match(/Credit:\s*₹([\d.]+)/);
+                                  if (creditM && Number(creditM[1]) > 0) {
+                                    creditOutstanding += Number(creditM[1]);
+                                    creditBillsCount += 1;
+                                  }
                                 }
                               });
 
