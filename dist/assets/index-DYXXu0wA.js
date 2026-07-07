@@ -1951,16 +1951,13 @@ ${itemsText}
       const batch=me.product_batches.find(b=>b.bchcode===bchcode);
       if(batch)batchMrp=parseFloat(batch.mrp)||me.mrp;
     }
-    if(r==="customer"){
-      const scaleRatio=me.mrp>0?(batchMrp/me.mrp):1;
-      const base=me.customer_price>0?(me.customer_price*scaleRatio):batchMrp;
-      const price=(me.tier2_min_qty>0&&he>=me.tier2_min_qty)?(me.tier2_price*scaleRatio):base;
-      return j+price*he
-    }
     let batchTp=me.tp;
     if(bchcode>0&&me.product_batches){
       const batch=me.product_batches.find(b=>b.bchcode===bchcode);
       if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
+    }
+    if(r==="customer"){
+      return j+batchTp*he;
     }
     const disc=parseFloat(T[prodId])||0;
     return j+batchTp*he*(1-disc/100)
@@ -2103,8 +2100,8 @@ ${itemsText}
       }
       const displayName=batchName?`${ce.name} (${batchName})`:ce.name;
       if(r==="customer"){
-        const scaleRatio=ce.mrp>0?(batchMrp/ce.mrp):1,base=ce.customer_price>0?(ce.customer_price*scaleRatio):batchMrp,price=(ce.tier2_min_qty>0&&me>=ce.tier2_min_qty)?(ce.tier2_price*scaleRatio):base,lineTotal=price*me;
-        return`• ${displayName} (${ce.unit}) × ${me} @ ₹${price} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}`
+        const lineTotal=batchTp*me;
+        return`• ${displayName} (${ce.unit}) × ${me} @ ₹${batchTp} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}`
       }
       let batchTp=ce.tp;
       if(bchcode>0&&ce.product_batches){
@@ -2231,9 +2228,7 @@ _via KMART_`
       }
       let price = batchMrp;
       if (r === "customer") {
-        const scaleRatio = p.mrp > 0 ? (batchMrp / p.mrp) : 1;
-        const base = p.customer_price > 0 ? (p.customer_price * scaleRatio) : batchMrp;
-        price = (p.tier2_min_qty > 0 && qty >= p.tier2_min_qty) ? (p.tier2_price * scaleRatio) : base;
+        price = batchTp;
       } else {
         const disc = parseFloat(T[p.id]) || 0;
         let batchTp = p.tp;
@@ -6970,7 +6965,7 @@ S.jsxs("div", {
                   const batch=he.product_batches.find(b=>b.bchcode===bchcode);
                   if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
                 }
-                const priceVal = r==="customer"?((he.tier2_min_qty>0&&J>=he.tier2_min_qty)?(he.tier2_price*scaleRatio):(he.customer_price>0?(he.customer_price*scaleRatio):batchMrp)):batchTp*(1-(parseFloat(T[prodId])||0)/100);
+                const priceVal = r==="customer"?batchTp:batchTp*(1-(parseFloat(T[prodId])||0)/100);
                 return he?S.jsxs("div",{
                   style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`},
                   children:[
@@ -7057,14 +7052,14 @@ S.jsxs("div", {
                         }),
                         S.jsx("div",{
                           style:{fontSize:14,fontWeight:800,color:C.primary,minWidth:52,textAlign:"right"},
-                          children:un(r==="customer"?((he.tier2_min_qty>0&&J>=he.tier2_min_qty)?he.tier2_price:(he.customer_price>0?he.customer_price:batchMrp))*J:( (()=>{
+                          children:un(( (()=>{
                             let batchTp=he.tp;
                             if(bchcode>0&&he.product_batches){
                               const batch=he.product_batches.find(b=>b.bchcode===bchcode);
                               if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
                             }
                             return batchTp;
-                          })() )*J*(1-(parseFloat(T[prodId])||0)/100))
+                          })() )*J*(r==="customer"?1:(1-(parseFloat(T[prodId])||0)/100)))
                         })
                       ]
                     })
