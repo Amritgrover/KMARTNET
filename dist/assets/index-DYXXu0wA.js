@@ -883,9 +883,34 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [c, h] = ge.useState(!0);
   const [f, y] = ge.useState("");
   const [g, m] = ge.useState("All");
-  const [v, b] = ge.useState({});
-  const [T, x] = ge.useState({});
-  const [z, H] = ge.useState("");const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);
+  const [v, b] = ge.useState(() => {
+    try {
+      const stored = localStorage.getItem("kmart_cart");
+      return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  const [T, x] = ge.useState(() => {
+    try {
+      const stored = localStorage.getItem("kmart_discounts");
+      return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  const [z, H] = ge.useState(() => {
+    return localStorage.getItem("kmart_customer_name") || "";
+  });
+  ge.useEffect(() => {
+    localStorage.setItem("kmart_cart", JSON.stringify(v));
+  }, [v]);
+  ge.useEffect(() => {
+    localStorage.setItem("kmart_discounts", JSON.stringify(T));
+  }, [T]);
+  ge.useEffect(() => {
+    localStorage.setItem("kmart_customer_name", z);
+  }, [z]);const [selectedBeat, setSelectedBeat] = ge.useState("Chohla Sahib");const [selectedCustomerId, setSelectedCustomerId] = ge.useState("");const [newCustomerName, setNewCustomerName] = ge.useState("");const [newCustomerPhone, setNewCustomerPhone] = ge.useState("");const [dbBeats, setDbBeats] = ge.useState(["Chohla Sahib", "Tarn Taran", "Patti", "Harike", "Goindwal Sahib", "Naushehra Pannuan", "Bhikhiwind", "Others"]);const [adminBeatName, setAdminBeatName] = ge.useState("");const [adminCustName, setAdminCustName] = ge.useState("");const [adminCustPhone, setAdminCustPhone] = ge.useState("");const [adminCustBeat, setAdminCustBeat] = ge.useState("Chohla Sahib");const [adminBeatFilter, setAdminBeatFilter] = ge.useState("All");const [adminCatFilter, setAdminCatFilter] = ge.useState("All");const [editingCustomer, setEditingCustomer] = ge.useState(null);const [deleteConfirm, setDeleteConfirm] = ge.useState(null);
   const [expandedTripId, setExpandedTripId] = ge.useState(null);
   const [expandedTripStops, setExpandedTripStops] = ge.useState([]);
   const [loadingTripStops, setLoadingTripStops] = ge.useState(false);
