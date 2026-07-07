@@ -6716,34 +6716,41 @@ S.jsxs("div", {
                                 children: [
                                   S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "TRIP PAYMENT SUMMARY" }),
                                   S.jsxs("div", {
-                                    style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 },
+                                    style: { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 },
                                     children: [
                                       S.jsxs("div", {
-                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
-                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "TOTAL VALUE" }),
-                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.text, marginTop: 2 }, children: [un(totalValue)] })
+                                          S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "TOTAL VALUE" }),
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.text, marginTop: 2 }, children: [un(totalValue)] })
                                         ]
                                       }),
                                       S.jsxs("div", {
-                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
-                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "CASH" }),
-                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.green, marginTop: 2 }, children: [un(cashCollected)] })
+                                          S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "CASH" }),
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.green, marginTop: 2 }, children: [un(cashCollected)] })
                                         ]
                                       }),
                                       S.jsxs("div", {
-                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
-                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "CHEQUE" }),
-                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.accent, marginTop: 2 }, children: [un(chequeCollected)] })
+                                          S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "CHEQUE" }),
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.accent, marginTop: 2 }, children: [un(chequeCollected)] })
                                         ]
                                       }),
                                       S.jsxs("div", {
-                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
-                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: `CREDIT (${creditBillsCount} BILLS)` }),
-                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: "#b91c1c", marginTop: 2 }, children: [un(creditOutstanding)] })
+                                          S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "UPI" }),
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#0284c7", marginTop: 2 }, children: [un(upiCollected)] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: `CREDIT (${creditBillsCount} BILLS)` }),
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#b91c1c", marginTop: 2 }, children: [un(creditOutstanding)] })
                                         ]
                                       })
                                     ]
