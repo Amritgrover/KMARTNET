@@ -1957,7 +1957,8 @@ ${itemsText}
       if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
     }
     if(r==="customer"){
-      return j+batchTp*he;
+      const price = me.tier2_min_qty > 0 ? ((he >= me.tier2_min_qty) ? batchTp : (batchTp * 1.02)) : batchTp;
+      return j+price*he;
     }
     const disc=parseFloat(T[prodId])||0;
     return j+batchTp*he*(1-disc/100)
@@ -2102,8 +2103,9 @@ ${itemsText}
       }
       const displayName=batchName?`${ce.name} (${batchName})`:ce.name;
       if(r==="customer"){
-        const lineTotal=batchTp*me;
-        return`• ${displayName} (${ce.unit}) × ${me} @ ₹${batchTp} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}`
+        const price = ce.tier2_min_qty > 0 ? ((me >= ce.tier2_min_qty) ? batchTp : (batchTp * 1.02)) : batchTp;
+        const lineTotal=price*me;
+        return`• ${displayName} (${ce.unit}) × ${me} @ ₹${price.toFixed(2)} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}`
       }
       const yt=T[prodId],disc=parseFloat(yt)||0,discountedPrice=batchTp*(1-disc/100),at=yt&&yt!=="0"?`  |  Disc: ${yt}%`:"";
       const lineTotal=discountedPrice*me;
@@ -2225,7 +2227,7 @@ _via KMART_`
       }
       let price = batchMrp;
       if (r === "customer") {
-        price = batchTp;
+        price = p.tier2_min_qty > 0 ? ((qty >= p.tier2_min_qty) ? batchTp : (batchTp * 1.02)) : batchTp;
       } else {
         const disc = parseFloat(T[p.id]) || 0;
         let batchTp = p.tp;
@@ -3133,8 +3135,9 @@ _Contact us to place your order!_`;
               if(r==="customer"){
                 const activeBatches = (j.product_batches || []).filter(b => b.stock > 0 && b.bchcode > 0).sort((a, b) => a.bchcode - b.bchcode);
                 const fifoBatch = activeBatches[0] || null;
-                const batchCustomerPrice = fifoBatch ? ((fifoBatch.tp > 0 ? fifoBatch.tp : j.tp)) : j.tp;
-                const batchTier2Price = 0;
+                const batchTp = fifoBatch ? ((fifoBatch.tp > 0 ? fifoBatch.tp : j.tp)) : j.tp;
+                const batchCustomerPrice = j.tier2_min_qty > 0 ? (batchTp * 1.02) : batchTp;
+                const batchTier2Price = j.tier2_min_qty > 0 ? batchTp : 0;
                 const batchStock = fifoBatch ? fifoBatch.stock : 0;
                 const batchBchcode = fifoBatch ? fifoBatch.bchcode : 0;
                 const scaledProduct = {
@@ -6961,7 +6964,7 @@ S.jsxs("div", {
                   const batch=he.product_batches.find(b=>b.bchcode===bchcode);
                   if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
                 }
-                const priceVal = r==="customer"?batchTp:batchTp*(1-(parseFloat(T[prodId])||0)/100);
+                const priceVal = r==="customer"?(he.tier2_min_qty > 0 ? ((J >= he.tier2_min_qty) ? batchTp : (batchTp * 1.02)) : batchTp):batchTp*(1-(parseFloat(T[prodId])||0)/100);
                 return he?S.jsxs("div",{
                   style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`},
                   children:[
@@ -7054,8 +7057,11 @@ S.jsxs("div", {
                               const batch=he.product_batches.find(b=>b.bchcode===bchcode);
                               if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
                             }
-                            return batchTp;
-                          })() )*J*(r==="customer"?1:(1-(parseFloat(T[prodId])||0)/100)))
+                            if (r === "customer") {
+                              return he.tier2_min_qty > 0 ? ((J >= he.tier2_min_qty) ? batchTp : (batchTp * 1.02)) : batchTp;
+                            }
+                            return batchTp * (1-(parseFloat(T[prodId])||0)/100);
+                          })() )*J)
                         })
                       ]
                     })
