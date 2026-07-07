@@ -109,8 +109,8 @@ ${$}`}class Xe extends Error{constructor({message:a,code:s,cause:l,name:c}){var 
       viewMode === "customer" && marginStr !== null && S.jsxs("div", {
         style: {
           position: "absolute",
-          top: 10,
-          right: 10,
+          top: 12,
+          left: 12,
           background: "#ffb03a",
           color: "#5e3b00",
           fontSize: "11px",
