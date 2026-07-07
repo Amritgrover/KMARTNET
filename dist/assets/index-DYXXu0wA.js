@@ -902,6 +902,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [z, H] = ge.useState(() => {
     return localStorage.getItem("kmart_customer_name") || "";
   });
+  const [custSearchQuery, setCustSearchQuery] = ge.useState("");
   ge.useEffect(() => {
     localStorage.setItem("kmart_cart", JSON.stringify(v));
   }, [v]);
@@ -6903,6 +6904,7 @@ S.jsxs("div", {
                           setSelectedBeat(e.target.value);
                           setSelectedCustomerId("");
                           setNewCustomerName("");
+                          setCustSearchQuery("");
                           H("");
                         },
                         style: { width: "100%", padding: "10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13.5, fontWeight: 600, color: C.text, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif" },
@@ -6916,6 +6918,13 @@ S.jsxs("div", {
                       S.jsx("label", {
                         style: { fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 5, display: "block" },
                         children: "Select Customer *"
+                      }),
+                      S.jsx("input", {
+                        type: "text",
+                        placeholder: "🔍 Type to filter shops...",
+                        value: custSearchQuery,
+                        onChange: e => setCustSearchQuery(e.target.value),
+                        style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 500, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif", marginBottom: 8 }
                       }),
                       S.jsxs("select", {
                         value: selectedCustomerId,
@@ -6933,10 +6942,10 @@ S.jsxs("div", {
                         children: [
                           S.jsx("option", { value: "", children: "-- Select Customer --" }),
                           beatCustomers.filter(c => {
-                            if (selectedBeat === "Others") {
-                              return c.beat === "Others" || !c.beat;
-                            }
-                            return c.beat === selectedBeat;
+                            const matchBeat = (selectedBeat === "Others") ? (c.beat === "Others" || !c.beat) : (c.beat === selectedBeat);
+                            const q = custSearchQuery.trim().toLowerCase();
+                            const matchSearch = !q || c.name.toLowerCase().includes(q) || (c.phone || "").includes(q);
+                            return matchBeat && matchSearch;
                           }).map(c => S.jsx("option", { value: String(c.id), children: c.name }, c.id)),
                           S.jsx("option", { value: "new", children: "+ Add New Customer" })
                         ]
