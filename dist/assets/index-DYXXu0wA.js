@@ -826,16 +826,10 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
           ]
         });
       })(),
-      (r.customer_price > 0 || (r.tier2_min_qty > 0 && r.tier2_price > 0)) && S.jsxs("div",{
+      r.tier2_min_qty > 0 && r.tier2_price > 0 && S.jsxs("div",{
         style:{borderTop:`1px dashed ${C.border}`,paddingTop:10,display:"flex",flexWrap:"wrap",gap:"8px 16px"},
         children:[
-          r.customer_price > 0 && S.jsxs("div",{
-            children:[
-              S.jsx("span",{style:{fontSize:11,fontWeight:600,color:C.muted,marginRight:4},children:"Cust. Base Price:"}),
-              S.jsx("span",{style:{fontSize:12,fontWeight:700,color:C.text},children:un(r.customer_price)})
-            ]
-          }),
-          r.tier2_min_qty > 0 && r.tier2_price > 0 && S.jsxs("div",{
+          S.jsxs("div",{
             children:[
               S.jsx("span",{style:{fontSize:11,fontWeight:600,color:C.muted,marginRight:4},children:`Tier 2 (Qty ${r.tier2_min_qty}+):`}),
               S.jsx("span",{style:{fontSize:12,fontWeight:700,color:C.green},children:un(r.tier2_price)})
