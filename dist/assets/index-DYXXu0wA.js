@@ -4320,6 +4320,7 @@ _Contact us to place your order!_`;
                     const finalReason = finalStatus === "Skipped" ? (nonDeliveryReason === "Other" ? otherReasonText : nonDeliveryReason) : "";
                     const resolvedPaymentMode = paymentMode === "Partial Credit" ? "Partial Credit (" + partialCreditMode + ")" : paymentMode;
                     const isCheque = paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque");
+                    const isUpi = paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI");
                     
                     const payload = {
                       delivery_status: finalStatus,
