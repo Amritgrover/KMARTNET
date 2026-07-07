@@ -1368,7 +1368,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
     }).join("\n");
 
     const totalAmount = parseFloat(o.total_amount) || 0;
-    const totalStr = totalAmount.toFixed(totalAmount % 1 === 0 ? 0 : 2);
+    const totalStr = String(Math.round(totalAmount));
 
     return `*📦 ORDER — ${custName}*
 _${J}_
