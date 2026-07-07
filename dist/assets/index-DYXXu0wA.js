@@ -2091,22 +2091,19 @@ ${itemsText}
       if(!ce)return"";
       let batchName="";
       let batchMrp=ce.mrp;
+      let batchTp=ce.tp;
       if(bchcode>0&&ce.product_batches){
         const batch=ce.product_batches.find(b=>b.bchcode===bchcode);
         if(batch){
           batchName=batch.batch||"";
           batchMrp=parseFloat(batch.mrp)||ce.mrp;
+          if(batch.tp>0)batchTp=parseFloat(batch.tp);
         }
       }
       const displayName=batchName?`${ce.name} (${batchName})`:ce.name;
       if(r==="customer"){
         const lineTotal=batchTp*me;
         return`• ${displayName} (${ce.unit}) × ${me} @ ₹${batchTp} = ₹${lineTotal.toFixed(lineTotal%1===0?0:2)}`
-      }
-      let batchTp=ce.tp;
-      if(bchcode>0&&ce.product_batches){
-        const batch=ce.product_batches.find(b=>b.bchcode===bchcode);
-        if(batch&&batch.tp>0)batchTp=parseFloat(batch.tp);
       }
       const yt=T[prodId],disc=parseFloat(yt)||0,discountedPrice=batchTp*(1-disc/100),at=yt&&yt!=="0"?`  |  Disc: ${yt}%`:"";
       const lineTotal=discountedPrice*me;
