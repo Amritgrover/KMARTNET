@@ -4414,10 +4414,7 @@ _Contact us to place your order!_`;
                         }
                       }
                       // Cheque details are optional
-                      if (isUpi && !upiTransactionId.trim()) {
-                        ye("Please enter UPI Transaction ID.");
-                        return;
-                      }
+                      // UPI Transaction ID is optional
                     }
                     
                     const payload = {
