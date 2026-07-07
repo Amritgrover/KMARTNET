@@ -1042,6 +1042,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   });
   const [custNameInput, setCustNameInput] = ge.useState("");
   const [custPhoneInput, setCustPhoneInput] = ge.useState("");
+  const [custBeatInput, setCustBeatInput] = ge.useState("Chohla Sahib");
   const [custOrders, setCustOrders] = ge.useState([]);
   const [showCustOrders, setShowCustOrders] = ge.useState(!1);
   const [showCustProfile, setShowCustProfile] = ge.useState(!1);
@@ -2042,7 +2043,7 @@ ${itemsText}
       H(cObj.name);
       ye(`Welcome back, ${cObj.name}!`)
     }else{
-      const{data:inserted,error:insErr}=await Or.from("customers").insert({name,phone}).select().single();
+      const{data:inserted,error:insErr}=await Or.from("customers").insert({name,phone,beat:custBeatInput}).select().single();
       if(insErr){ye("Failed to register. Phone might be registered.");return}
       localStorage.setItem("kmart_customer",JSON.stringify(inserted));
       setCust(inserted);
@@ -7581,7 +7582,7 @@ S.jsxs("div", {
                 ]
               }),
               S.jsxs("div",{
-                style:{textAlign:"left",marginBottom:24},
+                style:{textAlign:"left",marginBottom:16},
                 children:[
                   S.jsx("div",{style:{fontSize:12,fontWeight:600,color:C.muted,marginBottom:5},children:"Phone Number *"}),
                   S.jsx("input",{
@@ -7591,6 +7592,18 @@ S.jsxs("div", {
                     placeholder:"e.g. 9876543210",
                     maxLength:10,
                     style:{width:"100%",padding:"10px 12px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:14,fontFamily:"'Outfit', sans-serif",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.05)",outline:"none"}
+                  })
+                ]
+              }),
+              S.jsxs("div",{
+                style:{textAlign:"left",marginBottom:24},
+                children:[
+                  S.jsx("div",{style:{fontSize:12,fontWeight:600,color:C.muted,marginBottom:5},children:"Area (Beat) *"}),
+                  S.jsx("select",{
+                    value:custBeatInput,
+                    onChange:e=>setCustBeatInput(e.target.value),
+                    style:{width:"100%",padding:"10px 12px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:14,fontFamily:"'Outfit', sans-serif",outline:"none",background:"#fff",cursor:"pointer"},
+                    children:dbBeats.map(b=>S.jsx("option",{value:b,children:b},b))
                   })
                 ]
               }),
