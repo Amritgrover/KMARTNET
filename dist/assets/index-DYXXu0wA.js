@@ -6831,9 +6831,9 @@ S.jsxs("div", {
         ]      }),
       X&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:40,onClick:()=>$(!1)}),
+          S.jsx(xr,{zIndex:9940,onClick:()=>$(!1)}),
           S.jsxs("div",{
-            style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:50,padding:"20px 20px 36px",maxHeight:"82vh",overflowY:"auto",boxShadow:"0 -8px 32px rgba(0,0,0,0.18)"},
+            style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:9950,padding:"20px 20px 36px",maxHeight:"82vh",overflowY:"auto",boxShadow:"0 -8px 32px rgba(0,0,0,0.18)"},
             children:[
               S.jsx("div",{style:{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
               S.jsxs("div",{
@@ -7122,9 +7122,9 @@ S.jsxs("div", {
       }),
       N&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:60,onClick:()=>G(!1)}),
+          S.jsx(xr,{zIndex:9960,onClick:()=>G(!1)}),
           S.jsxs("div",{
-            style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:70,padding:"20px 20px 40px",maxHeight:"92vh",overflowY:"auto"},
+            style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:9970,padding:"20px 20px 40px",maxHeight:"92vh",overflowY:"auto"},
             children:[
               S.jsx("div",{style:{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
               S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:18},children:ee?"✏️ Edit Product":"➕ Add New Product"}),ee&&(() => {
@@ -7437,9 +7437,9 @@ S.jsxs("div", {
       }),
       It&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:80}),
+          S.jsx(xr,{zIndex:9980}),
           S.jsxs("div",{
-            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:18,padding:"24px 22px",zIndex:90,boxShadow:"0 8px 40px rgba(0,0,0,0.22)",fontFamily:"'Outfit', sans-serif"},
+            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:18,padding:"24px 22px",zIndex:9990,boxShadow:"0 8px 40px rgba(0,0,0,0.22)",fontFamily:"'Outfit', sans-serif"},
             children:[
               S.jsx("div",{style:{fontSize:36,textAlign:"center",marginBottom:10},children:"🔄"}),
               S.jsx("div",{style:{fontSize:16,fontWeight:800,color:C.text,textAlign:"center",marginBottom:8},children:"Start New Order?"}),
@@ -7486,7 +7486,7 @@ S.jsxs("div", {
         children:[
           S.jsx(xr,{zIndex:80}),
           S.jsxs("div",{
-            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:18,padding:"24px 22px",zIndex:90,boxShadow:"0 8px 40px rgba(0,0,0,0.22)"},
+            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:18,padding:"24px 22px",zIndex:9990,boxShadow:"0 8px 40px rgba(0,0,0,0.22)"},
             children:[
               S.jsx("div",{style:{fontSize:36,textAlign:"center",marginBottom:10},children:"🗑️"}),
               S.jsx("div",{style:{fontSize:16,fontWeight:800,color:C.text,textAlign:"center",marginBottom:8},children:"Delete Product?"}),
@@ -7507,9 +7507,9 @@ S.jsxs("div", {
       }),
       Ze&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:90,onClick:ka}),
+          S.jsx(xr,{zIndex:9982,onClick:ka}),
           S.jsxs("div",{
-            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:22,padding:"28px 24px 24px",zIndex:100,boxShadow:"0 16px 48px rgba(0,0,0,0.28)",textAlign:"center",fontFamily:"'Outfit', sans-serif"},
+            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:300,background:"#fff",borderRadius:22,padding:"28px 24px 24px",zIndex:9992,boxShadow:"0 16px 48px rgba(0,0,0,0.28)",textAlign:"center",fontFamily:"'Outfit', sans-serif"},
             children:[
               S.jsx("div",{style:{fontSize:34,marginBottom:8},children:"🔐"}),
               S.jsx("div",{style:{fontSize:17,fontWeight:800,color:C.text,marginBottom:4},children:authTarget==="admin"?"Admin Access":authTarget==="salesman"?"Salesman Access":"Delivery Access"}),
@@ -7561,9 +7561,9 @@ S.jsxs("div", {
       }),
       r==="customer"&&!cust&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:130}),
+          S.jsx(xr,{zIndex:9994}),
           S.jsxs("div",{
-            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:320,background:"#fff",borderRadius:22,padding:"32px 24px 28px",zIndex:140,boxShadow:"0 16px 48px rgba(0,0,0,0.28)",textAlign:"center",fontFamily:"'Outfit', sans-serif"},
+            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:320,background:"#fff",borderRadius:22,padding:"32px 24px 28px",zIndex:9995,boxShadow:"0 16px 48px rgba(0,0,0,0.28)",textAlign:"center",fontFamily:"'Outfit', sans-serif"},
             children:[
               S.jsx("img",{src:"/assets/logo.png",style:{width:56,height:56,borderRadius:12,objectFit:"contain",marginBottom:16}}),
               S.jsx("div",{style:{fontSize:20,fontWeight:800,color:C.text,marginBottom:4},children:"Welcome to KMART"}),
@@ -7606,9 +7606,9 @@ S.jsxs("div", {
       }),
       showCustProfile&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:110,onClick:()=>setShowCustProfile(!1)}),
+          S.jsx(xr,{zIndex:9985,onClick:()=>setShowCustProfile(!1)}),
           S.jsxs("div",{
-            style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:120,padding:"20px 20px 36px",maxHeight:"82vh",overflowY:"auto",boxShadow:"0 -8px 32px rgba(0,0,0,0.18)",fontFamily:"'Outfit', sans-serif"},
+            style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderRadius:"20px 20px 0 0",zIndex:9995,padding:"20px 20px 36px",maxHeight:"82vh",overflowY:"auto",boxShadow:"0 -8px 32px rgba(0,0,0,0.18)",fontFamily:"'Outfit', sans-serif"},
             children:[
               S.jsx("div",{style:{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
               S.jsxs("div",{
@@ -7679,9 +7679,9 @@ S.jsxs("div", {
       }),
       showCustOrders&&S.jsxs(S.Fragment,{
         children:[
-          S.jsx(xr,{zIndex:110,onClick:()=>setShowCustOrders(!1)}),
+          S.jsx(xr,{zIndex:9985,onClick:()=>setShowCustOrders(!1)}),
           S.jsxs("div",{
-            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:340,maxHeight:"80vh",overflowY:"auto",background:"#fff",borderRadius:18,padding:"24px 22px",zIndex:120,boxShadow:"0 8px 40px rgba(0,0,0,0.22)",fontFamily:"'Outfit', sans-serif"},
+            style:{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"calc(100% - 32px)",maxWidth:340,maxHeight:"80vh",overflowY:"auto",background:"#fff",borderRadius:18,padding:"24px 22px",zIndex:9995,boxShadow:"0 8px 40px rgba(0,0,0,0.22)",fontFamily:"'Outfit', sans-serif"},
             children:[
               S.jsxs("div",{
                 style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16},
