@@ -99,9 +99,31 @@ async function syncStock(pool) {
       productStockMap.set(p.id, 0); // Initialize stock to 0
     });
 
-    // 2. Fetch stock and batch details from Vision database (Batch_master table)
+    // 2. Fetch stock and batch details from Vision database (Batch_master table joined with Godown 1 stock calculation)
     const result = await pool.request().query(`
-      SELECT ITCODE, BCHCODE, BATCH, STOCKBAL, MRP, NCPAGST, PRICERET FROM Batch_master WHERE ITCODE > 0
+      SELECT 
+        bm.ITCODE, 
+        bm.BCHCODE, 
+        bm.BATCH, 
+        ISNULL(gdn.STOCK, 0) AS STOCKBAL, 
+        bm.MRP, 
+        bm.NCPAGST, 
+        bm.PRICERET 
+      FROM Batch_master bm
+      LEFT JOIN (
+        SELECT 
+          ITCODE, 
+          BCHCODE, 
+          SUM(CASE 
+            WHEN TYPE IN ('P', 'OPB', 'SR', 'GP') THEN QTY 
+            WHEN TYPE IN ('S', 'PR', 'GS') THEN -QTY 
+            ELSE 0 
+          END) AS STOCK
+        FROM BILL
+        WHERE GDCODE = 1 AND ITCODE > 0
+        GROUP BY ITCODE, BCHCODE
+      ) gdn ON bm.ITCODE = gdn.ITCODE AND bm.BCHCODE = gdn.BCHCODE
+      WHERE bm.ITCODE > 0
     `);
 
     if (!result.recordset || result.recordset.length === 0) {
