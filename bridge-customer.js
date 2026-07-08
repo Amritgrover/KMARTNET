@@ -99,8 +99,8 @@ async function insertBillRow(pool, p) {
   r.input('TYPE',      sql.NVarChar(5),  'S');
   r.input('DES',       sql.NVarChar(100),p.des || '');
   r.input('PARTICULAR',sql.NVarChar(100),'');
-  r.input('GDCODE',    sql.Int,          0);
-  r.input('GDCODE1',   sql.Int,          0);
+  r.input('GDCODE',    sql.Int,          1);
+  r.input('GDCODE1',   sql.Int,          1);
   r.input('GDCODE2',   sql.Float,        0);
   r.input('LOTNO',     sql.NVarChar(20), '');
   
