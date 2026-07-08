@@ -7525,14 +7525,6 @@ S.jsxs("div", {
                           onClick:()=>ae(J=>({...J,brand:j})),
                           style:{cursor:"pointer",fontFamily:"'Outfit', sans-serif"},
                           children:j
-                        }),
-                        S.jsx("button",{
-                          onClick:(e)=>{
-                            e.stopPropagation();
-                            setBrandToDelete(j);
-                          },
-                          style:{background:"transparent",border:"none",color:C.red,fontSize:13,fontWeight:800,cursor:"pointer",padding:"0 2px",marginLeft:2},
-                          children:"×"
                         })
                       ]
                     },j))
