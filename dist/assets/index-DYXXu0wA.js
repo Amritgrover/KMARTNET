@@ -1264,6 +1264,19 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   });
   const [newCatName, setNewCatName] = ge.useState("");
   const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [brandBeingEdited, setBrandBeingEdited] = ge.useState(null);const [editBrandNameInput, setEditBrandNameInput] = ge.useState("");const [beatBeingEdited, setBeatBeingEdited] = ge.useState(null);const [editBeatNameInput, setEditBeatNameInput] = ge.useState("");const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
+  ge.useEffect(() => {
+    if (brandImages && brandImages.length > 0) {
+      setCustomBrands(prev => {
+        const dbBrands = brandImages.map(bi => bi.brand).filter(Boolean);
+        const merged = Array.from(new Set([...prev, ...dbBrands]));
+        if (JSON.stringify(prev) !== JSON.stringify(merged)) {
+          localStorage.setItem("kmart_custom_brands", JSON.stringify(merged));
+          return merged;
+        }
+        return prev;
+      });
+    }
+  }, [brandImages]);
 
   // NEW Salesman states
   const [salesmenList, setSalesmenList] = ge.useState([]);
