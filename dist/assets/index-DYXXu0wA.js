@@ -3332,8 +3332,8 @@ _Contact us to place your order!_`;
                         S.jsxs("div", {
                           style: { display: "flex", justifyContent: "space-between", fontSize: 12 },
                           children: [
-                            S.jsxs("span", { style: { color: C.muted, fontWeight: 500 }, children: ["Order Total: ", un(o.total_amount)] }),
-                            S.jsxs("span", { style: { fontWeight: 700, color: C.primary }, children: ["Collected: ", un(o.collected_amount)] })
+                            S.jsxs("span", { style: { color: C.muted, fontWeight: 500 }, children: ["Order Total: ", un(Math.round(o.total_amount))] }),
+                            S.jsxs("span", { style: { fontWeight: 700, color: C.primary }, children: ["Collected: ", un(Math.round(o.collected_amount))] })
                           ]
                         }),
 
@@ -3347,7 +3347,7 @@ _Contact us to place your order!_`;
                                 style: { display: "flex", justifyContent: "space-between", fontSize: 11 },
                                 children: [
                                   S.jsxs("span", { style: { color: C.text, fontWeight: 500 }, children: [item.qty, "x ", item.product_name] }),
-                                  S.jsx("span", { style: { color: C.primary, fontWeight: 600 }, children: un(item.total_value) })
+                                  S.jsx("span", { style: { color: C.primary, fontWeight: 600 }, children: un(Math.round(item.total_value)) })
                                 ]
                               })
                             )),
@@ -3355,7 +3355,7 @@ _Contact us to place your order!_`;
                               style: { display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, color: C.green, background: C.greenBg, padding: "4px 8px", borderRadius: 4, marginTop: 2 },
                               children: [
                                 S.jsx("span", { children: "Expiry Credit Applied" }),
-                                S.jsxs("span", { children: ["-", un(o.expiry_credit_amount)] })
+                                S.jsxs("span", { children: ["-", un(Math.round(o.expiry_credit_amount))] })
                               ]
                             })
                           ]
@@ -3420,7 +3420,7 @@ _Contact us to place your order!_`;
                               style: { textAlign: "right" },
                               children: [
                                 S.jsx("div", { style: { fontSize: 11, color: C.muted, fontWeight: 500 }, children: "Total Amount" }),
-                                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.primary }, children: un(o.total_amount) })
+                                S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.primary }, children: un(Math.round(o.total_amount)) })
                               ]
                             })
                           ]
@@ -3597,7 +3597,7 @@ _Contact us to place your order!_`;
                         S.jsxs("div", {
                           style: { textAlign: "right", flexShrink: 0 },
                           children: [
-                            S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(orderObj.total_amount) }),
+                            S.jsx("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.primary }, children: un(Math.round(orderObj.total_amount)) }),
                             S.jsx("div", { style: { fontSize: 10, color: C.muted, marginTop: 2 }, children: displayStatus === "Pending" ? "Unpaid" : `Paid${payModeText}` })
                           ]
                         })
