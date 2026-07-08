@@ -4299,7 +4299,7 @@ _Contact us to place your order!_`;
                             S.jsxs("span", { children: ["Credit: ₹", Number(splitCredit)||0] }),
                             S.jsxs("span", {
                               style: { color: Math.round(((Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0)) * 100) / 100 === Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0)) ? C.green : C.red },
-                              children: ["Sum: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0), " / ₹", Math.round((deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0)) * 100) / 100]
+                              children: ["Sum: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0), " / ₹", Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0))]
                             })
                           ]
                         })
