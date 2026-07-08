@@ -6722,35 +6722,35 @@ S.jsxs("div", {
                                         style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "TOTAL VALUE" }),
-                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.text, marginTop: 2 }, children: [un(totalValue)] })
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.text, marginTop: 2 }, children: [un(Math.round(totalValue))] })
                                         ]
                                       }),
                                       S.jsxs("div", {
                                         style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "CASH" }),
-                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.green, marginTop: 2 }, children: [un(cashCollected)] })
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.green, marginTop: 2 }, children: [un(Math.round(cashCollected))] })
                                         ]
                                       }),
                                       S.jsxs("div", {
                                         style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "CHEQUE" }),
-                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.accent, marginTop: 2 }, children: [un(chequeCollected)] })
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: C.accent, marginTop: 2 }, children: [un(Math.round(chequeCollected))] })
                                         ]
                                       }),
                                       S.jsxs("div", {
                                         style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "UPI" }),
-                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#0284c7", marginTop: 2 }, children: [un(upiCollected)] })
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#0284c7", marginTop: 2 }, children: [un(Math.round(upiCollected))] })
                                         ]
                                       }),
                                       S.jsxs("div", {
                                         style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: `CREDIT (${creditBillsCount} BILLS)` }),
-                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#b91c1c", marginTop: 2 }, children: [un(creditOutstanding)] })
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#b91c1c", marginTop: 2 }, children: [un(Math.round(creditOutstanding))] })
                                         ]
                                       })
                                     ]
@@ -6838,7 +6838,7 @@ S.jsxs("div", {
                                             style: { fontSize: 12, fontWeight: 700, color: C.primary, cursor: "pointer", textDecoration: "underline" },
                                             children: [`Stop ${sIdx + 1}: `, cust.name || "Unknown"]
                                           }),
-                                          S.jsxs("div", { style: { fontSize: 11, color: C.muted }, children: [`Beat: ${cust.beat || "N/A"} · Value: ₹${order.total_amount || 0} · Status: `, S.jsx("span", { style: { fontWeight: 700, color: stop.status === "pending" ? C.accent : stop.status === "delivered" ? C.green : C.red }, children: stop.status.toUpperCase() })] })
+                                          S.jsxs("div", { style: { fontSize: 11, color: C.muted }, children: [`Beat: ${cust.beat || "N/A"} · Value: ₹${Math.round(order.total_amount || 0)} · Status: `, S.jsx("span", { style: { fontWeight: 700, color: stop.status === "pending" ? C.accent : stop.status === "delivered" ? C.green : C.red }, children: stop.status.toUpperCase() })] })
                                         ]
                                       }),
                                       S.jsx("button", {
