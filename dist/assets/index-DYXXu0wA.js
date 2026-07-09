@@ -2507,7 +2507,7 @@ _Contact us to place your order!_`;
     if(uploadedImageUrl)j.image_url=uploadedImageUrl;
     if(ee){
       const{data:J}=await Or.from("products").update(j).eq("id",ee.id).select().single();
-      J&&l(he=>sortProducts(he.map(me=>me.id===ee.id?yl(J):me))),setImageFile(null),ye("Product updated!")
+      J&&l(he=>sortProducts(he.map(me=>me.id===ee.id?yl({...J,product_batches:me.product_batches}):me))),setImageFile(null),ye("Product updated!")
     }else{
       const{data:J}=await Or.from("products").insert(j).select().single();
       J&&l(he=>sortProducts([...he,yl(J)])),setImageFile(null),ye("Product added!")
