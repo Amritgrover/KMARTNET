@@ -73,7 +73,8 @@ async function insertBillRow(pool, p) {
   const titax   = parseFloat((sgsta + cgsta).toFixed(2));
   const nrbgst  = qty > 0 ? parseFloat((taxable / qty).toFixed(3)) : 0;
   const rcode   = `S${CONFIG.bridge.billSeries}${p.bno}`;
-  const dt      = new Date(p.orderDate);
+  const dFull   = new Date(p.orderDate);
+  const dt      = new Date(dFull.getFullYear(), dFull.getMonth(), dFull.getDate());
 
   const r = pool.request();
 
@@ -273,7 +274,8 @@ async function insertBillRow(pool, p) {
 
 async function insertVouRow(pool, p) {
   const r = pool.request();
-  const dt = new Date(p.orderDate);
+  const dFull = new Date(p.orderDate);
+  const dt = new Date(dFull.getFullYear(), dFull.getMonth(), dFull.getDate());
 
   r.input('VCODE',      sql.Int,          101);
   r.input('VECODE',     sql.Int,          0);
@@ -469,6 +471,9 @@ sql.connect(CONFIG.sqlServer).then(pool => {
           const custName = order.customers?.name || '';
           const salesName = order.salesmen?.name || '.';
 
+          const dOrder = new Date(order.created_at);
+          const cleanOrderDate = new Date(dOrder.getFullYear(), dOrder.getMonth(), dOrder.getDate());
+
           // Update or Insert ENTRY header row so Vision's bill list displays NAMT (rounded total) & RO (round-off)
           const existingEntry = await pool.request().query(`
             SELECT BNO FROM ENTRY 
@@ -486,8 +491,8 @@ sql.connect(CONFIG.sqlServer).then(pool => {
             rEntry.input('BNO', sql.Int, next_bno);
             rEntry.input('DOCNO', sql.NVarChar(20), String(next_bno));
             rEntry.input('BLSRS', sql.NVarChar(20), CONFIG.bridge.billSeries);
-            rEntry.input('DATE', sql.DateTime, new Date(order.created_at));
-            rEntry.input('RDATE', sql.DateTime, new Date(order.created_at));
+            rEntry.input('DATE', sql.DateTime, cleanOrderDate);
+            rEntry.input('RDATE', sql.DateTime, cleanOrderDate);
             rEntry.input('ACCODE', sql.Int, visCustId);
             rEntry.input('NAME', sql.NVarChar(100), custName);
             rEntry.input('SMCODE', sql.Int, visSalesId);
