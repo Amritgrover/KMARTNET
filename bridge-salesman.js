@@ -469,6 +469,46 @@ sql.connect(CONFIG.sqlServer).then(pool => {
           const custName = order.customers?.name || '';
           const salesName = order.salesmen?.name || '.';
 
+          // Update or Insert ENTRY header row so Vision's bill list displays NAMT (rounded total) & RO (round-off)
+          const existingEntry = await pool.request().query(`
+            SELECT BNO FROM ENTRY 
+            WHERE BNO = ${next_bno} AND BLSRS = '${CONFIG.bridge.billSeries}'
+          `);
+
+          if (existingEntry.recordset.length > 0) {
+            await pool.request().query(`
+              UPDATE ENTRY
+              SET GAMT = ${grandTotal}, TAXAAMT = ${grandTotal}, RO = ${roundOff}, NAMT = ${roundedTotal}, TITAX = ${parseFloat((totalSgsta + totalCgsta).toFixed(2))}
+              WHERE BNO = ${next_bno} AND BLSRS = '${CONFIG.bridge.billSeries}'
+            `);
+          } else {
+            const rEntry = pool.request();
+            rEntry.input('BNO', sql.Int, next_bno);
+            rEntry.input('DOCNO', sql.NVarChar(20), String(next_bno));
+            rEntry.input('BLSRS', sql.NVarChar(20), CONFIG.bridge.billSeries);
+            rEntry.input('DATE', sql.DateTime, new Date(order.created_at));
+            rEntry.input('RDATE', sql.DateTime, new Date(order.created_at));
+            rEntry.input('ACCODE', sql.Int, visCustId);
+            rEntry.input('NAME', sql.NVarChar(100), custName);
+            rEntry.input('SMCODE', sql.Int, visSalesId);
+            rEntry.input('GAMT', sql.Float, grandTotal);
+            rEntry.input('TAXAAMT', sql.Float, grandTotal);
+            rEntry.input('RO', sql.Float, roundOff);
+            rEntry.input('NAMT', sql.Float, roundedTotal);
+            rEntry.input('TITAX', sql.Float, parseFloat((totalSgsta + totalCgsta).toFixed(2)));
+            rEntry.input('RCODE', sql.NVarChar(30), `S${CONFIG.bridge.billSeries}${next_bno}`);
+            rEntry.input('TYPE', sql.NVarChar(5), 'S');
+            rEntry.input('USERNAME', sql.NVarChar(20), 'SUPERVISOR');
+
+            await rEntry.query(`
+              INSERT INTO ENTRY (
+                BNO, DOCNO, BLSRS, DATE, RDATE, ACCODE, NAME, SMCODE, GAMT, TAXAAMT, RO, NAMT, TITAX, RCODE, TYPE, USERNAME
+              ) VALUES (
+                @BNO, @DOCNO, @BLSRS, @DATE, @RDATE, @ACCODE, @NAME, @SMCODE, @GAMT, @TAXAAMT, @RO, @NAMT, @TITAX, @RCODE, @TYPE, @USERNAME
+              )
+            `);
+          }
+
           // Clean up any existing voucher entries for this bill first
           await pool.request().query(`
             DELETE FROM VOUENTRY 
