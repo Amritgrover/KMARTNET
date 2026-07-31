@@ -50,6 +50,13 @@ async function getVisionItem(pool, itcode) {
   return result.recordset[0] || null;
 }
 
+async function getVisionAccountName(pool, accode) {
+  const result = await pool.request()
+    .input('accode', sql.Int, accode)
+    .query(`SELECT ACNAME FROM ACCOUNT WHERE ACCODE = @accode`);
+  return result.recordset[0]?.ACNAME || null;
+}
+
 async function getVisionBatch(pool, itcode) {
   const result = await pool.request()
     .input('itcode', sql.Int, itcode)
@@ -468,8 +475,9 @@ sql.connect(CONFIG.sqlServer).then(pool => {
           const roundedTotal = Math.round(grandTotal);
           const roundOff = parseFloat((roundedTotal - grandTotal).toFixed(2));
 
-          const custName = order.customers?.name || '';
-          const salesName = order.salesmen?.name || '.';
+          const visAccName = await getVisionAccountName(pool, visCustId);
+          const custName = visAccName || (order.customers?.name || '').toUpperCase();
+          const salesName = (order.salesmen?.name || '.').toUpperCase();
 
           const dOrder = new Date(order.created_at);
           const dateStr = dOrder.toISOString().split('T')[0];
