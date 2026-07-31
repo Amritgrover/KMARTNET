@@ -271,6 +271,72 @@ async function insertBillRow(pool, p) {
   `);
 }
 
+async function insertVouRow(pool, p) {
+  const r = pool.request();
+  const dt = new Date(p.orderDate);
+
+  r.input('VCODE',      sql.Int,          101);
+  r.input('VECODE',     sql.Int,          0);
+  r.input('VDATE',      sql.DateTime,     dt);
+  r.input('VNO',        sql.VarChar(50),  p.vno);
+  r.input('ACCODE',     sql.Int,          p.accode);
+  r.input('ACNAME',     sql.VarChar(50),  '');
+  r.input('NARR',       sql.VarChar(100), p.narr);
+  r.input('DEBIT',      sql.Float,        p.debit);
+  r.input('CREDIT',     sql.Float,        p.credit);
+  r.input('TYPE',       sql.VarChar(1),   p.type);
+  r.input('CTRCODE',    sql.Int,          p.ctrcode);
+  r.input('CTRNAME',    sql.VarChar(50),  p.ctrname || '');
+  r.input('BLNO',       sql.Int,          p.blno);
+  r.input('BLSRS',      sql.VarChar(10),  CONFIG.bridge.billSeries);
+  r.input('BLTYPE',     sql.VarChar(1),   'S');
+  r.input('SNO',        sql.Int,          0);
+  r.input('RNO',        sql.Int,          0);
+  r.input('DOSCODE',    sql.VarChar(10),  null);
+  r.input('USERID',     sql.VarChar(20),  'SUPERVISOR');
+  r.input('bankdate',   sql.DateTime,     new Date('2000-01-01'));
+  r.input('bankyn',     sql.Bit,          false);
+  r.input('rrno',       sql.VarChar(20),  null);
+  r.input('nugs',       sql.VarChar(10),  null);
+  r.input('consignee',  sql.VarChar(50),  null);
+  r.input('pvtmark',    sql.VarChar(20),  null);
+  r.input('DISCOUNT',   sql.Float,        null);
+  r.input('vnat',       sql.VarChar(20),  null);
+  r.input('SACCODE',    sql.Int,          0);
+  r.input('SACNAME',    sql.VarChar(50),  '');
+  r.input('SMCODE',     sql.Int,          p.smcode);
+  r.input('SMNAME',     sql.VarChar(50),  p.smname || '.');
+  r.input('PBLSRS',     sql.VarChar(10),  '');
+  r.input('PBNO',       sql.Int,          null);
+  r.input('CHQDT',      sql.DateTime,     null);
+  r.input('DOCNO',      sql.VarChar(50),  p.vno);
+  r.input('DETAIL',     sql.VarChar(50),  null);
+  r.input('VDUEDATE',   sql.DateTime,     dt);
+  r.input('BRNO',       sql.Int,          0);
+  r.input('DETAIL1',    sql.VarChar(50),  '');
+  r.input('TDSTCSP',    sql.Float,        null);
+  r.input('TDSTCSON',   sql.Float,        null);
+  r.input('TDSTCSAMT',  sql.Float,        null);
+  r.input('SELNO',      sql.VarChar(10),  '');
+  r.input('VOUDATE',    sql.DateTime,     dt);
+
+  await r.query(`
+    INSERT INTO VOUENTRY (
+      VCODE, VECODE, VDATE, VNO, ACCODE, ACNAME, NARR, DEBIT, CREDIT, TYPE,
+      CTRCODE, CTRNAME, BLNO, BLSRS, BLTYPE, SNO, RNO, DOSCODE, USERID,
+      bankdate, bankyn, rrno, nugs, consignee, pvtmark, DISCOUNT, vnat,
+      SACCODE, SACNAME, SMCODE, SMNAME, PBLSRS, PBNO, CHQDT, DOCNO,
+      DETAIL, VDUEDATE, BRNO, DETAIL1, TDSTCSP, TDSTCSON, TDSTCSAMT, SELNO, VOUDATE
+    ) VALUES (
+      @VCODE, @VECODE, @VDATE, @VNO, @ACCODE, @ACNAME, @NARR, @DEBIT, @CREDIT, @TYPE,
+      @CTRCODE, @CTRNAME, @BLNO, @BLSRS, @BLTYPE, @SNO, @RNO, @DOSCODE, @USERID,
+      @bankdate, @bankyn, @rrno, @nugs, @consignee, @pvtmark, @DISCOUNT, @vnat,
+      @SACCODE, @SACNAME, @SMCODE, @SMNAME, @PBLSRS, @PBNO, @CHQDT, @DOCNO,
+      @DETAIL, @VDUEDATE, @BRNO, @DETAIL1, @TDSTCSP, @TDSTCSON, @TDSTCSAMT, @SELNO, @VOUDATE
+    )
+  `);
+}
+
 log('🚀 KMART-Vision Salesman Bridge started');
 log(`   Series  : ${CONFIG.bridge.billSeries}`);
 log(`   Polling : every ${CONFIG.bridge.pollIntervalMs / 1000}s`);
@@ -285,8 +351,8 @@ sql.connect(CONFIG.sqlServer).then(pool => {
         .from('orders')
         .select(`
           id, created_at, items,
-          customers ( vision_customer_id ),
-          salesmen ( vision_salesman_id )
+          customers ( vision_customer_id, name ),
+          salesmen ( vision_salesman_id, name )
         `)
         .eq('sync_status', 'pending')
         .eq('source', 'salesman');
@@ -322,6 +388,11 @@ sql.connect(CONFIG.sqlServer).then(pool => {
           `);
           const { next_uncode, next_bno } = idResult.recordset[0];
           let uncode = next_uncode;
+
+          let totalAmt = 0;
+          let totalSgsta = 0;
+          let totalCgsta = 0;
+          let salesTotalByAccount = {};
 
           for (const item of items) {
             const prodInfo = dbProducts.find(p => p.id === item.id);
@@ -368,6 +439,17 @@ sql.connect(CONFIG.sqlServer).then(pool => {
             const gstRate  = (vItem.SGST || 0) + (vItem.CGST || 0);
             const pkg      = Math.floor(item.qty / caseSize);
             const looseqty = item.qty % caseSize;
+            const qty      = (pkg * caseSize) + looseqty;
+            const amt      = parseFloat((item.price * qty).toFixed(2));
+            const taxable  = parseFloat((amt / (1 + gstRate / 100)).toFixed(2));
+            const sgsta    = parseFloat((taxable * (vItem.SGST || 0) / 100).toFixed(2));
+            const cgsta    = parseFloat((taxable * (vItem.CGST || 0) / 100).toFixed(2));
+
+            totalAmt += amt;
+            totalSgsta += sgsta;
+            totalCgsta += cgsta;
+            const salecode = vItem.SALECODE || 0;
+            salesTotalByAccount[salecode] = (salesTotalByAccount[salecode] || 0) + taxable;
 
             await insertBillRow(pool, {
               uncode: uncode++, accode: visCustId,
@@ -377,6 +459,111 @@ sql.connect(CONFIG.sqlServer).then(pool => {
               pkg, nugs: caseSize, looseqty, rate: item.price,
               taxp: gstRate, salecode: vItem.SALECODE || 0,
               mrp, bchcode, batch, bexpiry,
+            });
+          }
+
+          const grandTotal = parseFloat((totalAmt).toFixed(2));
+          const roundedTotal = Math.round(grandTotal);
+          const roundOff = parseFloat((roundedTotal - grandTotal).toFixed(2));
+
+          const custName = order.customers?.name || '';
+          const salesName = order.salesmen?.name || '.';
+
+          // Clean up any existing voucher entries for this bill first
+          await pool.request().query(`
+            DELETE FROM VOUENTRY 
+            WHERE BLNO = ${next_bno} AND BLSRS = '${CONFIG.bridge.billSeries}'
+          `);
+
+          // 1. Customer Debit row
+          await insertVouRow(pool, {
+            vno: next_bno.toString(),
+            accode: visCustId,
+            narr: 'To Sal.Bill No.' + CONFIG.bridge.billSeries + next_bno + ' ',
+            debit: roundedTotal,
+            credit: 0,
+            type: 'D',
+            ctrcode: visCustId,
+            ctrname: custName,
+            blno: next_bno,
+            smcode: visSalesId,
+            smname: salesName,
+            orderDate: order.created_at
+          });
+
+          // 2. Sales Credit rows
+          for (const salecode of Object.keys(salesTotalByAccount)) {
+            const revAmt = salesTotalByAccount[salecode];
+            if (revAmt > 0) {
+              await insertVouRow(pool, {
+                vno: next_bno.toString(),
+                accode: parseInt(salecode),
+                narr: 'By Sal.Bill No.' + CONFIG.bridge.billSeries + next_bno + '  Credit',
+                debit: 0,
+                credit: parseFloat(revAmt.toFixed(2)),
+                type: 'C',
+                ctrcode: visCustId,
+                ctrname: custName,
+                blno: next_bno,
+                smcode: visSalesId,
+                smname: salesName,
+                orderDate: order.created_at
+              });
+            }
+          }
+
+          // 3. SGST Credit row
+          if (totalSgsta > 0) {
+            await insertVouRow(pool, {
+              vno: next_bno.toString(),
+              accode: -45,
+              narr: 'By Sal.Bill No.' + CONFIG.bridge.billSeries + next_bno + ' ',
+              debit: 0,
+              credit: parseFloat(totalSgsta.toFixed(2)),
+              type: 'C',
+              ctrcode: visCustId,
+              ctrname: custName,
+              blno: next_bno,
+              smcode: visSalesId,
+              smname: salesName,
+              orderDate: order.created_at
+            });
+          }
+
+          // 4. CGST Credit row
+          if (totalCgsta > 0) {
+            await insertVouRow(pool, {
+              vno: next_bno.toString(),
+              accode: -46,
+              narr: 'By Sal.Bill No.' + CONFIG.bridge.billSeries + next_bno + ' ',
+              debit: 0,
+              credit: parseFloat(totalCgsta.toFixed(2)),
+              type: 'C',
+              ctrcode: visCustId,
+              ctrname: custName,
+              blno: next_bno,
+              smcode: visSalesId,
+              smname: salesName,
+              orderDate: order.created_at
+            });
+          }
+
+          // 5. Round Off row
+          if (roundOff !== 0) {
+            const isDebit = roundOff < 0;
+            await insertVouRow(pool, {
+              vno: next_bno.toString(),
+              accode: -6,
+              narr: (isDebit ? 'To' : 'By') + ' Sal.Bill No.' + CONFIG.bridge.billSeries + next_bno + ' ',
+              debit: isDebit ? Math.abs(roundOff) : 0,
+              credit: isDebit ? 0 : roundOff,
+              type: isDebit ? 'D' : 'C',
+              ctrcode: visCustId,
+              ctrname: custName,
+              blno: next_bno,
+              smcode: visSalesId,
+              smname: salesName,
+              orderDate: order.created_at
             });
           }
 

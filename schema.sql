@@ -49,6 +49,7 @@ DECLARE
   prod_id bigint;
   item_qty integer;
   item_bchcode integer;
+  prod_exists boolean;
 BEGIN
   -- Revert stock for OLD items (on DELETE or UPDATE)
   IF (TG_OP = 'DELETE' OR TG_OP = 'UPDATE') THEN
@@ -57,21 +58,26 @@ BEGIN
       item_qty := (item->>'qty')::integer;
       item_bchcode := COALESCE((item->>'bchcode')::integer, 0);
 
-      UPDATE product_batches
-      SET stock = stock + item_qty
-      WHERE product_id = prod_id AND bchcode = item_bchcode;
+      -- Check if the product exists in the products table
+      SELECT EXISTS (SELECT 1 FROM products WHERE id = prod_id) INTO prod_exists;
 
-      IF NOT FOUND THEN
-        INSERT INTO product_batches (product_id, bchcode, batch, mrp, stock)
-        VALUES (prod_id, item_bchcode, '', COALESCE((item->>'mrp')::numeric, 0), item_qty)
-        ON CONFLICT (product_id, bchcode) DO UPDATE
-        SET stock = product_batches.stock + item_qty;
+      IF prod_exists THEN
+        UPDATE product_batches
+        SET stock = stock + item_qty
+        WHERE product_id = prod_id AND bchcode = item_bchcode;
+
+        IF NOT FOUND THEN
+          INSERT INTO product_batches (product_id, bchcode, batch, mrp, stock)
+          VALUES (prod_id, item_bchcode, '', COALESCE((item->>'mrp')::numeric, 0), item_qty)
+          ON CONFLICT (product_id, bchcode) DO UPDATE
+          SET stock = product_batches.stock + item_qty;
+        END IF;
+
+        -- Update main products stock to sum of all batches
+        UPDATE products
+        SET stock = (SELECT COALESCE(SUM(stock), 0) FROM product_batches WHERE product_id = prod_id)
+        WHERE id = prod_id;
       END IF;
-
-      -- Update main products stock to sum of all batches
-      UPDATE products
-      SET stock = (SELECT COALESCE(SUM(stock), 0) FROM product_batches WHERE product_id = prod_id)
-      WHERE id = prod_id;
     END LOOP;
   END IF;
 
@@ -82,21 +88,26 @@ BEGIN
       item_qty := (item->>'qty')::integer;
       item_bchcode := COALESCE((item->>'bchcode')::integer, 0);
 
-      UPDATE product_batches
-      SET stock = stock - item_qty
-      WHERE product_id = prod_id AND bchcode = item_bchcode;
+      -- Check if the product exists in the products table
+      SELECT EXISTS (SELECT 1 FROM products WHERE id = prod_id) INTO prod_exists;
 
-      IF NOT FOUND THEN
-        INSERT INTO product_batches (product_id, bchcode, batch, mrp, stock)
-        VALUES (prod_id, item_bchcode, '', COALESCE((item->>'mrp')::numeric, 0), -item_qty)
-        ON CONFLICT (product_id, bchcode) DO UPDATE
-        SET stock = product_batches.stock - item_qty;
+      IF prod_exists THEN
+        UPDATE product_batches
+        SET stock = stock - item_qty
+        WHERE product_id = prod_id AND bchcode = item_bchcode;
+
+        IF NOT FOUND THEN
+          INSERT INTO product_batches (product_id, bchcode, batch, mrp, stock)
+          VALUES (prod_id, item_bchcode, '', COALESCE((item->>'mrp')::numeric, 0), -item_qty)
+          ON CONFLICT (product_id, bchcode) DO UPDATE
+          SET stock = product_batches.stock - item_qty;
+        END IF;
+
+        -- Update main products stock to sum of all batches
+        UPDATE products
+        SET stock = (SELECT COALESCE(SUM(stock), 0) FROM product_batches WHERE product_id = prod_id)
+        WHERE id = prod_id;
       END IF;
-
-      -- Update main products stock to sum of all batches
-      UPDATE products
-      SET stock = (SELECT COALESCE(SUM(stock), 0) FROM product_batches WHERE product_id = prod_id)
-      WHERE id = prod_id;
     END LOOP;
   END IF;
 
@@ -117,3 +128,6 @@ ALTER TABLE product_batches ADD COLUMN IF NOT EXISTS cp NUMERIC DEFAULT 0;
 
 -- 8. Enable Supabase Realtime for product_batches table
 ALTER PUBLICATION supabase_realtime ADD TABLE product_batches;
+
+-- 9. Add delivery_discount column to orders table
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_discount NUMERIC DEFAULT 0;

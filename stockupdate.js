@@ -134,9 +134,13 @@ async function syncStock(pool) {
     // 3. Format database rows for product_batches and determine main product properties
     const batchesData = [];
     const productMrpMap = new Map();
+    const productTpMap = new Map();
+    const productCpMap = new Map();
 
     dbProducts.forEach(p => {
       productMrpMap.set(p.id, null);
+      productTpMap.set(p.id, null);
+      productCpMap.set(p.id, null);
     });
 
     // Group batches by product id
@@ -164,6 +168,8 @@ async function syncStock(pool) {
       const activeRow = sortedRows[0];
       if (activeRow) {
         productMrpMap.set(productId, parseFloat(activeRow.MRP) || 0);
+        productTpMap.set(productId, parseFloat(activeRow.PRICERET) || 0);
+        productCpMap.set(productId, parseFloat(activeRow.NCPAGST) || 0);
       }
 
       rows.forEach(row => {
@@ -229,17 +235,25 @@ async function syncStock(pool) {
       }
     }
 
-    // 5. Update main product stock and MRP in Supabase (chunked updates to avoid identity column constraints)
+    // 5. Update main product stock, MRP, TP, and CP in Supabase (chunked updates to avoid identity column constraints)
     const productsUpdateData = Array.from(productStockMap.entries()).map(([id, stock]) => {
       const mrp = productMrpMap.get(id);
+      const tp = productTpMap.get(id);
+      const cp = productCpMap.get(id);
       const updateObj = { id, stock };
       if (mrp !== null && mrp !== undefined) {
         updateObj.mrp = mrp;
       }
+      if (tp !== null && tp !== undefined) {
+        updateObj.tp = tp;
+      }
+      if (cp !== null && cp !== undefined) {
+        updateObj.cp = cp;
+      }
       return updateObj;
     });
 
-    log(`Syncing ${productsUpdateData.length} product stocks and MRPs to Supabase...`);
+    log(`Syncing ${productsUpdateData.length} product stocks, MRPs, TPs, and CPs to Supabase...`);
     const chunkSize = 20;
     for (let i = 0; i < productsUpdateData.length; i += chunkSize) {
       const chunk = productsUpdateData.slice(i, i + chunkSize);
@@ -247,6 +261,12 @@ async function syncStock(pool) {
         const updatePayload = { stock: item.stock };
         if (item.mrp !== undefined) {
           updatePayload.mrp = item.mrp;
+        }
+        if (item.tp !== undefined) {
+          updatePayload.tp = item.tp;
+        }
+        if (item.cp !== undefined) {
+          updatePayload.cp = item.cp;
         }
         const { error } = await supabase
           .from('products')

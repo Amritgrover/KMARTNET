@@ -1058,6 +1058,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
   const [paymentMode, setPaymentMode] = ge.useState("Cash");
   const [partialCreditMode, setPartialCreditMode] = ge.useState("Cash");
   const [collectedAmount, setCollectedAmount] = ge.useState("");
+  const [deliveryDiscount, setDeliveryDiscount] = ge.useState("");
   const [chequeNo, setChequeNo] = ge.useState("");
   const [splitCash, setSplitCash] = ge.useState("");
   const [splitCheque, setSplitCheque] = ge.useState("");
@@ -1226,17 +1227,31 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
       setSelectedExpiryProduct("");
       setExpiryQty("");
       setExpiryPrice("");
+      setDeliveryDiscount("");
       setDeductExpiryCredit(true);
       setUpiTransactionId("");
+      setSplitCash("");
+      setSplitCheque("");
+      setSplitUpi("");
+      setSplitCredit("");
     }
   }, [activeStopOrder]);
 
-  const deliveredSubtotal = (activeStopOrder && activeStopOrder.order_id && activeStopOrder.order_id.items) ? activeStopOrder.order_id.items.reduce((sum, item) => {
-    const dQty = deliveredQties[item.id] ?? item.qty;
-    const itemPrice = item.price || 0;
-    const itemDiscount = item.discount || 0;
-    return sum + (dQty * itemPrice * (1 - itemDiscount/100));
-  }, 0) : 0;
+  const deliveredSubtotal = (activeStopOrder && activeStopOrder.order_id) ? (() => {
+    const orderObj = activeStopOrder.order_id;
+    if (deliveryStatusOption === "Delivered" || !orderObj.items || orderObj.items.length === 0) {
+      return Number(orderObj.total_amount) || 0;
+    }
+    const originalTotalCalc = orderObj.items.reduce((sum, item) => sum + ((item.qty || 0) * (item.price || 0)), 0);
+    const deliveredTotalCalc = orderObj.items.reduce((sum, item) => {
+      const dQty = deliveredQties[item.id] !== undefined ? (parseInt(deliveredQties[item.id]) || 0) : (item.qty || 0);
+      return sum + (dQty * (item.price || 0));
+    }, 0);
+    if (originalTotalCalc > 0) {
+      return ((Number(orderObj.total_amount) || 0) * deliveredTotalCalc) / originalTotalCalc;
+    }
+    return deliveredTotalCalc;
+  })() : 0;
 
   const totalExpiryCredit = expiryReturns.reduce((sum, item) => sum + (Number(item.total_value) || 0), 0);
 
@@ -1246,9 +1261,10 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
     } else {
       const baseAmt = Math.round(deliveredSubtotal);
       const credit = deductExpiryCredit ? totalExpiryCredit : 0;
-      setCollectedAmount(String(Math.max(0, baseAmt - credit)));
+      const disc = parseFloat(deliveryDiscount) || 0;
+      setCollectedAmount(String(Math.max(0, baseAmt - credit - disc)));
     }
-  }, [deliveredSubtotal, deliveryStatusOption, expiryReturns, deductExpiryCredit]);
+  }, [deliveredSubtotal, deliveryStatusOption, expiryReturns, deductExpiryCredit, deliveryDiscount]);
   const [customCats, setCustomCats] = ge.useState(() => {
     const defaults = ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
     const stored = localStorage.getItem("kmart_custom_categories");
@@ -4211,14 +4227,21 @@ _Contact us to place your order!_`;
                           key: mode,
                           onClick: () => {
                             setPaymentMode(mode);
+                            const credit = deductExpiryCredit ? totalExpiryCredit : 0;
+                            const disc = parseFloat(deliveryDiscount) || 0;
+                            const netAmt = Math.max(0, Math.round(deliveredSubtotal) - credit - disc);
                             if (mode === "Credit") {
                               setCollectedAmount("0");
                             } else if (mode === "Partial Credit") {
-                              const credit = deductExpiryCredit ? totalExpiryCredit : 0;
-                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal / 2) - credit)));
+                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal / 2) - credit - disc)));
+                            } else if (mode === "Split") {
+                              setCollectedAmount(String(netAmt));
+                              setSplitCash(String(netAmt));
+                              setSplitCheque("");
+                              setSplitUpi("");
+                              setSplitCredit("");
                             } else {
-                              const credit = deductExpiryCredit ? totalExpiryCredit : 0;
-                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal) - credit)));
+                              setCollectedAmount(String(netAmt));
                             }
                           },
                           style: { flex: 1, padding: "8px 0", background: paymentMode === mode ? C.primary : C.bg, color: paymentMode === mode ? "#fff" : C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
@@ -4311,22 +4334,40 @@ _Contact us to place your order!_`;
                             S.jsxs("span", { children: ["Collected: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0)] }),
                             S.jsxs("span", { children: ["Credit: ₹", Number(splitCredit)||0] }),
                             S.jsxs("span", {
-                              style: { color: Math.round(((Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0)) * 100) / 100 === Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0)) ? C.green : C.red },
-                              children: ["Sum: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0), " / ₹", Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0))]
+                              style: { color: Math.round(((Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0)) * 100) / 100 === Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0) - (parseFloat(deliveryDiscount) || 0)) ? C.green : C.red },
+                              children: ["Sum: ₹", (Number(splitCash)||0) + (Number(splitCheque)||0) + (Number(splitUpi)||0) + (Number(splitCredit)||0), " / ₹", Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0) - (parseFloat(deliveryDiscount) || 0))]
                             })
                           ]
                         })
                       ]
                     }),
                     paymentMode !== "Credit" && paymentMode !== "Split" && S.jsxs("div", {
-                      style: { display: "flex", flexDirection: "column", gap: 4 },
+                      style: { display: "flex", flexDirection: "column", gap: 10 },
                       children: [
-                        S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "AMOUNT COLLECTED (₹)" }),
-                        S.jsx("input", {
-                          type: "number",
-                          value: collectedAmount,
-                          onChange: e => setCollectedAmount(e.target.value),
-                          style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.primary, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
+                          children: [
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "AMOUNT COLLECTED (₹)" }),
+                            S.jsx("input", {
+                              type: "number",
+                              value: collectedAmount,
+                              onChange: e => setCollectedAmount(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.primary, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
+                          children: [
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "DISCOUNT (₹)" }),
+                            S.jsx("input", {
+                              type: "number",
+                              placeholder: "0",
+                              value: deliveryDiscount,
+                              onChange: e => setDeliveryDiscount(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                            })
+                          ]
                         })
                       ]
                     }),
@@ -4419,7 +4460,7 @@ _Contact us to place your order!_`;
                     const isUpi = paymentMode === "UPI" || (paymentMode === "Partial Credit" && partialCreditMode === "UPI") || (paymentMode === "Split" && Number(splitUpi) > 0);
                     if (finalStatus !== "Skipped") {
                       if (paymentMode === "Split") {
-                        const netSubtotal = deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0);
+                        const netSubtotal = Math.max(0, Math.round(deliveredSubtotal - (deductExpiryCredit ? totalExpiryCredit : 0) - (parseFloat(deliveryDiscount) || 0)));
                         const sum = (Number(splitCash) || 0) + (Number(splitCheque) || 0) + (Number(splitUpi) || 0) + (Number(splitCredit) || 0);
                         if (Math.abs(sum - netSubtotal) > 0.05) {
                           ye("Total split sum (" + sum + ") must equal Net Subtotal (" + Math.round(netSubtotal * 100) / 100 + ")");
@@ -4430,6 +4471,7 @@ _Contact us to place your order!_`;
                       // UPI Transaction ID is optional
                     }
                     
+                    const totalDisc = parseFloat(deliveryDiscount) || 0;
                     const payload = {
                       delivery_status: finalStatus,
                       delivered_items: orderObj.items.map(item => ({
@@ -4441,6 +4483,7 @@ _Contact us to place your order!_`;
                       })),
                       payment_mode: finalStatus !== "Skipped" ? resolvedPaymentMode : null,
                       collected_amount: finalStatus !== "Skipped" ? amt : 0,
+                      delivery_discount: finalStatus !== "Skipped" ? totalDisc : 0,
                       cheque_no: finalStatus !== "Skipped" && isCheque ? chequeNo : null,
                       cheque_bank: finalStatus !== "Skipped" && isCheque ? chequeBank : null,
                       non_delivery_reason: finalReason,
@@ -4457,6 +4500,9 @@ _Contact us to place your order!_`;
                       "Skipped": "failed"
                     };
                     let finalNotes = finalReason || "";
+                    if (totalDisc > 0) {
+                      finalNotes = `[Discount: ₹${totalDisc}] ${finalNotes}`.trim();
+                    }
                     if (expiryReturns.length > 0) {
                       const returnSummary = expiryReturns.map(x => `${x.qty}x ${x.product_name} (₹${x.total_value})`).join(", ");
                       finalNotes = `[Expiry Returns: ${returnSummary}] ${finalNotes}`.trim();
@@ -6686,6 +6732,7 @@ S.jsxs("div", {
                               let cashCollected = 0;
                               let chequeCollected = 0;
                               let upiCollected = 0;
+                              let totalDiscount = 0;
                               let creditOutstanding = 0;
                               let creditBillsCount = 0;
 
@@ -6694,6 +6741,13 @@ S.jsxs("div", {
                                 const val = Number(ord.total_amount) || 0;
                                 const col = Number(stop.payment_collected) || 0;
                                 const mode = stop.payment_mode || "";
+
+                                let disc = Number(ord.delivery_discount) || 0;
+                                if (!disc && stop.notes) {
+                                  const m = stop.notes.match(/\[Discount:\s*₹([\d.]+)\]/);
+                                  if (m) disc = Number(m[1]) || 0;
+                                }
+                                totalDiscount += disc;
 
                                 totalValue += val;
                                 
@@ -6713,7 +6767,7 @@ S.jsxs("div", {
                                 }
 
                                 if (mode === "Credit" || mode.startsWith("Partial Credit")) {
-                                  creditOutstanding += (val - col);
+                                  creditOutstanding += (val - col - disc);
                                   creditBillsCount += 1;
                                 } else if (mode.startsWith("Split")) {
                                   const creditM = mode.match(/Credit:\s*₹([\d.]+)/);
@@ -6729,7 +6783,7 @@ S.jsxs("div", {
                                 children: [
                                   S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "TRIP PAYMENT SUMMARY" }),
                                   S.jsxs("div", {
-                                    style: { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 },
+                                    style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 8 },
                                     children: [
                                       S.jsxs("div", {
                                         style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
@@ -6757,6 +6811,13 @@ S.jsxs("div", {
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "UPI" }),
                                           S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#0284c7", marginTop: 2 }, children: [un(Math.round(upiCollected))] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 6, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted }, children: "DISCOUNT" }),
+                                          S.jsxs("div", { style: { fontSize: 13, fontWeight: 800, color: "#d97706", marginTop: 2 }, children: [un(Math.round(totalDiscount))] })
                                         ]
                                       }),
                                       S.jsxs("div", {

@@ -901,6 +901,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
   const [paymentMode, setPaymentMode] = ge.useState("Cash");
   const [partialCreditMode, setPartialCreditMode] = ge.useState("Cash");
   const [collectedAmount, setCollectedAmount] = ge.useState("");
+  const [deliveryDiscount, setDeliveryDiscount] = ge.useState("");
   const [chequeNo, setChequeNo] = ge.useState("");
   const [chequeBank, setChequeBank] = ge.useState("");
   const [nonDeliveryReason, setNonDeliveryReason] = ge.useState("Shop Closed");
@@ -951,6 +952,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
       setDeliveryStatusOption("Delivered");
       setPaymentMode("Cash");
       setCollectedAmount(String(orderObj.total_amount || 0));
+      setDeliveryDiscount("");
       setChequeNo("");
       setChequeBank("");
       setNonDeliveryReason("Shop Closed");
@@ -958,20 +960,31 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x}){
     }
   }, [activeStopOrder]);
 
-  const deliveredSubtotal = (activeStopOrder && activeStopOrder.order_id && activeStopOrder.order_id.items) ? activeStopOrder.order_id.items.reduce((sum, item) => {
-    const dQty = deliveredQties[item.id] ?? item.qty;
-    const itemPrice = item.price || 0;
-    const itemDiscount = item.discount || 0;
-    return sum + (dQty * itemPrice * (1 - itemDiscount/100));
-  }, 0) : 0;
+  const deliveredSubtotal = (activeStopOrder && activeStopOrder.order_id) ? (() => {
+    const orderObj = activeStopOrder.order_id;
+    if (deliveryStatusOption === "Delivered" || !orderObj.items || orderObj.items.length === 0) {
+      return Number(orderObj.total_amount) || 0;
+    }
+    const originalTotalCalc = orderObj.items.reduce((sum, item) => sum + ((item.qty || 0) * (item.price || 0)), 0);
+    const deliveredTotalCalc = orderObj.items.reduce((sum, item) => {
+      const dQty = deliveredQties[item.id] !== undefined ? (parseInt(deliveredQties[item.id]) || 0) : (item.qty || 0);
+      return sum + (dQty * (item.price || 0));
+    }, 0);
+    if (originalTotalCalc > 0) {
+      return ((Number(orderObj.total_amount) || 0) * deliveredTotalCalc) / originalTotalCalc;
+    }
+    return deliveredTotalCalc;
+  })() : 0;
 
   ge.useEffect(() => {
     if (deliveryStatusOption === "Skipped") {
       setCollectedAmount("0");
     } else {
-      setCollectedAmount(String(Math.round(deliveredSubtotal)));
+      const baseAmt = Math.round(deliveredSubtotal);
+      const disc = parseFloat(deliveryDiscount) || 0;
+      setCollectedAmount(String(Math.max(0, baseAmt - disc)));
     }
-  }, [deliveredSubtotal, deliveryStatusOption]);
+  }, [deliveredSubtotal, deliveryStatusOption, deliveryDiscount]);
   const [customCats, setCustomCats] = ge.useState(() => {
     const defaults = ["Staples", "Edible Oils", "Home Care", "Dairy", "Biscuits", "Instant Food", "Personal Care", "Beverages", "Snacks"];
     const stored = localStorage.getItem("kmart_custom_categories");
@@ -3301,12 +3314,13 @@ _Contact us to place your order!_`;
                           key: mode,
                           onClick: () => {
                             setPaymentMode(mode);
+                            const disc = parseFloat(deliveryDiscount) || 0;
                             if (mode === "Credit") {
                               setCollectedAmount("0");
                             } else if (mode === "Partial Credit") {
-                              setCollectedAmount(String(Math.round(deliveredSubtotal / 2)));
+                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal / 2) - disc)));
                             } else {
-                              setCollectedAmount(String(Math.round(deliveredSubtotal)));
+                              setCollectedAmount(String(Math.max(0, Math.round(deliveredSubtotal) - disc)));
                             }
                           },
                           style: { flex: 1, padding: "8px 0", background: paymentMode === mode ? C.primary : C.bg, color: paymentMode === mode ? "#fff" : C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" },
@@ -3334,14 +3348,32 @@ _Contact us to place your order!_`;
                     }),
 
                     paymentMode !== "Credit" && S.jsxs("div", {
-                      style: { display: "flex", flexDirection: "column", gap: 4 },
+                      style: { display: "flex", flexDirection: "column", gap: 10 },
                       children: [
-                        S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "AMOUNT COLLECTED (₹)" }),
-                        S.jsx("input", {
-                          type: "number",
-                          value: collectedAmount,
-                          onChange: e => setCollectedAmount(e.target.value),
-                          style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.primary, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
+                          children: [
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "AMOUNT COLLECTED (₹)" }),
+                            S.jsx("input", {
+                              type: "number",
+                              value: collectedAmount,
+                              onChange: e => setCollectedAmount(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.primary, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                            })
+                          ]
+                        }),
+                        S.jsxs("div", {
+                          style: { display: "flex", flexDirection: "column", gap: 4 },
+                          children: [
+                            S.jsx("label", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "DISCOUNT (₹)" }),
+                            S.jsx("input", {
+                              type: "number",
+                              placeholder: "0",
+                              value: deliveryDiscount,
+                              onChange: e => setDeliveryDiscount(e.target.value),
+                              style: { width: "100%", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }
+                            })
+                          ]
                         })
                       ]
                     }),
@@ -3387,6 +3419,7 @@ _Contact us to place your order!_`;
                     const resolvedPaymentMode = paymentMode === "Partial Credit" ? "Partial Credit (" + partialCreditMode + ")" : paymentMode;
                     const isCheque = paymentMode === "Cheque" || (paymentMode === "Partial Credit" && partialCreditMode === "Cheque");
                     
+                    const totalDisc = parseFloat(deliveryDiscount) || 0;
                     const payload = {
                       delivery_status: finalStatus,
                       delivered_items: orderObj.items.map(item => ({
@@ -3398,6 +3431,7 @@ _Contact us to place your order!_`;
                       })),
                       payment_mode: finalStatus !== "Skipped" ? resolvedPaymentMode : null,
                       collected_amount: finalStatus !== "Skipped" ? amt : 0,
+                      delivery_discount: finalStatus !== "Skipped" ? totalDisc : 0,
                       cheque_no: finalStatus !== "Skipped" && isCheque ? chequeNo : null,
                       cheque_bank: finalStatus !== "Skipped" && isCheque ? chequeBank : null,
                       non_delivery_reason: finalReason,
@@ -3410,11 +3444,15 @@ _Contact us to place your order!_`;
                       "Partial": "partial",
                       "Skipped": "failed"
                     };
+                    let finalNotes = finalReason || "";
+                    if (totalDisc > 0) {
+                      finalNotes = `[Discount: ₹${totalDisc}] ${finalNotes}`.trim();
+                    }
                     const stop_update = {
                       status: stopStatusMap[finalStatus] || "delivered",
                       payment_collected: finalStatus !== "Skipped" ? amt : 0,
                       payment_mode: finalStatus !== "Skipped" ? resolvedPaymentMode : null,
-                      notes: finalReason || null,
+                      notes: finalNotes || null,
                       delivered_at: new Date().toISOString()
                     };
 
@@ -5334,6 +5372,7 @@ S.jsxs("div", {
                               let cashCollected = 0;
                               let chequeCollected = 0;
                               let upiCollected = 0;
+                              let totalDiscount = 0;
                               let creditOutstanding = 0;
                               let creditBillsCount = 0;
 
@@ -5342,6 +5381,13 @@ S.jsxs("div", {
                                 const val = Number(ord.total_amount) || 0;
                                 const col = Number(stop.payment_collected) || 0;
                                 const mode = stop.payment_mode || "";
+
+                                let disc = Number(ord.delivery_discount) || 0;
+                                if (!disc && stop.notes) {
+                                  const m = stop.notes.match(/\[Discount:\s*₹([\d.]+)\]/);
+                                  if (m) disc = Number(m[1]) || 0;
+                                }
+                                totalDiscount += disc;
 
                                 totalValue += val;
                                 
@@ -5354,7 +5400,7 @@ S.jsxs("div", {
                                 }
 
                                 if (mode === "Credit" || mode.startsWith("Partial Credit")) {
-                                  creditOutstanding += (val - col);
+                                  creditOutstanding += (val - col - disc);
                                   creditBillsCount += 1;
                                 }
                               });
@@ -5364,7 +5410,7 @@ S.jsxs("div", {
                                 children: [
                                   S.jsx("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted }, children: "TRIP PAYMENT SUMMARY" }),
                                   S.jsxs("div", {
-                                    style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 },
+                                    style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10 },
                                     children: [
                                       S.jsxs("div", {
                                         style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
@@ -5385,6 +5431,20 @@ S.jsxs("div", {
                                         children: [
                                           S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "CHEQUE" }),
                                           S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: C.accent, marginTop: 2 }, children: [un(chequeCollected)] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "UPI" }),
+                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: "#0284c7", marginTop: 2 }, children: [un(upiCollected)] })
+                                        ]
+                                      }),
+                                      S.jsxs("div", {
+                                        style: { background: "#fff", padding: 8, borderRadius: 8, border: `1px solid ${C.border}40` },
+                                        children: [
+                                          S.jsx("div", { style: { fontSize: 9.5, fontWeight: 700, color: C.muted }, children: "DISCOUNT" }),
+                                          S.jsxs("div", { style: { fontSize: 13.5, fontWeight: 800, color: "#d97706", marginTop: 2 }, children: [un(totalDiscount)] })
                                         ]
                                       }),
                                       S.jsxs("div", {
