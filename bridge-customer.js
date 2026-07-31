@@ -499,12 +499,13 @@ sql.connect(CONFIG.sqlServer).then(pool => {
             rEntry.input('RCODE', sql.NVarChar(30), `S${CONFIG.bridge.billSeries}${next_bno}`);
             rEntry.input('TYPE', sql.NVarChar(5), 'S');
             rEntry.input('USERNAME', sql.NVarChar(20), 'SUPERVISOR');
+            rEntry.input('ASELECT', sql.Bit, true);
 
             await rEntry.query(`
               INSERT INTO ENTRY (
-                BNO, DOCNO, BLSRS, DATE, RDATE, ACCODE, NAME, SMCODE, GAMT, TAXAAMT, RO, NAMT, TITAX, RCODE, TYPE, USERNAME
+                BNO, DOCNO, BLSRS, DATE, RDATE, ACCODE, NAME, SMCODE, GAMT, TAXAAMT, RO, NAMT, TITAX, RCODE, TYPE, USERNAME, ASELECT
               ) VALUES (
-                @BNO, @DOCNO, @BLSRS, @DATE, @RDATE, @ACCODE, @NAME, @SMCODE, @GAMT, @TAXAAMT, @RO, @NAMT, @TITAX, @RCODE, @TYPE, @USERNAME
+                @BNO, @DOCNO, @BLSRS, @DATE, @RDATE, @ACCODE, @NAME, @SMCODE, @GAMT, @TAXAAMT, @RO, @NAMT, @TITAX, @RCODE, @TYPE, @USERNAME, @ASELECT
               )
             `);
           }
