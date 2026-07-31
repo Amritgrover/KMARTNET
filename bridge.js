@@ -557,7 +557,8 @@ sql.connect(CONFIG.sqlServer).then(pool => {
           const salesName = order.salesmen?.name || '.';
 
           const dOrder = new Date(order.created_at);
-          const cleanOrderDate = new Date(dOrder.getFullYear(), dOrder.getMonth(), dOrder.getDate());
+          const dateStr = dOrder.toISOString().split('T')[0];
+          const cleanOrderDate = new Date(`${dateStr}T00:00:00.000Z`);
 
           // Update or Insert ENTRY header row so Vision's bill list displays NAMT (rounded total) & RO (round-off)
           const existingEntry = await pool.request().query(`
@@ -568,7 +569,7 @@ sql.connect(CONFIG.sqlServer).then(pool => {
           if (existingEntry.recordset.length > 0) {
             await pool.request().query(`
               UPDATE ENTRY
-              SET GAMT = ${grandTotal}, TAXAAMT = ${grandTotal}, RO = ${roundOff}, NAMT = ${roundedTotal}, TITAX = ${parseFloat((totalSgsta + totalCgsta).toFixed(2))}
+              SET GAMT = ${grandTotal}, TAXAAMT = ${grandTotal}, RO = ${roundOff}, NAMT = ${roundedTotal}, TITAX = ${parseFloat((totalSgsta + totalCgsta).toFixed(2))}, CCR = '0', DATE = '${dateStr}T00:00:00.000Z', RDATE = '${dateStr}T00:00:00.000Z'
               WHERE BNO = ${next_bno} AND BLSRS = '${CONFIG.bridge.billSeries}'
             `);
           } else {
@@ -590,12 +591,13 @@ sql.connect(CONFIG.sqlServer).then(pool => {
             rEntry.input('TYPE', sql.NVarChar(5), 'S');
             rEntry.input('USERNAME', sql.NVarChar(20), 'SUPERVISOR');
             rEntry.input('ASELECT', sql.Bit, true);
+            rEntry.input('CCR', sql.NVarChar(10), '0');
 
             await rEntry.query(`
               INSERT INTO ENTRY (
-                BNO, DOCNO, BLSRS, DATE, RDATE, ACCODE, NAME, SMCODE, GAMT, TAXAAMT, RO, NAMT, TITAX, RCODE, TYPE, USERNAME, ASELECT
+                BNO, DOCNO, BLSRS, DATE, RDATE, ACCODE, NAME, SMCODE, GAMT, TAXAAMT, RO, NAMT, TITAX, RCODE, TYPE, USERNAME, ASELECT, CCR
               ) VALUES (
-                @BNO, @DOCNO, @BLSRS, @DATE, @RDATE, @ACCODE, @NAME, @SMCODE, @GAMT, @TAXAAMT, @RO, @NAMT, @TITAX, @RCODE, @TYPE, @USERNAME, @ASELECT
+                @BNO, @DOCNO, @BLSRS, @DATE, @RDATE, @ACCODE, @NAME, @SMCODE, @GAMT, @TAXAAMT, @RO, @NAMT, @TITAX, @RCODE, @TYPE, @USERNAME, @ASELECT, @CCR
               )
             `);
           }
