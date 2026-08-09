@@ -135,7 +135,7 @@ async function runImport() {
             ...notesObj,
             cp: cp > 0 ? cp : (notesObj.cp || existing.cp || 0),
             cs: String(caseSize),
-            is_visible: notesObj.is_visible !== undefined ? notesObj.is_visible : true
+            is_visible: notesObj.is_visible !== undefined ? notesObj.is_visible : false
           })
         });
         updatedCount++;
