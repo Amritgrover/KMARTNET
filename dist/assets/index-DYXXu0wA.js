@@ -7241,7 +7241,7 @@ S.jsxs("div", {
                             S.jsx("input",{
                               type:"number",
                               min:"1",
-                              defaultValue:J,
+                              value:J,
                               onChange:me=>{
                                 const ce=parseInt(me.target.value,10);
                                 !isNaN(ce)&&ce>0&&Nt(j,ce)
@@ -7253,7 +7253,7 @@ S.jsxs("div", {
                               onFocus:me=>me.target.select(),
                               onKeyDown:me=>{me.key==="Enter"&&me.target.blur()},
                               style:{fontSize:13,fontWeight:700,width:48,textAlign:"center",border:`1.5px solid ${C.border}`,borderRadius:6,background:"#fff",outline:"none",fontFamily:"'Outfit', sans-serif",padding:"2px 4px",MozAppearance:"textfield"}
-                            },`dots`),
+                            }),
                             S.jsx("button",{
                               onClick:()=>Nn(j,he.packsize||1),
                               style:{width:24,height:24,borderRadius:6,border:`1.5px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.primary,fontSize:12},
