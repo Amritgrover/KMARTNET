@@ -680,7 +680,27 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
       })
     ]
   });
-}function a_({p:r,onEdit:a,onDelete:s}){
+}function a_({p:r,onEdit:a,onDelete:s,onToggleVis:t}){
+  const isVis = (() => {
+    if (!r) return false;
+    let notesObj = null;
+    if (r.notes) {
+      if (typeof r.notes === "string") {
+        try { notesObj = JSON.parse(r.notes); } catch(e) {}
+      } else if (typeof r.notes === "object") {
+        notesObj = r.notes;
+      }
+    }
+    if (notesObj && notesObj.is_visible !== undefined && notesObj.is_visible !== null) {
+      return notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1;
+    }
+    if (r.is_visible !== undefined && r.is_visible !== null) {
+      return r.is_visible === true || r.is_visible === "true" || r.is_visible === 1;
+    }
+    if (r.note === "hidden" || r.note === "false") return false;
+    if (r.note === "visible" || r.note === "true" || r.note === "1") return true;
+    return false;
+  })();
   const wholesaleMargin = r.tp > 0 && r.cp > 0 ? ((r.tp - r.cp) / r.tp * 100).toFixed(0) : null;
   const retailMargin = r.mrp > 0 && r.tp > 0 ? ((r.mrp - r.tp) / r.mrp * 100).toFixed(0) : null;
   const cs = parseInt(r.cs) || 0;
@@ -705,7 +725,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
                   S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.text,lineHeight:1.25,marginBottom:3,wordBreak:"break-word"},children:r.name}),
                   S.jsxs("div",{style:{fontSize:12.5,color:C.muted,fontWeight:500,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"},children:[
                     getCleanCat(r.cat)," · ",r.unit, r.cs && ` · Case Size: ${r.cs} units`,
-                    r.vision_product_id&&S.jsxs("span",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,whiteSpace:"nowrap"},children:["Vision ID: ",r.vision_product_id]})
+                    r.vision_product_id&&S.jsxs("span",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,whiteSpace:"nowrap"},children:["Vision ID: ",r.vision_product_id]}),S.jsx("button",{onClick:(e)=>{e.stopPropagation();t&&t()},style:{fontSize:10.5,fontWeight:700,color:isVis?"#166534":"#475569",background:isVis?"#dcfce7":"#f1f5f9",border:`1px solid ${isVis?"#bbf7d0":"#cbd5e1"}`,padding:"2px 8px",borderRadius:6,cursor:"pointer",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:4},children:isVis?"🟢 App Catalog":"⚪ Hidden"})
                   ]})
                 ]
               })
@@ -4669,7 +4689,7 @@ _Contact us to place your order!_`;
               Dn.length===0?S.jsxs("div",{
                 style:{textAlign:"center",color:C.muted,padding:"40px 0"},
                 children:[S.jsx("div",{style:{fontSize:36,marginBottom:8},children:"🔍"}),"No products match your search"]
-              }):Dn.map(j=>S.jsx(a_,{p:j,onEdit:()=>jl(j),onDelete:()=>E(j)},j.id)),
+              }):Dn.map(j=>S.jsx(a_,{p:j,onEdit:()=>jl(j),onDelete:()=>E(j),onToggleVis:()=>toggleVis(j)},j.id)),
               S.jsxs("button",{
                 onClick:Ua,
                 style:{marginTop:8,width:"100%",padding:"12px",background:C.wa,color:"#fff",border:"none",borderRadius:12,fontSize:13.5,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:7},
