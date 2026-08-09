@@ -1689,15 +1689,22 @@ ${itemsText}
 
   const checkVis = (p) => {
     if (!p) return false;
+    if (p.is_visible === true) return true;
     if (p.is_visible === false) return false;
+    let notesObj = null;
     if (p.notes) {
-      try {
-        const parsed = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes;
-        if (parsed && parsed.is_visible === false) return false;
-      } catch(e) {}
+      if (typeof p.notes === "string") {
+        try { notesObj = JSON.parse(p.notes); } catch(e) {}
+      } else if (typeof p.notes === "object") {
+        notesObj = p.notes;
+      }
     }
-    if (p.note === "hidden" || p.note === "false") return false;
-    return true;
+    if (notesObj) {
+      if (notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1) return true;
+      if (notesObj.is_visible === false || notesObj.is_visible === "false" || notesObj.is_visible === 0) return false;
+    }
+    if (p.note === "visible" || p.note === "true" || p.note === "1") return true;
+    return false;
   };
 
   const visibleProducts = ge.useMemo(() => s.filter(checkVis), [s]);
@@ -3610,15 +3617,22 @@ _Contact us to place your order!_`;
           adminTab === "vision_products" && (() => {
             const checkVis = (p) => {
               if (!p) return false;
+              if (p.is_visible === true) return true;
               if (p.is_visible === false) return false;
+              let notesObj = null;
               if (p.notes) {
-                try {
-                  const parsed = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes;
-                  if (parsed && parsed.is_visible === false) return false;
-                } catch(e) {}
+                if (typeof p.notes === "string") {
+                  try { notesObj = JSON.parse(p.notes); } catch(e) {}
+                } else if (typeof p.notes === "object") {
+                  notesObj = p.notes;
+                }
               }
-              if (p.note === "hidden" || p.note === "false") return false;
-              return true;
+              if (notesObj) {
+                if (notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1) return true;
+                if (notesObj.is_visible === false || notesObj.is_visible === "false" || notesObj.is_visible === 0) return false;
+              }
+              if (p.note === "visible" || p.note === "true" || p.note === "1") return true;
+              return false;
             };
 
             const toggleVis = async (p) => {
