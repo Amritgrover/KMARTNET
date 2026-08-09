@@ -1689,8 +1689,6 @@ ${itemsText}
 
   const checkVis = (p) => {
     if (!p) return false;
-    if (p.is_visible === true) return true;
-    if (p.is_visible === false) return false;
     let notesObj = null;
     if (p.notes) {
       if (typeof p.notes === "string") {
@@ -1699,10 +1697,13 @@ ${itemsText}
         notesObj = p.notes;
       }
     }
-    if (notesObj) {
-      if (notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1) return true;
-      if (notesObj.is_visible === false || notesObj.is_visible === "false" || notesObj.is_visible === 0) return false;
+    if (notesObj && notesObj.is_visible !== undefined && notesObj.is_visible !== null) {
+      return notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1;
     }
+    if (p.is_visible !== undefined && p.is_visible !== null) {
+      return p.is_visible === true || p.is_visible === "true" || p.is_visible === 1;
+    }
+    if (p.note === "hidden" || p.note === "false") return false;
     if (p.note === "visible" || p.note === "true" || p.note === "1") return true;
     return false;
   };
@@ -3617,8 +3618,6 @@ _Contact us to place your order!_`;
           adminTab === "vision_products" && (() => {
             const checkVis = (p) => {
               if (!p) return false;
-              if (p.is_visible === true) return true;
-              if (p.is_visible === false) return false;
               let notesObj = null;
               if (p.notes) {
                 if (typeof p.notes === "string") {
@@ -3627,10 +3626,13 @@ _Contact us to place your order!_`;
                   notesObj = p.notes;
                 }
               }
-              if (notesObj) {
-                if (notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1) return true;
-                if (notesObj.is_visible === false || notesObj.is_visible === "false" || notesObj.is_visible === 0) return false;
+              if (notesObj && notesObj.is_visible !== undefined && notesObj.is_visible !== null) {
+                return notesObj.is_visible === true || notesObj.is_visible === "true" || notesObj.is_visible === 1;
               }
+              if (p.is_visible !== undefined && p.is_visible !== null) {
+                return p.is_visible === true || p.is_visible === "true" || p.is_visible === 1;
+              }
+              if (p.note === "hidden" || p.note === "false") return false;
               if (p.note === "visible" || p.note === "true" || p.note === "1") return true;
               return false;
             };
