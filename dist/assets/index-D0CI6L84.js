@@ -1687,8 +1687,22 @@ ${itemsText}
   }, [syncOfflineOrders, syncOfflineDeliveries]);
   
 
+  const checkVis = (p) => {
+    if (!p) return false;
+    if (p.is_visible === false) return false;
+    if (p.notes) {
+      try {
+        const parsed = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes;
+        if (parsed && parsed.is_visible === false) return false;
+      } catch(e) {}
+    }
+    if (p.note === "hidden" || p.note === "false") return false;
+    return true;
+  };
+
+  const visibleProducts = ge.useMemo(() => s.filter(checkVis), [s]);
   const 
-  Pe=ge.useMemo(()=>["All",...Array.from(new Set(s.map(j=>j.cat)))],[s]),dbBrands=ge.useMemo(()=>{const brandsList=["All",...Array.from(new Set(s.map(j=>j.brand).filter(Boolean)))];return brandsList.map(b=>{const found=brandImages.find(bi=>bi.brand===b);return{name:b,image_url:found?found.image_url:""}})},[s,brandImages]),Ue=ge.useMemo(()=>s.filter(j=>(g==="All"||j.cat===g)&&(selectedBrand==="All"||j.brand===selectedBrand)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[s,f,g,selectedBrand]),
+  Pe=ge.useMemo(()=>["All",...Array.from(new Set(visibleProducts.map(j=>j.cat)))],[visibleProducts]),dbBrands=ge.useMemo(()=>{const brandsList=["All",...Array.from(new Set(visibleProducts.map(j=>j.brand).filter(Boolean)))];return brandsList.map(b=>{const found=brandImages.find(bi=>bi.brand===b);return{name:b,image_url:found?found.image_url:""}})},[visibleProducts,brandImages]),Ue=ge.useMemo(()=>visibleProducts.filter(j=>(g==="All"||j.cat===g)&&(selectedBrand==="All"||j.brand===selectedBrand)&&(j.name.toLowerCase().includes(f.toLowerCase())||j.cat.toLowerCase().includes(f.toLowerCase())||(j.desc??"").toLowerCase().includes(f.toLowerCase()))),[visibleProducts,f,g,selectedBrand]),
   Dn=ge.useMemo(()=>s.filter(j=>(adminCatFilter==="All"||j.cat===adminCatFilter)&&(j.name.toLowerCase().includes(B.toLowerCase())||j.cat.toLowerCase().includes(B.toLowerCase()))), [s,B,adminCatFilter]),
   tn=ge.useMemo(()=>Object.entries(v).reduce((j,[J,he])=>{
     const [prodIdStr,bchcodeStr]=J.split('_');
