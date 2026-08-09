@@ -725,7 +725,7 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
                   S.jsx("div",{style:{fontSize:15,fontWeight:800,color:C.text,lineHeight:1.25,marginBottom:3,wordBreak:"break-word"},children:r.name}),
                   S.jsxs("div",{style:{fontSize:12.5,color:C.muted,fontWeight:500,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"},children:[
                     getCleanCat(r.cat)," · ",r.unit, r.cs && ` · Case Size: ${r.cs} units`,
-                    r.vision_product_id&&S.jsxs("span",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,whiteSpace:"nowrap"},children:["Vision ID: ",r.vision_product_id]}),S.jsx("button",{onClick:(e)=>{e.stopPropagation();t&&t()},style:{fontSize:10.5,fontWeight:700,color:isVis?"#166534":"#475569",background:isVis?"#dcfce7":"#f1f5f9",border:`1px solid ${isVis?"#bbf7d0":"#cbd5e1"}`,padding:"2px 8px",borderRadius:6,cursor:"pointer",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:4},children:isVis?"🟢 App Catalog":"⚪ Hidden"})
+                    r.vision_product_id&&S.jsxs("span",{style:{fontSize:10,fontWeight:700,color:C.accent,background:C.accentLight,padding:"2px 6px",borderRadius:4,whiteSpace:"nowrap"},children:["Vision ID: ",r.vision_product_id]}),S.jsx("button",{onClick:(e)=>{e.stopPropagation();t&&t()},style:{fontSize:10.5,fontWeight:700,color:isVis?"#166534":"#475569",background:isVis?"#dcfce7":"#f1f5f9",border:`1px solid ${isVis?"#bbf7d0":"#cbd5e1"}`,padding:"2px 8px",borderRadius:6,cursor:"pointer",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:4},children:isVis?"🟢 App Catalog":"⚪ Hidden"}),S.jsx("button",{onClick:(e)=>{e.stopPropagation();t&&t()},style:{fontSize:10.5,fontWeight:700,color:isVis?"#166534":"#475569",background:isVis?"#dcfce7":"#f1f5f9",border:`1px solid ${isVis?"#bbf7d0":"#cbd5e1"}`,padding:"2px 8px",borderRadius:6,cursor:"pointer",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:4},children:isVis?"🟢 App Catalog":"⚪ Hidden"})
                   ]})
                 ]
               })
@@ -2061,6 +2061,26 @@ ${itemsText}
     if (p.note === "hidden" || p.note === "false") return false;
     if (p.note === "visible" || p.note === "true" || p.note === "1") return true;
     return false;
+  };
+
+  const toggleVis = async (p) => {
+    let notesObj = {};
+    if (p.notes) {
+      try { notesObj = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes; } catch(e) {}
+    }
+    const curVis = checkVis(p);
+    const newVis = !curVis;
+    const updatedNotesObj = { ...notesObj, is_visible: newVis };
+    const updatedNotesStr = JSON.stringify(updatedNotesObj);
+
+    l(prev => prev.map(item => item.id === p.id ? { ...item, is_visible: newVis, notes: updatedNotesStr } : item));
+
+    const { error } = await Or.from("products").update({ notes: updatedNotesStr }).eq("id", p.id);
+    if (error) {
+      ye("Failed to update visibility: " + error.message);
+    } else {
+      ye(newVis ? `🟢 Enabled "${p.name}" for App!` : `⚪ Hidden "${p.name}" from App!`);
+    }
   };
 
   const visibleProducts = ge.useMemo(() => s.filter(checkVis), [s]);
@@ -4719,25 +4739,8 @@ _Contact us to place your order!_`;
               return false;
             };
 
-            const toggleVis = async (p) => {
-              let notesObj = {};
-              if (p.notes) {
-                try { notesObj = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes; } catch(e) {}
-              }
-              const curVis = checkVis(p);
-              const newVis = !curVis;
-              const updatedNotesObj = { ...notesObj, is_visible: newVis };
-              const updatedNotesStr = JSON.stringify(updatedNotesObj);
-
-              l(prev => prev.map(item => item.id === p.id ? { ...item, is_visible: newVis, notes: updatedNotesStr } : item));
-
-              const { error } = await Or.from("products").update({ notes: updatedNotesStr }).eq("id", p.id);
-              if (error) {
-                ye("Failed to update visibility: " + error.message);
-              } else {
-                ye(newVis ? `🟢 Enabled "${p.name}" for App!` : `⚪ Hidden "${p.name}" from App!`);
-              }
-            };
+            
+              
 
             const totalVis = s.filter(p => checkVis(p)).length;
             const totalHid = s.length - totalVis;
