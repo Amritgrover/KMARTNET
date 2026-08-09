@@ -1279,6 +1279,8 @@ function n_({p:r,cart:a,onInc:s,onDec:l,onSet:h,discMap:T,setDiscMap:x,viewMode}
     return defaults;
   });
   const [newCatName, setNewCatName] = ge.useState("");
+  const [visionProdSearch, setVisionProdSearch] = ge.useState("");
+  const [visionProdFilter, setVisionProdFilter] = ge.useState("all");
   const [showNewCatInput, setShowNewCatInput] = ge.useState(!1);const [catToDelete, setCatToDelete] = ge.useState(null);const [adminOrderSubTab, setAdminOrderSubTab] = ge.useState("customer");const [brandBeingEdited, setBrandBeingEdited] = ge.useState(null);const [editBrandNameInput, setEditBrandNameInput] = ge.useState("");const [beatBeingEdited, setBeatBeingEdited] = ge.useState(null);const [editBeatNameInput, setEditBeatNameInput] = ge.useState("");const [newCatEmoji, setNewCatEmoji] = ge.useState("");const [selectedSalesmanFilter, setSelectedSalesmanFilter] = ge.useState("all");const [selectedBrand, setSelectedBrand] = ge.useState("All");const [customBrands, setCustomBrands] = ge.useState(()=>{const defaults=["Reckitt Benckiser","Marico","McVitie's"];const stored=localStorage.getItem("kmart_custom_brands");if(stored){try{const parsed=JSON.parse(stored);if(Array.isArray(parsed)){return Array.from(new Set(parsed.map(x=>x.trim()).filter(Boolean)));}}catch(e){}}return defaults;});const [newBrandName, setNewBrandName] = ge.useState("");const [showNewBrandInput, setShowNewBrandInput] = ge.useState(!1);const [brandToDelete, setBrandToDelete] = ge.useState(null);const [brandImages, setBrandImages] = ge.useState([]);const [newMgmtBrandName, setNewMgmtBrandName] = ge.useState("");const [newMgmtBrandFile, setNewMgmtBrandFile] = ge.useState(null);
   ge.useEffect(() => {
     if (brandImages && brandImages.length > 0) {
@@ -4592,7 +4594,7 @@ _Contact us to place your order!_`;
           S.jsxs("div", {
             style: { display: "flex", gap: 6, marginBottom: 16, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" },
             children: [
-              [["products", "📦 Products"], ["customers", "🏪 Customers"], ["salesmen", "💼 Salesmen"], ["delivery_persons", "🚚 Delivery Persons"], ["orders", "📋 Orders"], ["brands", "🏷️ Brands"], ["trips", "🚚 Trips"]].map(([tabKey, tabLabel]) =>
+              [["products", "📦 Products"], ["vision_products", "⚡ Vision Products"], ["customers", "🏪 Customers"], ["salesmen", "💼 Salesmen"], ["delivery_persons", "🚚 Delivery Persons"], ["orders", "📋 Orders"], ["brands", "🏷️ Brands"], ["trips", "🚚 Trips"]].map(([tabKey, tabLabel]) =>
                 S.jsx("button", {
                   onClick: () => setAdminTab(tabKey),
                   style: {
@@ -4653,6 +4655,154 @@ _Contact us to place your order!_`;
               })
             ]
           }),
+          adminTab === "vision_products" && (() => {
+            const checkVis = (p) => {
+              if (!p) return false;
+              if (p.is_visible === false) return false;
+              if (p.notes) {
+                try {
+                  const parsed = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes;
+                  if (parsed && parsed.is_visible === false) return false;
+                } catch(e) {}
+              }
+              if (p.note === "hidden" || p.note === "false") return false;
+              return true;
+            };
+
+            const toggleVis = async (p) => {
+              let notesObj = {};
+              if (p.notes) {
+                try { notesObj = typeof p.notes === "string" ? JSON.parse(p.notes) : p.notes; } catch(e) {}
+              }
+              const curVis = checkVis(p);
+              const newVis = !curVis;
+              const updatedNotesObj = { ...notesObj, is_visible: newVis };
+              const updatedNotesStr = JSON.stringify(updatedNotesObj);
+
+              l(prev => prev.map(item => item.id === p.id ? { ...item, is_visible: newVis, notes: updatedNotesStr } : item));
+
+              const { error } = await Or.from("products").update({ notes: updatedNotesStr }).eq("id", p.id);
+              if (error) {
+                ye("Failed to update visibility: " + error.message);
+              } else {
+                ye(newVis ? `🟢 Enabled "${p.name}" for App!` : `⚪ Hidden "${p.name}" from App!`);
+              }
+            };
+
+            const totalVis = s.filter(p => checkVis(p)).length;
+            const totalHid = s.length - totalVis;
+
+            const q = (visionProdSearch || "").trim().toLowerCase();
+            const filtered = s.filter(p => {
+              const matchesQ = !q || p.name.toLowerCase().includes(q) || String(p.vision_product_id || "").includes(q) || (p.brand || "").toLowerCase().includes(q) || (p.cat || "").toLowerCase().includes(q);
+              const vState = checkVis(p);
+              const matchesF = visionProdFilter === "all" ? true : (visionProdFilter === "enabled" ? vState : !vState);
+              return matchesQ && matchesF;
+            });
+
+            return S.jsxs("div", {
+              children: [
+                S.jsxs("div", {
+                  style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+                  children: [
+                    S.jsxs("div", {
+                      children: [
+                        S.jsx("div", { style: { fontSize: 16, fontWeight: 800, color: C.text }, children: "⚡ Vision Master Products" }),
+                        S.jsxs("div", { style: { fontSize: 12, color: C.muted }, children: [s.length, " products imported from Vision ERP"] })
+                      ]
+                    })
+                  ]
+                }),
+                S.jsxs("div", {
+                  style: { display: "flex", gap: 8, marginBottom: 14 },
+                  children: [
+                    S.jsxs("button", {
+                      onClick: () => setVisionProdFilter("all"),
+                      style: { flex: 1, padding: "8px 10px", borderRadius: 10, border: `1.5px solid ${visionProdFilter === "all" ? C.primary : C.border}`, background: visionProdFilter === "all" ? C.primaryLight : "#fff", cursor: "pointer", textAlign: "center", fontFamily: "'Outfit', sans-serif" },
+                      children: [
+                        S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.primary }, children: s.length }),
+                        S.jsx("div", { style: { fontSize: 11, fontWeight: 600, color: C.muted }, children: "All Items" })
+                      ]
+                    }),
+                    S.jsxs("button", {
+                      onClick: () => setVisionProdFilter("enabled"),
+                      style: { flex: 1, padding: "8px 10px", borderRadius: 10, border: `1.5px solid ${visionProdFilter === "enabled" ? C.green : C.border}`, background: visionProdFilter === "enabled" ? C.greenBg : "#fff", cursor: "pointer", textAlign: "center", fontFamily: "'Outfit', sans-serif" },
+                      children: [
+                        S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.green }, children: totalVis }),
+                        S.jsx("div", { style: { fontSize: 11, fontWeight: 600, color: C.green }, children: "🟢 App Catalog" })
+                      ]
+                    }),
+                    S.jsxs("button", {
+                      onClick: () => setVisionProdFilter("hidden"),
+                      style: { flex: 1, padding: "8px 10px", borderRadius: 10, border: `1.5px solid ${visionProdFilter === "hidden" ? C.accent : C.border}`, background: visionProdFilter === "hidden" ? C.accentLight : "#fff", cursor: "pointer", textAlign: "center", fontFamily: "'Outfit', sans-serif" },
+                      children: [
+                        S.jsx("div", { style: { fontSize: 15, fontWeight: 800, color: C.accent }, children: totalHid }),
+                        S.jsx("div", { style: { fontSize: 11, fontWeight: 600, color: C.muted }, children: "⚪ Hidden" })
+                      ]
+                    })
+                  ]
+                }),
+                S.jsx("input", {
+                  type: "text",
+                  placeholder: "🔍 Search Vision products by name or ITCODE...",
+                  value: visionProdSearch,
+                  onChange: e => setVisionProdSearch(e.target.value),
+                  style: { width: "100%", padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 600, outline: "none", background: "#fff", fontFamily: "'Outfit', sans-serif", marginBottom: 14 }
+                }),
+                filtered.length === 0 ? S.jsx("div", {
+                  style: { textAlign: "center", color: C.muted, padding: "30px 0", fontSize: 13, fontWeight: 600 },
+                  children: "No Vision products found matching your search."
+                }) : filtered.slice(0, 100).map(p => {
+                  const vis = checkVis(p);
+                  return S.jsxs("div", {
+                    key: p.id,
+                    style: { background: "#fff", border: `1.5px solid ${vis ? C.primary : C.border}`, borderRadius: 12, padding: 12, marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, opacity: vis ? 1 : 0.75 },
+                    children: [
+                      S.jsxs("div", {
+                        style: { flex: 1 },
+                        children: [
+                          S.jsxs("div", {
+                            style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4 },
+                            children: [
+                              S.jsxs("span", { style: { fontSize: 10.5, fontWeight: 800, background: C.bg, color: C.muted, padding: "2px 6px", borderRadius: 4 }, children: ["ITCODE: ", p.vision_product_id || "N/A"] }),
+                              S.jsx("span", { style: { fontSize: 13.5, fontWeight: 700, color: C.text }, children: p.name })
+                            ]
+                          }),
+                          S.jsxs("div", {
+                            style: { fontSize: 11.5, color: C.muted },
+                            children: [
+                              `MRP: ₹${p.mrp || 0} | TP: ₹${p.tp || 0} | CP: ₹${p.cp || 0} | Case: ${p.cs || 1}`,
+                              p.brand ? ` | Brand: ${p.brand}` : ""
+                            ]
+                          })
+                        ]
+                      }),
+                      S.jsxs("button", {
+                        onClick: () => toggleVis(p),
+                        style: {
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          border: "none",
+                          background: vis ? C.greenBg : C.bg,
+                          color: vis ? C.green : C.muted,
+                          fontSize: 11.5,
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          fontFamily: "'Outfit', sans-serif",
+                          whiteSpace: "nowrap"
+                        },
+                        children: [vis ? "🟢 Enabled" : "⚪ Hidden"]
+                      })
+                    ]
+                  });
+                }),
+                filtered.length > 100 && S.jsxs("div", {
+                  style: { textAlign: "center", fontSize: 12, color: C.muted, marginTop: 10 },
+                  children: ["Showing top 100 of ", filtered.length, " items. Use search to find specific products."]
+                })
+              ]
+            });
+          })(),
           adminTab === "salesmen" && S.jsxs("div", {
             children: [
               S.jsxs("div", {
