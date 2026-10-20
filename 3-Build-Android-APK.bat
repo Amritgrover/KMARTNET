@@ -11,6 +11,7 @@ echo.
 set SCRIPT_DIR=%~dp0
 set EXPORT_DIR=C:\Users\Amritpal Singh\Desktop\Vision_Products_Export
 set APP_DIR=%SCRIPT_DIR%..\kmart-app
+if not exist "%APP_DIR%\app" set APP_DIR=C:\Users\Amritpal Singh\Downloads\kmartnet\kmart-app
 
 if not exist "%EXPORT_DIR%\index.html" (
     echo [ERROR] %EXPORT_DIR%\index.html not found!

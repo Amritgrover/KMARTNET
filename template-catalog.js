@@ -5,12 +5,23 @@
 // bill preview, and 1-tap direct WhatsApp ordering to +91 98775 70829.
 // ========================================================================
 
+const fs = require('fs');
+const path = require('path');
+
 function buildCatalogHtml(webProducts) {
   const countAll = webProducts.length;
   const countDettol = webProducts.filter((p) => p.mfr.toUpperCase().includes('REKITT')).length;
   const countMarico = webProducts.filter((p) => p.mfr.toUpperCase().includes('MARICO')).length;
   const countSleepy = webProducts.filter((p) => p.mfr.toUpperCase().includes('SLEEPY OWL')).length;
   const countMcVitties = webProducts.filter((p) => p.mfr.toUpperCase().includes('MC VITTIES')).length;
+
+  let logoBase64 = '';
+  try {
+    const logoPath = path.join(__dirname, 'dist', 'icon-192.png');
+    if (fs.existsSync(logoPath)) {
+      logoBase64 = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+    }
+  } catch (e) {}
 
   const jsonPayload = JSON.stringify(webProducts);
 
@@ -82,6 +93,16 @@ function buildCatalogHtml(webProducts) {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+    .brand-logo-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      background: #ffffff;
+      flex-shrink: 0;
     }
     .brand-badge {
       font-size: 0.65rem;
@@ -1196,6 +1217,7 @@ function buildCatalogHtml(webProducts) {
   <header>
     <div class="header-top">
       <div class="brand-title">
+        ${logoBase64 ? `<img src="${logoBase64}" alt="KMART Logo" class="brand-logo-img">` : ''}
         <span>KMART FMCG</span>
         <span class="brand-badge">B2B Wholesale</span>
       </div>
