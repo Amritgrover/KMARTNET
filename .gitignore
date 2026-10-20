@@ -1,0 +1,5 @@
+# Node Dependencies
+node_modules/
+
+# Scratch Scripts & Temp Test Files
+scratch/

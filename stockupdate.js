@@ -120,7 +120,7 @@ async function syncStock(pool) {
             ELSE 0 
           END) AS STOCK
         FROM BILL
-        WHERE GDCODE = 1 AND ITCODE > 0
+        WHERE GDCODE = 0 AND ITCODE > 0
         GROUP BY ITCODE, BCHCODE
       ) gdn ON bm.ITCODE = gdn.ITCODE AND bm.BCHCODE = gdn.BCHCODE
       WHERE bm.ITCODE > 0

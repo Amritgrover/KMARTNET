@@ -4,7 +4,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
+    "exceljs": "^4.4.0",
     "mssql": "^12.5.5",
+    "sharp": "^0.35.5",
     "web-push": "^3.6.7"
   }
 }
