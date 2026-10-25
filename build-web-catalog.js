@@ -84,10 +84,22 @@ async function buildFromExcel() {
   // Map to hold merged products: key = itcode
   const itemsMap = new Map();
 
+  // 0. Load baseline products.json to detect user edits
+  const baselineMap = new Map();
+  const baselineJsonPath = path.join(CONFIG.outputDir, 'products.json');
+  if (fs.existsSync(baselineJsonPath)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(baselineJsonPath, 'utf8'));
+      for (const p of raw) {
+        baselineMap.set(p.itcode, p);
+      }
+    } catch (e) {}
+  }
+
   // 1. First pass: read "All FMCG Products" as baseline
   const masterSheet = workbook.getWorksheet('All FMCG Products') || workbook.worksheets[0];
   if (masterSheet) {
-    log(`📋 Loading baseline from "${masterSheet.name}"...`);
+    log(`📋 Loading master catalog from "${masterSheet.name}"...`);
     masterSheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       const rawName = parseText(row.getCell(2).value);
@@ -103,6 +115,17 @@ async function buildFromExcel() {
       const unit = parseText(row.getCell(9).value) || 'PCS';
       let imagePath = parseText(row.getCell(10).value);
 
+      const base = baselineMap.get(itcode);
+      const masterEdited = base && (
+        (base.mrp !== undefined && base.mrp !== mrp) ||
+        (base.saleRate !== undefined && base.saleRate !== saleRate) ||
+        (base.cleanName && cleanName && base.cleanName !== cleanName)
+      );
+
+      if (masterEdited) {
+        log(`   ✏️ Detected user edit on master sheet "${masterSheet.name}": [${itcode}] "${rawName}" -> MRP: ₹${base.mrp} -> ₹${mrp}, Rate: ₹${base.saleRate} -> ₹${saleRate}`);
+      }
+
       itemsMap.set(itcode, {
         itcode,
         mfrName,
@@ -113,11 +136,12 @@ async function buildFromExcel() {
         mrp,
         saleRate,
         imagePath,
+        masterEdited: !!masterEdited,
       });
     });
   }
 
-  // 2. Second pass: scan all individual manufacturer sheets for any user edits/overrides
+  // 2. Second pass: scan brand worksheets only for intentional brand tab edits
   let overridesCount = 0;
   workbook.eachSheet((ws) => {
     if (ws.name === 'All FMCG Products') return;
@@ -136,10 +160,25 @@ async function buildFromExcel() {
       const imagePath = parseText(row.getCell(10).value);
       const mfrName = parseText(row.getCell(7).value) || ws.name;
 
+      const base = baselineMap.get(itcode);
+
       if (itemsMap.has(itcode)) {
         const existing = itemsMap.get(itcode);
-        if (existing.mrp !== mrp || existing.saleRate !== saleRate || (cleanName && existing.cleanName !== cleanName)) {
-          log(`   ✏️ Override from sheet "${ws.name}": [${itcode}] "${rawName}" -> MRP: ₹${existing.mrp} -> ₹${mrp}, Rate: ₹${existing.saleRate} -> ₹${saleRate}`);
+
+        // If master was edited by user, Master Tab ALWAYS wins!
+        if (existing.masterEdited) {
+          return;
+        }
+
+        // Check if brand sheet has an intentional edit different from baseline
+        const brandEdited = base ? (
+          (base.mrp !== undefined && base.mrp !== mrp) ||
+          (base.saleRate !== undefined && base.saleRate !== saleRate) ||
+          (base.cleanName && cleanName && base.cleanName !== cleanName)
+        ) : (existing.mrp !== mrp || existing.saleRate !== saleRate);
+
+        if (brandEdited) {
+          log(`   ✏️ Override from brand sheet "${ws.name}": [${itcode}] "${rawName}" -> MRP: ₹${existing.mrp} -> ₹${mrp}, Rate: ₹${existing.saleRate} -> ₹${saleRate}`);
           existing.mrp = mrp;
           existing.saleRate = saleRate;
           if (cleanName) existing.cleanName = cleanName;

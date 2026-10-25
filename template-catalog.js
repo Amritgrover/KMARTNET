@@ -1550,7 +1550,7 @@ function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
       if (elHeaderCount) elHeaderCount.textContent = totalAll + ' Products';
     }
 
-    // Cloud Auto-Sync Function (OTA Update)
+    // Cloud Auto-Sync Function (OTA Update with Zero CDN Lag)
     let isSyncing = false;
     async function syncCatalog(isManual) {
       if (isSyncing) return;
@@ -1563,11 +1563,32 @@ function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
       if (syncLabel) syncLabel.textContent = 'Syncing...';
 
       try {
-        const cacheBuster = '?t=' + Date.now();
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        let fetchUrl = CLOUD_SYNC_URL + '?t=' + Date.now();
 
-        const res = await fetch(CLOUD_SYNC_URL + cacheBuster, {
+        // Query GitHub API to get the exact latest commit SHA to completely bypass Fastly CDN edge cache (0s delay)
+        try {
+          const apiController = new AbortController();
+          const apiTimeout = setTimeout(() => apiController.abort(), 4000);
+          const apiRes = await fetch('https://api.github.com/repos/Amritgrover/KMARTNET/commits/master', {
+            signal: apiController.signal,
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+          });
+          clearTimeout(apiTimeout);
+          if (apiRes.ok) {
+            const commitData = await apiRes.json();
+            if (commitData && commitData.sha) {
+              fetchUrl = 'https://raw.githubusercontent.com/Amritgrover/KMARTNET/' + commitData.sha + '/catalog_sync.json';
+              console.log('[KMART] Using zero-cache commit SHA URL:', commitData.sha.substring(0, 7));
+            }
+          }
+        } catch (apiErr) {
+          console.log('[KMART] GitHub API commit SHA check skipped, falling back to query param:', apiErr.message);
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const res = await fetch(fetchUrl, {
           signal: controller.signal,
           headers: { 'Accept': 'application/json' }
         });
@@ -1585,6 +1606,23 @@ function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
         const shouldUpdate = isManual || (data.version && data.version !== activeVersion);
 
         if (shouldUpdate) {
+          // Detect specific price updates for user feedback
+          const updatedPrices = [];
+          if (products && Array.isArray(products)) {
+            data.products.forEach(newP => {
+              const oldP = products.find(x => x.itcode === newP.itcode);
+              if (oldP && (oldP.saleRate !== newP.saleRate || oldP.mrp !== newP.mrp)) {
+                updatedPrices.push({
+                  name: newP.name || newP.cleanName || newP.rawName,
+                  oldRate: oldP.saleRate,
+                  newRate: newP.saleRate,
+                  oldMrp: oldP.mrp,
+                  newMrp: newP.mrp
+                });
+              }
+            });
+          }
+
           // Update persistent storage and active state
           localStorage.setItem('KMART_CATALOG_SYNC_DATA', JSON.stringify({
             version: data.version,
@@ -1614,7 +1652,12 @@ function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
           renderProducts();
           updateCartUI();
 
-          showToast('✅ Catalog updated! ' + data.products.length + ' products with latest prices.');
+          if (updatedPrices.length > 0) {
+            const first = updatedPrices[0];
+            showToast('✅ Updated ' + first.name + ': ₹' + first.newRate.toFixed(2) + ' (MRP ₹' + first.newMrp.toFixed(2) + ')');
+          } else {
+            showToast('✅ Catalog updated! ' + data.products.length + ' products with latest prices.');
+          }
         } else {
           updateCategoryCounts();
           if (isManual) {
