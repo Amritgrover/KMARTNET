@@ -8,12 +8,17 @@
 const fs = require('fs');
 const path = require('path');
 
-function buildCatalogHtml(webProducts) {
+function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
   const countAll = webProducts.length;
-  const countDettol = webProducts.filter((p) => p.mfr.toUpperCase().includes('REKITT')).length;
-  const countMarico = webProducts.filter((p) => p.mfr.toUpperCase().includes('MARICO')).length;
-  const countSleepy = webProducts.filter((p) => p.mfr.toUpperCase().includes('SLEEPY OWL')).length;
-  const countMcVitties = webProducts.filter((p) => p.mfr.toUpperCase().includes('MC VITTIES')).length;
+  const countDettol = webProducts.filter((p) => (p.mfr || '').toUpperCase().includes('REKITT')).length;
+  const countMarico = webProducts.filter((p) => (p.mfr || '').toUpperCase().includes('MARICO')).length;
+  const countSleepy = webProducts.filter((p) => (p.mfr || '').toUpperCase().includes('SLEEPY OWL')).length;
+  const countMcVitties = webProducts.filter((p) => (p.mfr || '').toUpperCase().includes('MC VITTIES')).length;
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const ver = catalogVersion || `v${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}.${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const timeStr = catalogTimestamp || (now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }));
 
   let logoBase64 = '';
   try {
@@ -117,7 +122,62 @@ function buildCatalogHtml(webProducts) {
     .header-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+    }
+    .sync-catalog-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .sync-catalog-btn:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+    .sync-catalog-btn:active {
+      transform: scale(0.96);
+    }
+    .sync-icon {
+      font-size: 0.85rem;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+    .sync-icon.spinning {
+      animation: syncSpin 0.9s linear infinite;
+    }
+    @keyframes syncSpin {
+      100% { transform: rotate(360deg); }
+    }
+    .sync-toast {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #123e2b;
+      color: #ffffff;
+      border: 1.5px solid #d4a843;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      z-index: 999999;
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sync-toast.show {
+      transform: translateX(-50%) translateY(0);
     }
     .header-order-count {
       font-size: 0.8rem;
@@ -1222,6 +1282,10 @@ function buildCatalogHtml(webProducts) {
         <span class="brand-badge">B2B Wholesale</span>
       </div>
       <div class="header-right">
+        <button id="syncCatalogBtn" class="sync-catalog-btn" onclick="syncCatalog(true)" title="Check for latest prices and products">
+          <span class="sync-icon" id="syncIcon">🔄</span>
+          <span class="sync-label" id="syncLabel">Sync</span>
+        </button>
         <span class="header-order-count" id="headerProductCount">${countAll} Products</span>
       </div>
     </div>
@@ -1238,11 +1302,11 @@ function buildCatalogHtml(webProducts) {
 
         <!-- Horizontal Brand Filter Tabs -->
         <div class="brand-pills-scroll">
-          <div class="brand-pill active" data-brand="ALL">All<span class="pill-count">(${countAll})</span></div>
-          <div class="brand-pill" data-brand="REKITT">Dettol / Reckitt<span class="pill-count">(${countDettol})</span></div>
-          <div class="brand-pill" data-brand="MARICO">Marico<span class="pill-count">(${countMarico})</span></div>
-          <div class="brand-pill" data-brand="SLEEPY OWL">Sleepy Owl<span class="pill-count">(${countSleepy})</span></div>
-          <div class="brand-pill" data-brand="MC VITTIES">McVitie's<span class="pill-count">(${countMcVitties})</span></div>
+          <div class="brand-pill active" data-brand="ALL">All<span class="pill-count" id="count-all">(${countAll})</span></div>
+          <div class="brand-pill" data-brand="REKITT">Dettol / Reckitt<span class="pill-count" id="count-rekitt">(${countDettol})</span></div>
+          <div class="brand-pill" data-brand="MARICO">Marico<span class="pill-count" id="count-marico">(${countMarico})</span></div>
+          <div class="brand-pill" data-brand="SLEEPY OWL">Sleepy Owl<span class="pill-count" id="count-sleepy">(${countSleepy})</span></div>
+          <div class="brand-pill" data-brand="MC VITTIES">McVitie's<span class="pill-count" id="count-mcvitties">(${countMcVitties})</span></div>
         </div>
       </div>
     </div>
@@ -1407,9 +1471,38 @@ function buildCatalogHtml(webProducts) {
     </div>
   </div>
 
+  <!-- Sync Status Toast -->
+  <div id="syncToast" class="sync-toast">
+    <span id="syncToastIcon">✅</span>
+    <span id="syncToastText">Catalog updated!</span>
+  </div>
+
   <script>
-    // Embedded Product Data
-    const products = ${jsonPayload};
+    // Embedded Product Data & Cloud Auto-Sync
+    const CLOUD_SYNC_URL = 'https://raw.githubusercontent.com/Amritgrover/KMARTNET/master/catalog_sync.json';
+    const EMBEDDED_VERSION = '${ver}';
+    const EMBEDDED_TIMESTAMP = '${timeStr}';
+    const DEFAULT_PRODUCTS = ${jsonPayload};
+
+    let activeVersion = EMBEDDED_VERSION;
+    let activeTimestamp = EMBEDDED_TIMESTAMP;
+    let products = DEFAULT_PRODUCTS;
+
+    // Check persistent storage for synced catalog
+    try {
+      const cached = localStorage.getItem('KMART_CATALOG_SYNC_DATA');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.products) && parsed.products.length > 0) {
+          products = parsed.products;
+          activeVersion = parsed.version || EMBEDDED_VERSION;
+          activeTimestamp = parsed.timestamp || EMBEDDED_TIMESTAMP;
+          console.log('[KMART] Initialized from persistent sync cache:', activeVersion, products.length, 'items');
+        }
+      }
+    } catch (e) {
+      console.warn('[KMART] Cache parse error:', e);
+    }
 
     // App State
     let currentBrand = 'ALL';
@@ -1417,6 +1510,112 @@ function buildCatalogHtml(webProducts) {
     let currentView = 'grid';
     let currentSort = 'default';
     let cart = JSON.parse(localStorage.getItem('kmart_cart') || '{}');
+
+    // Toast Notification Helper
+    let toastTimeout = null;
+    function showToast(msg, icon = '✅', duration = 3500) {
+      const toast = document.getElementById('syncToast');
+      const toastIcon = document.getElementById('syncToastIcon');
+      const toastText = document.getElementById('syncToastText');
+      if (!toast || !toastText) return;
+      toastIcon.textContent = icon;
+      toastText.textContent = msg;
+      toast.classList.add('show');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // Dynamic Category Counts Updater
+    function updateCategoryCounts() {
+      const totalAll = products.length;
+      const totalDettol = products.filter(p => (p.mfr || '').toUpperCase().includes('REKITT')).length;
+      const totalMarico = products.filter(p => (p.mfr || '').toUpperCase().includes('MARICO')).length;
+      const totalSleepy = products.filter(p => (p.mfr || '').toUpperCase().includes('SLEEPY OWL')).length;
+      const totalMcVitties = products.filter(p => (p.mfr || '').toUpperCase().includes('MC VITTIES')).length;
+
+      const elAll = document.getElementById('count-all');
+      const elDettol = document.getElementById('count-rekitt');
+      const elMarico = document.getElementById('count-marico');
+      const elSleepy = document.getElementById('count-sleepy');
+      const elMcVitties = document.getElementById('count-mcvitties');
+      const elHeaderCount = document.getElementById('headerProductCount');
+
+      if (elAll) elAll.textContent = '(' + totalAll + ')';
+      if (elDettol) elDettol.textContent = '(' + totalDettol + ')';
+      if (elMarico) elMarico.textContent = '(' + totalMarico + ')';
+      if (elSleepy) elSleepy.textContent = '(' + totalSleepy + ')';
+      if (elMcVitties) elMcVitties.textContent = '(' + totalMcVitties + ')';
+      if (elHeaderCount) elHeaderCount.textContent = totalAll + ' Products';
+    }
+
+    // Cloud Auto-Sync Function (OTA Update)
+    let isSyncing = false;
+    async function syncCatalog(isManual) {
+      if (isSyncing) return;
+      isSyncing = true;
+      const syncBtn = document.getElementById('syncCatalogBtn');
+      const syncIcon = document.getElementById('syncIcon');
+      const syncLabel = document.getElementById('syncLabel');
+
+      if (syncIcon) syncIcon.classList.add('spinning');
+      if (syncLabel) syncLabel.textContent = 'Syncing...';
+
+      try {
+        const cacheBuster = '?t=' + Date.now();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const res = await fetch(CLOUD_SYNC_URL + cacheBuster, {
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' }
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error('Sync server responded with status ' + res.status);
+        }
+
+        const data = await res.json();
+        if (!data || !Array.isArray(data.products) || data.products.length === 0) {
+          throw new Error('Invalid catalog payload received from cloud.');
+        }
+
+        if (data.version && data.version !== activeVersion) {
+          // Newer version detected! Update persistent storage and active state
+          localStorage.setItem('KMART_CATALOG_SYNC_DATA', JSON.stringify({
+            version: data.version,
+            timestamp: data.timestamp,
+            products: data.products
+          }));
+
+          products = data.products;
+          activeVersion = data.version;
+          activeTimestamp = data.timestamp;
+
+          updateCategoryCounts();
+          renderProducts();
+          updateCartUI();
+
+          showToast('✅ Catalog updated! ' + data.products.length + ' products with latest prices.');
+        } else {
+          updateCategoryCounts();
+          if (isManual) {
+            showToast('Catalog is already up to date (' + products.length + ' items).', '✨');
+          }
+        }
+      } catch (err) {
+        console.warn('[KMART] Cloud sync error:', err.message);
+        if (isManual) {
+          showToast('Offline / cannot reach sync server. Using cached catalog.', '📶');
+        }
+      } finally {
+        isSyncing = false;
+        if (syncIcon) syncIcon.classList.remove('spinning');
+        if (syncLabel) syncLabel.textContent = 'Sync';
+      }
+    }
 
     // DOM Elements
     const productsGrid = document.getElementById('productsGrid');
@@ -1512,8 +1711,16 @@ function buildCatalogHtml(webProducts) {
     // Initialize App
     function init() {
       loadSavedShopsDropdown();
+      updateCategoryCounts();
       renderProducts();
       updateCartUI();
+
+      // Auto-check for cloud catalog updates in background
+      setTimeout(() => {
+        if (navigator.onLine) {
+          syncCatalog(false);
+        }
+      }, 1200);
 
       // Search listener
       searchInput.addEventListener('input', (e) => {
@@ -1558,11 +1765,14 @@ function buildCatalogHtml(webProducts) {
     // Filter & Sort Products
     function getFilteredProducts() {
       let filtered = products.filter(p => {
-        const matchesBrand = (currentBrand === 'ALL') || (p.mfr.toUpperCase().includes(currentBrand));
+        const pClean = (p.cleanName || p.name || '');
+        const pRaw = (p.rawName || '');
+        const pMfr = (p.mfr || '');
+        const matchesBrand = (currentBrand === 'ALL') || (pMfr.toUpperCase().includes(currentBrand));
         const matchesSearch = !searchQuery || 
-          p.cleanName.toLowerCase().includes(searchQuery) ||
-          p.rawName.toLowerCase().includes(searchQuery) ||
-          p.mfr.toLowerCase().includes(searchQuery) ||
+          pClean.toLowerCase().includes(searchQuery) ||
+          pRaw.toLowerCase().includes(searchQuery) ||
+          pMfr.toLowerCase().includes(searchQuery) ||
           String(p.itcode).includes(searchQuery);
 
         return matchesBrand && matchesSearch;
@@ -1580,7 +1790,7 @@ function buildCatalogHtml(webProducts) {
       } else if (currentSort === 'price_desc') {
         filtered.sort((a, b) => b.saleRate - a.saleRate);
       } else if (currentSort === 'name_asc') {
-        filtered.sort((a, b) => a.cleanName.localeCompare(b.cleanName));
+        filtered.sort((a, b) => (a.cleanName || a.name || '').localeCompare(b.cleanName || b.name || ''));
       } else if (currentSort === 'in_cart') {
         filtered = filtered.filter(p => cart[p.itcode] && cart[p.itcode].qty > 0);
       }
@@ -1618,6 +1828,7 @@ function buildCatalogHtml(webProducts) {
         const savings = (p.mrp > p.saleRate && p.saleRate > 0) ? (p.mrp - p.saleRate) : 0;
         const discountPct = (p.mrp > p.saleRate && p.mrp > 0) ? Math.round(((p.mrp - p.saleRate) / p.mrp) * 100) : 0;
         const imgSrc = p.imageBase64 || p.imageRelPath || fallbackSvg;
+        const pTitle = p.cleanName || p.name || p.rawName || 'FMCG Item';
         const brandBadge = getShortBrand(p.mfr);
         const badgeClass = getBrandBadgeClass(p.mfr);
         const inCartItem = cart[p.itcode];
@@ -1630,11 +1841,11 @@ function buildCatalogHtml(webProducts) {
             <div class="card-img-wrap">
               <span class="card-brand-badge \${badgeClass}">\${brandBadge}</span>
               \${discountPct > 0 ? \`<span class="card-savings-badge">\${discountPct}% OFF</span>\` : ''}
-              <img src="\${imgSrc}" alt="\${p.cleanName}" class="card-img" loading="lazy" onerror="this.onerror=null;this.src='\${fallbackSvg}'">
+              <img src="\${imgSrc}" alt="\${pTitle}" class="card-img" loading="lazy" onerror="this.onerror=null;this.src='\${fallbackSvg}'">
             </div>
             <div class="card-body">
               <div>
-                <h3 class="product-title" title="\${p.cleanName}">\${p.cleanName}</h3>
+                <h3 class="product-title" title="\${pTitle}">\${pTitle}</h3>
                 <div class="product-raw">\${p.rawName}</div>
                 
                 <!-- Vision SQL PACK1 Case Size Display -->
@@ -1687,6 +1898,7 @@ function buildCatalogHtml(webProducts) {
       // 2. Render Table View
       tableBody.innerHTML = filtered.map(p => {
         const imgSrc = p.imageBase64 || p.imageRelPath || fallbackSvg;
+        const pTitle = p.cleanName || p.name || p.rawName || 'FMCG Item';
         const inCartItem = cart[p.itcode];
         const inCartQty = inCartItem ? inCartItem.qty : 0;
         const activeRate = inCartItem ? inCartItem.rate : p.saleRate;
@@ -1695,7 +1907,7 @@ function buildCatalogHtml(webProducts) {
           <tr>
             <td><img src="\${imgSrc}" class="table-thumb" loading="lazy" onerror="this.onerror=null;this.src='\${fallbackSvg}'"></td>
             <td>
-              <strong>\${p.cleanName}</strong><br>
+              <strong>\${pTitle}</strong><br>
               <span class="case-size-badge" style="font-size:0.62rem">📦 Case: \${p.pack || 1} \${p.unit || 'PCS'}</span>
             </td>
             <td><small class="text-muted">\${p.rawName}</small></td>
@@ -1734,7 +1946,7 @@ function buildCatalogHtml(webProducts) {
 
       cart[itcode] = {
         itcode: p.itcode,
-        name: p.cleanName,
+        name: p.cleanName || p.name || p.rawName,
         mfr: p.mfr,
         pack: parseInt(p.pack, 10) || 1,
         unit: p.unit || 'PCS',
@@ -1772,7 +1984,7 @@ function buildCatalogHtml(webProducts) {
       if (!cart[itcode]) {
         cart[itcode] = {
           itcode: p.itcode,
-          name: p.cleanName,
+          name: p.cleanName || p.name || p.rawName,
           mfr: p.mfr,
           pack: parseInt(p.pack, 10) || 1,
           unit: p.unit || 'PCS',
@@ -1808,7 +2020,7 @@ function buildCatalogHtml(webProducts) {
       if (!cart[itcode]) {
         cart[itcode] = {
           itcode: p.itcode,
-          name: p.cleanName,
+          name: p.cleanName || p.name || p.rawName,
           mfr: p.mfr,
           pack: parseInt(p.pack, 10) || 1,
           unit: p.unit || 'PCS',

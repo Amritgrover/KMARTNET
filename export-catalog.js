@@ -70,94 +70,448 @@ function cleanProductName(manufacturer, rawName) {
   let name = (rawName || '').trim();
   const mfrUpper = (manufacturer || '').toUpperCase();
 
-  // Strip leading single-letter prefixes like "A.", "B.", "C.", "D.", "M.", "Z."
+  const isSaffolaPrefix = /^S\.\s*/i.test(name);
+
+  // Strip leading single-letter division prefixes like "A.", "B.", "C.", "D.", "M.", "Z.", "S."
   name = name.replace(/^[A-Z]\.\s*/i, '');
 
-  // Strip case pack multipliers like "1*24PC", "1*6", "1*12 PCS", "(16*453.75G)", "(SET OF 10)"
-  name = name.replace(/\(\d+\*\d+(?:\.\d+)?(?:G|GM|ML|KG)?\)/gi, '');
-  name = name.replace(/\b\d+\s*\*\s*\d+\s*(?:PCS?|PC)?\b/gi, '');
-  name = name.replace(/\(SET OF \d+\)/gi, '');
+  // Strip case pack multipliers like "1*24PC", "1*6", "1*12 PCS", "(16*453.75G)", "(SET OF 10)", "*360"
+  name = name.replace(/\(\s*\d+\s*\*\s*\d+(?:\.\d+)?(?:G|GM|ML|KG)?\s*\)/gi, '');
+  name = name.replace(/[-–]?\s*\b\d+\s*\*\s*\d+\s*(?:PCS?|PC)?\b/gi, '');
+  name = name.replace(/\*\s*\d+\b/g, '');
+  name = name.replace(/-\s*\d+PK\b/gi, '');
+  name = name.replace(/\b1\*\d+\b/gi, '');
 
   // Strip price tags like "10/-", "99/-", "599/-", "RS10", "1/-", "7/-", "254.59/-"
   name = name.replace(/\b\d+(?:\.\d+)?\/-/g, '');
   name = name.replace(/\bRS\s*\d+\b/gi, '');
 
-  let brandPrefix = '';
+  // Clean trailing dashes or orphan punctuation
+  name = name.replace(/[-–]\s*$/, '').trim();
 
-  // --- RECKITT BENCKISER (Dettol, Harpic, Lizol, Air Wick, Durex, Cherry Blossom) ---
-  if (mfrUpper.includes('REKITT') || mfrUpper.includes('RECKITT')) {
-    if (/^Z\.RE$/i.test(name.trim())) {
-      return { clean: 'Reckitt Product Sample', query: 'Reckitt Benckiser product' };
+  // Helper to extract pack size (e.g. 275ML, 1KG, 500G, 100GM, 1LTR, V400GM, etc.)
+  function extractSize(str) {
+    const match = str.match(/\b(?:V)?(\d+(?:\.\d+)?)\s*(KG|G|GM|ML|LT|LTR|L)\b/i);
+    if (!match) return '';
+    let val = match[1];
+    let unit = match[2].toUpperCase();
+    if (unit === 'LTR' || unit === 'LT') unit = 'L';
+    if (unit === 'GM') unit = 'g';
+    if (unit === 'G') unit = 'g';
+    if (unit === 'ML') unit = 'ml';
+    if (unit === 'KG') unit = 'kg';
+    return `${val}${unit}`;
+  }
+
+  // Helper to clean and format title
+  function cleanSpaces(str) {
+    return str.replace(/\s+/g, ' ').trim();
+  }
+
+  let finalClean = '';
+  let searchQuery = '';
+
+  // =========================================================================
+  // 1. MARICO (Brands: Nihar, Saffola, Hair & Care, Mediker, Parachute)
+  // =========================================================================
+  if (mfrUpper.includes('MARICO')) {
+    const rawUpper = (rawName || '').toUpperCase();
+    const size = extractSize(rawName);
+
+    // --- A. SAFFOLA (S. prefix or Saffola product lines) ---
+    if (isSaffolaPrefix || /OATS|MASALA|TAMATO|TOMATO|TWIST|SOYA|HONEY|\bGOLD\b/i.test(name)) {
+      if (/\bOATS\b/i.test(name) && !/MASALA|TAMATO|TOMATO|TWIST/i.test(name)) {
+        finalClean = `Saffola Oats ${size}`;
+        searchQuery = `Saffola Oats ${size} Marico`;
+      } else if (/PEPPY|TAMATO|TOMATO/i.test(name)) {
+        finalClean = `Saffola Masala Oats Peppy Tomato ${size}`;
+        searchQuery = `Saffola Masala Oats Peppy Tomato ${size}`;
+      } else if (/VEGGIE\s*TWIST/i.test(name)) {
+        finalClean = `Saffola Masala Oats Veggie Twist ${size}`;
+        searchQuery = `Saffola Masala Oats Veggie Twist ${size}`;
+      } else if (/CLASSIC\s*MASALA/i.test(name)) {
+        finalClean = `Saffola Masala Oats Classic Masala ${size}`;
+        searchQuery = `Saffola Masala Oats Classic Masala ${size}`;
+      } else if (/\bHONEY\b/i.test(name)) {
+        finalClean = `Saffola Pure Honey ${size}`;
+        searchQuery = `Saffola Pure Honey ${size}`;
+      } else if (/\bGOLD\b/i.test(name)) {
+        let jarOrPack = size;
+        if (/JAR/i.test(rawName)) jarOrPack += ' Jar';
+        finalClean = `Saffola Gold Blended Edible Oil ${jarOrPack}`;
+        searchQuery = `Saffola Gold Cooking Oil ${jarOrPack}`;
+      } else if (/SOYA\s*MINI\s*CHUNKS/i.test(name)) {
+        finalClean = `Saffola Mealmaker Soya Mini Chunks ${size}`;
+        searchQuery = `Saffola Mealmaker Soya Mini Chunks ${size}`;
+      } else if (/SOYA\s*CHUNKS/i.test(name)) {
+        finalClean = `Saffola Mealmaker Soya Chunks ${size}`;
+        searchQuery = `Saffola Mealmaker Soya Chunks ${size}`;
+      }
     }
-    name = name.replace(/\bCHB LIQ BLK\b/gi, 'Cherry Blossom Liquid Shoe Polish Black');
-    name = name.replace(/\bCHARRY SHOE SHINER BLACK\b/gi, 'Cherry Blossom Shoe Shiner Polish Black');
-    name = name.replace(/\bCHARRY SHOE SHINER\b/gi, 'Cherry Blossom Shoe Shiner Polish');
-    name = name.replace(/\bDETOL\b/gi, 'Dettol');
-    name = name.replace(/\bAIR WIK\b/gi, 'Air Wick Room Freshener Spray');
-    name = name.replace(/\bANTISAPTIK LIQ\b/gi, 'Dettol Antiseptic Liquid');
-    name = name.replace(/\bANTISEPTIC\b/gi, 'Dettol Antiseptic Liquid');
-    name = name.replace(/\bREKITT ANT\b/gi, 'Dettol Antiseptic Liquid');
-    name = name.replace(/\bHRP RED ULTRA\b/gi, 'Harpic Red Ultra Bathroom Cleaner');
-    name = name.replace(/\bLYS BCL\b/gi, 'Lizol Disinfectant Surface Floor Cleaner');
-    name = name.replace(/\bHAND WASH FOAMING STWB\b/gi, 'Dettol Foaming Handwash Strawberry');
-    name = name.replace(/\bHAND WASH FOAMING ALOE COCO\b/gi, 'Dettol Foaming Handwash Aloe Vera & Coconut');
-    name = name.replace(/\bDETOL KITCHEN LIME\b/gi, 'Dettol Kitchen Gel Lime');
-    name = name.replace(/\bDUREX EXTRA TIME\b/gi, 'Durex Extra Time Condom');
-    name = name.replace(/\bORG\b/gi, 'Original');
-    name = name.replace(/\bSKC\b/gi, 'Skincare');
 
-    if (!/dettol|harpic|lizol|cherry blossom|air wick|durex/i.test(name)) {
-      brandPrefix = 'Dettol ';
+    // --- B. NIHAR (Nihar Shanti Amla, Nihar Naturals Jasmine, Nihar Sarson, Nihar Almond) ---
+    if (!finalClean && (/NIHAR/i.test(name) || /SARSO/i.test(name))) {
+      if (/AMLA/i.test(name)) {
+        finalClean = `Nihar Shanti Amla Hair Oil ${size}`;
+        searchQuery = `Nihar Shanti Amla Hair Oil ${size} Marico`;
+      } else if (/JASMINE/i.test(name)) {
+        finalClean = `Nihar Naturals Jasmine Hair Oil ${size}`;
+        searchQuery = `Nihar Naturals Jasmine Hair Oil ${size} Marico`;
+      } else if (/SARSO/i.test(name)) {
+        finalClean = `Nihar Shanti Sarson Kesh Tel Mustard Hair Oil ${size}`;
+        searchQuery = `Nihar Shanti Sarson Kesh Tel Mustard Hair Oil ${size} Marico`;
+      } else if (/ALMOND/i.test(name)) {
+        finalClean = `Nihar Naturals Almond Hair Oil ${size}`;
+        searchQuery = `Nihar Naturals Almond Hair Oil ${size} Marico`;
+      } else {
+        finalClean = `Nihar Hair Oil ${size}`;
+        searchQuery = `Nihar Hair Oil ${size} Marico`;
+      }
+    }
+
+    // --- C. HAIR & CARE (Non-sticky hair oils) ---
+    if (!finalClean && (/HAIR\s*(?:AND|&)\s*CARE/i.test(name) || /HAIR\s*CARE/i.test(name))) {
+      if (/ALMOND/i.test(name)) {
+        finalClean = `Hair & Care Fruit Hair Oil Almond ${size}`;
+        searchQuery = `Hair & Care Fruit Hair Oil Almond ${size} Marico`;
+      } else {
+        finalClean = `Hair & Care Non-Sticky Hair Oil ${size}`;
+        searchQuery = `Hair & Care Non-Sticky Hair Oil ${size} Marico`;
+      }
+    }
+
+    // --- D. MEDIKER (Anti-lice shampoo) ---
+    if (!finalClean && (/MEDICARE|MEDIKER/i.test(name))) {
+      finalClean = `Mediker Anti-Lice Shampoo ${size}`;
+      searchQuery = `Mediker Anti Lice Shampoo ${size} Marico`;
+    }
+
+    // --- E. PARACHUTE & PARACHUTE ADVANSED ---
+    if (!finalClean) {
+      // Pure Coconut Oil (OOM ED, OOM CNO, PARACHUTE 100ML, etc.)
+      if (/OOM/i.test(name) || /^PARACHUTE\s*\d+/i.test(name) || /^PARACHUTE\b/i.test(rawUpper)) {
+        if (!/ALOE|JASMINE|SHMP|SHAMPOO/i.test(name)) {
+          finalClean = `Parachute 100% Pure Coconut Oil ${size}`;
+          searchQuery = `Parachute Pure Coconut Oil ${size} Marico`;
+        }
+      }
+      // Parachute Advansed Coconut Milk Shampoos
+      if (!finalClean && /PARA.*(?:SHMP|SHAMPOO)/i.test(name)) {
+        let variant = 'Coconut Milk';
+        if (/ALOE/i.test(name)) variant = 'Coconut Milk Aloe Vera';
+        else if (/AMLA/i.test(name)) variant = 'Coconut Milk Amla';
+        else if (/ROSEMARY/i.test(name)) variant = 'Coconut Milk Rosemary';
+        else if (/DANDRUF/i.test(name)) variant = 'Coconut Milk Anti-Dandruff';
+
+        if (size) {
+          finalClean = `Parachute Advansed ${variant} Shampoo ${size}`;
+          searchQuery = `Parachute Advansed ${variant} Shampoo ${size} Marico`;
+        } else {
+          finalClean = `Parachute Advansed ${variant} Shampoo Sachet`;
+          searchQuery = `Parachute Advansed ${variant} Shampoo Sachet Marico`;
+        }
+      }
+      // Parachute Advansed Hair Oils
+      if (!finalClean && /ALOE\s*VERA/i.test(name)) {
+        finalClean = `Parachute Advansed Aloe Vera Hair Oil ${size}`;
+        searchQuery = `Parachute Advansed Aloe Vera Hair Oil ${size} Marico`;
+      }
+      if (!finalClean && /JASMINE/i.test(name)) {
+        finalClean = `Parachute Advansed Jasmine Hair Oil ${size}`;
+        searchQuery = `Parachute Advansed Jasmine Hair Oil ${size} Marico`;
+      }
+      if (!finalClean) {
+        finalClean = `Parachute ${name}`;
+        searchQuery = `Parachute ${name} Marico`;
+      }
     }
   }
 
-  // --- MARICO (Parachute, Saffola, Mediker) ---
-  else if (mfrUpper.includes('MARICO')) {
-    name = name.replace(/\bSARSO\b/gi, 'Parachute Advansed Mustard Sarson Hair Oil');
-    name = name.replace(/\bJASMINE\b/gi, 'Parachute Advansed Jasmine Hair Oil');
-    name = name.replace(/\bAMLA\b/gi, 'Parachute Advansed Amla Hair Oil');
-    name = name.replace(/\bALMOND\b/gi, 'Parachute Advansed Almond Hair Oil');
-    name = name.replace(/\bALOE VERA\b/gi, 'Parachute Advansed Aloe Vera Hair Oil');
-    name = name.replace(/\bPARACHUTE\b/gi, 'Parachute Advansed');
-    name = name.replace(/\bPARA SHMP\b/gi, 'Parachute Advansed Coconut Milk Shampoo');
-    name = name.replace(/\bMEDICARE SHAMPOO\b/gi, 'Mediker Anti Lice Shampoo');
-    name = name.replace(/\bVEGGIE TWIST\b/gi, 'Saffola Masala Oats Veggie Twist');
-    name = name.replace(/\bPEPPY TAMATO\b/gi, 'Saffola Masala Oats Peppy Tomato');
-    name = name.replace(/\bCLASSIC MASALA\b/gi, 'Saffola Masala Oats Classic Masala');
-    name = name.replace(/\bSOYA CHUNKS\b/gi, 'Saffola Mealmaker Soya Chunks');
-    name = name.replace(/\bSOYA MINI CHUNKS\b/gi, 'Saffola Mealmaker Soya Mini Chunks');
-    name = name.replace(/\bDANDRUF\b/gi, 'Anti Dandruff');
-    name = name.replace(/Parachute Advansed\s+Parachute Advansed/gi, 'Parachute Advansed');
+  // =========================================================================
+  // 2. RECKITT BENCKISER
+  // =========================================================================
+  else if (mfrUpper.includes('REKITT') || mfrUpper.includes('RECKITT')) {
+    const size = extractSize(rawName);
 
-    if (!/parachute|saffola|mediker/i.test(name)) {
-      brandPrefix = 'Parachute ';
+    if (/^Z\.RE/i.test(rawName.trim())) {
+      finalClean = 'Dettol Antiseptic Liquid Sample';
+      searchQuery = 'Dettol Antiseptic Liquid';
+    } else if (/AIR\s*WIK|AIR\s*WICK/i.test(name)) {
+      finalClean = `Air Wick Freshmatic Room Freshener Spray ${size}`;
+      searchQuery = `Air Wick Room Freshener Spray ${size}`;
+    } else if (/CHB|CHARRY|CHERRY/i.test(name)) {
+      if (/LIQ/i.test(name)) {
+        let color = /BROWN/i.test(name) ? 'Brown' : 'Black';
+        finalClean = `Cherry Blossom Liquid Shoe Polish ${color} ${size}`;
+        searchQuery = `Cherry Blossom Liquid Shoe Polish ${color} ${size}`;
+      } else if (/SHINER/i.test(name)) {
+        let color = /BLK|BLACK/i.test(name) ? 'Black' : 'Regular';
+        finalClean = `Cherry Blossom Instant Shoe Shiner ${color}`;
+        searchQuery = `Cherry Blossom Instant Shoe Shiner ${color}`;
+      } else if (/WAX/i.test(name) || /BLK/i.test(name)) {
+        finalClean = `Cherry Blossom Wax Shoe Polish Black ${size}`;
+        searchQuery = `Cherry Blossom Wax Shoe Polish Black ${size}`;
+      } else {
+        finalClean = `Cherry Blossom Shoe Polish ${size}`;
+        searchQuery = `Cherry Blossom Shoe Polish ${size}`;
+      }
+    } else if (/COL\s*TRG/i.test(name) || /\bCOLIN\b/i.test(name)) {
+      finalClean = `Colin Glass Cleaner Regular ${size}`;
+      searchQuery = `Colin Glass Cleaner Regular ${size}`;
+    } else if (/DUREX/i.test(name)) {
+      if (/EXTRA\s*TIME/i.test(name)) {
+        finalClean = 'Durex Extra Time Condoms';
+        searchQuery = 'Durex Extra Time Condoms';
+      } else {
+        finalClean = `Durex Condoms ${name}`;
+        searchQuery = `Durex Condoms ${name}`;
+      }
+    } else if (/HARPIC|HRP/i.test(name)) {
+      if (/RED\s*ULTRA/i.test(name)) {
+        finalClean = `Harpic Red Ultra Bathroom Cleaner ${size}`;
+        searchQuery = `Harpic Red Ultra Bathroom Cleaner ${size}`;
+      } else if (/RED/i.test(name)) {
+        finalClean = `Harpic Bathroom Cleaner Red ${size}`;
+        searchQuery = `Harpic Bathroom Cleaner Red ${size}`;
+      } else if (/BLUE/i.test(name)) {
+        finalClean = `Harpic Power Plus Toilet Cleaner Blue ${size}`;
+        searchQuery = `Harpic Power Plus Toilet Cleaner Blue ${size}`;
+      } else if (/DRAIN\s*CLEANER/i.test(name)) {
+        finalClean = 'Harpic Drain Cleaner Powder';
+        searchQuery = 'Harpic Drain Cleaner Powder';
+      } else if (/HYG\s*CIT/i.test(name)) {
+        finalClean = `Harpic Hygienic Toilet Rim Block Citrus ${size}`;
+        searchQuery = `Harpic Hygienic Toilet Rim Block Citrus ${size}`;
+      } else if (/STFISH/i.test(name)) {
+        const is2Pack = /50GM\*2|\*2/i.test(rawName);
+        finalClean = is2Pack ? 'Harpic Flushmatic In-Cistern Block 50g (Pack of 2)' : 'Harpic Flushmatic In-Cistern Block 50g';
+        searchQuery = 'Harpic Flushmatic In-Cistern Block 50g';
+      } else if (/PWR\s*5LTR|5LTR/i.test(name)) {
+        finalClean = 'Harpic Power Plus Toilet Cleaner 5L';
+        searchQuery = 'Harpic Power Plus Toilet Cleaner 5L';
+      } else {
+        finalClean = `Harpic Power Plus Toilet Cleaner ${size}`;
+        searchQuery = `Harpic Power Plus Toilet Cleaner ${size}`;
+      }
+    } else if (/LYSOL|LYS/i.test(name)) {
+      if (/SHAKTI/i.test(name)) {
+        finalClean = `Lizol Shakti Disinfectant Floor Cleaner ${size}`;
+        searchQuery = `Lizol Shakti Disinfectant Floor Cleaner ${size}`;
+      } else if (/BCL/i.test(name)) {
+        finalClean = 'Lizol Disinfectant Surface Cleaner Citrus 500ml';
+        searchQuery = 'Lizol Disinfectant Surface Cleaner Citrus 500ml';
+      } else {
+        finalClean = `Lizol Disinfectant Floor Cleaner ${size}`;
+        searchQuery = `Lizol Disinfectant Floor Cleaner ${size}`;
+      }
+    } else if (/MORTIN|MORT|MART/i.test(name)) {
+      if (/RAT\s*KILL/i.test(name)) {
+        finalClean = 'Mortein Rat Kill Cake';
+        searchQuery = 'Mortein Rat Kill Cake';
+      } else if (/COIL/i.test(name)) {
+        finalClean = 'Mortein Mosquito Repellent Coils';
+        searchQuery = 'Mortein Mosquito Repellent Coils';
+      } else if (/DUAL\s*AIK/i.test(name)) {
+        finalClean = `Mortein Dual AIK Mosquito & Fly Killer Spray ${size}`;
+        searchQuery = `Mortein Dual AIK Mosquito & Fly Killer Spray ${size}`;
+      } else if (/400ML/i.test(name)) {
+        finalClean = `Mortein All Insect Killer Spray ${size}`;
+        searchQuery = `Mortein All Insect Killer Spray ${size}`;
+      } else if (/IN\s*VPC|PLS/i.test(name)) {
+        finalClean = `Mortein Vaporizer Mosquito Liquid Refill ${size}`;
+        searchQuery = `Mortein Vaporizer Mosquito Liquid Refill ${size}`;
+      } else {
+        finalClean = 'Mortein Mosquito Repellent Vaporizer Machine + Refill';
+        searchQuery = 'Mortein Mosquito Repellent Vaporizer Machine Refill';
+      }
+    } else if (/MOOV/i.test(name)) {
+      if (/SPRAY/i.test(name)) {
+        finalClean = `Moov Pain Relief Fast Action Spray ${size}`;
+        searchQuery = `Moov Pain Relief Spray ${size}`;
+      } else {
+        finalClean = `Moov Pain Relief Ointment ${size}`;
+        searchQuery = `Moov Pain Relief Ointment ${size}`;
+      }
+    } else if (/VAN\b|VANISH/i.test(name)) {
+      if (/LIQ/i.test(name)) {
+        finalClean = `Vanish All in 1 Stain Remover Liquid ${size}`;
+        searchQuery = `Vanish All in 1 Stain Remover Liquid ${size}`;
+      } else if (/30GM/i.test(name)) {
+        finalClean = 'Vanish Oxi Action Stain Remover Powder Sachet 30g';
+        searchQuery = 'Vanish Oxi Action Stain Remover Powder Sachet 30g';
+      } else {
+        finalClean = `Vanish Oxi Action Stain Remover Powder ${size}`;
+        searchQuery = `Vanish Oxi Action Stain Remover Powder ${size}`;
+      }
+    } else if (/VEET/i.test(name)) {
+      finalClean = 'Veet Hair Removal Cream Normal Skin';
+      searchQuery = 'Veet Hair Removal Cream Normal Skin';
+    } else if (/ANTISAPTIK|ANTISEPTIC|REKITT\s*ANT/i.test(name)) {
+      finalClean = `Dettol Antiseptic Liquid ${size}`;
+      searchQuery = `Dettol Antiseptic Liquid ${size}`;
+    } else if (/BANDAGE/i.test(name)) {
+      finalClean = 'Dettol Medicated Plaster Bandage';
+      searchQuery = 'Dettol Medicated Plaster Bandage';
+    } else if (/KITCHEN/i.test(name)) {
+      finalClean = 'Dettol Kitchen Gel Lime';
+      searchQuery = 'Dettol Kitchen Gel Lime';
+    } else if (/SANITIZER/i.test(name)) {
+      finalClean = `Dettol Instant Hand Sanitizer Original ${size}`;
+      searchQuery = `Dettol Instant Hand Sanitizer Original ${size}`;
+    } else if (/FOAMING.*ALOE/i.test(name)) {
+      finalClean = 'Dettol Foaming Handwash Aloe Vera & Coconut';
+      searchQuery = 'Dettol Foaming Handwash Aloe Vera Coconut';
+    } else if (/FOAMING.*STWB/i.test(name)) {
+      finalClean = 'Dettol Foaming Handwash Strawberry';
+      searchQuery = 'Dettol Foaming Handwash Strawberry';
+    } else if (/HAND\s*WASH\s*POWDER/i.test(name)) {
+      finalClean = 'Dettol Hand Wash Powder Sachet 8g';
+      searchQuery = 'Dettol Hand Wash Powder Sachet 8g';
+    } else if (/HAND\s*WASH.*SKINCARE/i.test(name)) {
+      finalClean = `Dettol Handwash Skincare Refill ${size}`;
+      searchQuery = `Dettol Handwash Skincare Refill ${size}`;
+    } else if (/HAND\s*WASH/i.test(name)) {
+      let promo = /PROMO/i.test(name) ? ' Promo' : '';
+      finalClean = `Dettol Liquid Handwash Refill ${size}${promo}`;
+      searchQuery = `Dettol Liquid Handwash Refill ${size}`;
+    } else if (/SOAP/i.test(name)) {
+      let variant = 'Original';
+      if (/COOL/i.test(name)) variant = 'Cool';
+      if (/LIME\s*COOL/i.test(name)) variant = 'Lime Cool';
+      if (/SKC/i.test(name)) variant = 'Skincare';
+      finalClean = `Dettol Soap ${variant} ${size}`;
+      searchQuery = `Dettol Soap ${variant} ${size}`;
+    } else {
+      finalClean = `Dettol ${name}`;
+      searchQuery = `Dettol ${name}`;
     }
   }
 
-  // --- SLEEPY OWL ---
+  // =========================================================================
+  // 3. SLEEPY OWL
+  // =========================================================================
   else if (mfrUpper.includes('SLEEPY OWL')) {
+    const size = extractSize(rawName);
     name = name.replace(/\bCOFEE\b/gi, 'Coffee');
     name = name.replace(/\bHAZLENUT\b/gi, 'Hazelnut');
     name = name.replace(/\bXPRESSO\b/gi, 'Espresso');
     name = name.replace(/\bORGINAL\b/gi, 'Original');
-    name = name.replace(/\bPREMIX CAPPUCCINO\b/gi, 'Instant Premix Cappuccino');
-    name = name.replace(/\bCOFFEE ASSORTED\b/gi, 'Coffee Assorted Pack');
-    brandPrefix = 'Sleepy Owl ';
+
+    if (/PREMIX\s*CAPPUCCINO/i.test(name)) {
+      finalClean = 'Sleepy Owl Instant Premix Cappuccino';
+      searchQuery = 'Sleepy Owl Instant Premix Cappuccino';
+    } else if (/COFFEE\s*ASSORTED/i.test(name)) {
+      finalClean = 'Sleepy Owl Instant Coffee Assorted Pack (Set of 10)';
+      searchQuery = 'Sleepy Owl Instant Coffee Assorted Pack 10';
+    } else if (/GLASS\s*JAR/i.test(name)) {
+      let flavor = 'Original';
+      if (/FRENCH\s*VANILLA/i.test(name)) flavor = 'French Vanilla';
+      else if (/HAZELNUT/i.test(name)) flavor = 'Hazelnut';
+      else if (/ESPRESSO/i.test(name)) flavor = 'Espresso';
+      finalClean = `Sleepy Owl Instant Coffee ${flavor} Glass Jar 100g`;
+      searchQuery = `Sleepy Owl Instant Coffee ${flavor} Glass Jar 100g`;
+    } else if (size) {
+      let flavor = 'Original';
+      if (/HAZELNUT/i.test(name)) flavor = 'Hazelnut';
+      else if (/VANILLA/i.test(name)) flavor = 'Vanilla';
+      else if (/ESPRESSO/i.test(name)) flavor = 'Espresso';
+      finalClean = `Sleepy Owl Instant Coffee ${flavor} Sachet ${size}`;
+      searchQuery = `Sleepy Owl Instant Coffee ${flavor} Sachet ${size}`;
+    } else {
+      finalClean = `Sleepy Owl ${name}`;
+      searchQuery = `Sleepy Owl ${name}`;
+    }
   }
 
-  // --- MCVITIES ---
+  // =========================================================================
+  // 4. MCVITIE'S
+  // =========================================================================
   else if (mfrUpper.includes('MC VITTIES') || mfrUpper.includes('MCVITIES')) {
+    const size = extractSize(rawName);
     name = name.replace(/\bCASHIEW\b/gi, 'Cashew');
     name = name.replace(/\bBUTER\b/gi, 'Butter');
-    name = name.replace(/\bWHOLEWHEAT MARIE\b/gi, 'Wholewheat Marie Biscuits');
     name = name.replace(/\bHOBONO\b/gi, 'Hobnob');
-    name = name.replace(/\bFESTIVE PACK\b/gi, 'Festive Biscuits Gift Pack');
-    brandPrefix = "McVitie's ";
+    name = name.replace(/\bDIGSETIVE\b/gi, 'Digestive');
+    name = name.replace(/\bDIGS\b/gi, 'Digestive');
+
+    if (/FESTIVE\s*PACK/i.test(name)) {
+      finalClean = 'McVitie\'s Festive Biscuits Gift Pack';
+      searchQuery = 'McVities Festive Biscuits Gift Pack';
+    } else if (/WHOLEWHEAT\s*MARIE/i.test(name)) {
+      finalClean = 'McVitie\'s Wholewheat Marie Biscuits';
+      searchQuery = 'McVities Wholewheat Marie Biscuits';
+    } else if (/BOURBON/i.test(name)) {
+      finalClean = `McVitie's Bourbon Cream Biscuits ${size}`;
+      searchQuery = `McVities Bourbon Cream Biscuits ${size}`;
+    } else if (/BUTER\s*JEERA|BUTTER\s*JEERA/i.test(name)) {
+      let packType = /FAMILY\s*PACK/i.test(name) ? '(Family Pack)' : size;
+      finalClean = `McVitie's Butter Jeera Cookies ${packType}`;
+      searchQuery = `McVities Butter Jeera Cookies ${packType}`;
+    } else if (/BUTTER\s*COOKIES/i.test(name)) {
+      let packType = /FAMILY\s*PACK/i.test(name) ? '(Family Pack)' : size;
+      finalClean = `McVitie's Butter Cookies ${packType}`;
+      searchQuery = `McVities Butter Cookies ${packType}`;
+    } else if (/CASHEW\s*ALMOND/i.test(name)) {
+      let packType = /FAMILY\s*PACK/i.test(name) ? '(Family Pack)' : size;
+      finalClean = `McVitie's Cashew Almond Cookies ${packType}`;
+      searchQuery = `McVities Cashew Almond Cookies ${packType}`;
+    } else if (/CHOCO\s*ORANGE/i.test(name)) {
+      finalClean = `McVitie's Choco Orange Cookies ${size}`;
+      searchQuery = `McVities Choco Orange Cookies ${size}`;
+    } else if (/CHOCO\s*VANILLA/i.test(name)) {
+      finalClean = `McVitie's Choco Vanilla Cookies ${size}`;
+      searchQuery = `McVities Choco Vanilla Cookies ${size}`;
+    } else if (/DOUBLE\s*CHOCO/i.test(name)) {
+      finalClean = `McVitie's Double Choco Cookies ${size}`;
+      searchQuery = `McVities Double Choco Cookies ${size}`;
+    } else if (/COCO\s*COOK|COCONUT\s*COOKIES/i.test(name)) {
+      let packType = /FAMILY\s*PACK/i.test(name) ? '(Family Pack)' : size;
+      finalClean = `McVitie's Coconut Cookies ${packType}`;
+      searchQuery = `McVities Coconut Cookies ${packType}`;
+    } else if (/CREAM\s*ORANGE/i.test(name)) {
+      finalClean = `McVitie's Cream Orange Biscuits ${size}`;
+      searchQuery = `McVities Cream Orange Biscuits ${size}`;
+    } else if (/CREAM\s*VANILLA/i.test(name)) {
+      finalClean = `McVitie's Cream Vanilla Biscuits ${size}`;
+      searchQuery = `McVities Cream Vanilla Biscuits ${size}`;
+    } else if (/DIGESTIVE\s*ZERO\s*SUGAR/i.test(name)) {
+      finalClean = 'McVitie\'s Digestive Zero Sugar Biscuits';
+      searchQuery = 'McVities Digestive Zero Sugar Biscuits';
+    } else if (/DIGESTIVE.*CHOCO\s*CREAM/i.test(name)) {
+      finalClean = `McVitie's Digestive Choco Cream Biscuits ${size}`;
+      searchQuery = `McVities Digestive Choco Cream Biscuits ${size}`;
+    } else if (/DIGESTIVE.*VANILLLA\s*CREAM/i.test(name)) {
+      finalClean = `McVitie's Digestive Vanilla Cream Biscuits ${size}`;
+      searchQuery = `McVities Digestive Vanilla Cream Biscuits ${size}`;
+    } else if (/DIGESTIVE/i.test(name)) {
+      finalClean = `McVitie's Digestive Biscuits ${size}`;
+      searchQuery = `McVities Digestive Biscuits ${size}`;
+    } else if (/FRUIT\s*COOKIES/i.test(name)) {
+      finalClean = `McVitie's Fruit Cookies ${size}`;
+      searchQuery = `McVities Fruit Cookies ${size}`;
+    } else if (/HOBNOB/i.test(name)) {
+      let variant = /CHOCO/i.test(name) ? 'Choco' : '';
+      finalClean = `McVitie's Hobnob ${variant} Biscuits ${size}`;
+      searchQuery = `McVities Hobnob ${variant} Biscuits ${size}`;
+    } else if (/MARIE/i.test(name)) {
+      finalClean = `McVitie's Marie Biscuits ${size}`;
+      searchQuery = `McVities Marie Biscuits ${size}`;
+    } else if (/TRIPLE\s*NUTS/i.test(name)) {
+      finalClean = `McVitie's Triple Nuts Cookies ${size}`;
+      searchQuery = `McVities Triple Nuts Cookies ${size}`;
+    } else {
+      finalClean = `McVitie's ${name}`;
+      searchQuery = `McVitie's ${name}`;
+    }
+  } else {
+    finalClean = name;
+    searchQuery = name;
   }
 
-  let fullName = (brandPrefix + name).replace(/\s+/g, ' ').trim();
-  let query = fullName + ' product India';
-  return { clean: fullName, query };
+  return {
+    clean: cleanSpaces(finalClean),
+    query: cleanSpaces(searchQuery)
+  };
 }
 
 // Format canonical sheet name
@@ -502,6 +856,23 @@ priority, and update both your Excel spreadsheet and the Web Catalog!
         }
         // Polite delay
         await delay(250);
+
+        // Fallback: check if an existing image with this itcode exists from previous runs
+        if (!imageInfo.downloaded) {
+          try {
+            const files = fs.readdirSync(mfrDir);
+            const oldFile = files.find((f) => f.startsWith(`${itcode}_`) || f.startsWith(`${itcode}.`));
+            if (oldFile) {
+              const oldPath = path.join(mfrDir, oldFile);
+              const oldBuf = fs.readFileSync(oldPath);
+              const ext = getImageExtension(oldBuf);
+              if (ext) {
+                imageInfo = { downloaded: true, filePath: oldPath, url: 'Cached Previous', extension: ext, buffer: oldBuf };
+                log(`   ℹ️ Reusing previously cached image for itcode ${itcode}: ${oldFile}`);
+              }
+            }
+          } catch (e) {}
+        }
       } else {
         log(`[${i + 1}/${items.length}] Using existing cached image for: "${clean}"`);
       }
