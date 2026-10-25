@@ -83,60 +83,127 @@ async function publishCatalog() {
     log(`📖 Loading Excel catalog: ${targetExcel}`);
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(targetExcel);
-    const worksheet = workbook.getWorksheet('All FMCG Products') || workbook.worksheets[0];
-    if (!worksheet) {
-      throw new Error('No worksheets found in Excel file.');
+
+    // Map to hold merged products: key = itcode
+    const itemsMap = new Map();
+
+    // 1. First pass: read "All FMCG Products" as baseline
+    const masterSheet = workbook.getWorksheet('All FMCG Products') || workbook.worksheets[0];
+    if (masterSheet) {
+      log(`📋 Loading baseline from "${masterSheet.name}"...`);
+      masterSheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const rawName = parseText(row.getCell(2).value);
+        const cleanName = parseText(row.getCell(3).value);
+        const mrp = parseNumeric(row.getCell(4).value);
+        const saleRate = parseNumeric(row.getCell(5).value);
+        if (!rawName && !cleanName) return;
+
+        const itcodeVal = parseText(row.getCell(6).value);
+        const itcode = itcodeVal ? parseInt(itcodeVal, 10) : rowNumber;
+        const mfrName = parseText(row.getCell(7).value) || 'FMCG';
+        const pack = parseInt(parseText(row.getCell(8).value), 10) || 1;
+        const unit = parseText(row.getCell(9).value) || 'PCS';
+        let imagePath = parseText(row.getCell(10).value);
+
+        itemsMap.set(itcode, {
+          itcode,
+          mfr: mfrName,
+          rawName: rawName || cleanName,
+          name: cleanName || rawName,
+          pack,
+          unit,
+          mrp,
+          saleRate,
+          imagePath,
+        });
+      });
     }
 
-    log(`📋 Processing rows from "${worksheet.name}"...`);
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber === 1) return; // Skip header
+    // 2. Second pass: scan all individual manufacturer sheets for any user edits/overrides
+    let overridesCount = 0;
+    workbook.eachSheet((ws) => {
+      if (ws.name === 'All FMCG Products') return;
+      ws.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const itcodeVal = parseText(row.getCell(6).value);
+        const itcode = itcodeVal ? parseInt(itcodeVal, 10) : null;
+        if (!itcode) return;
 
-      const rawName = parseText(row.getCell(2).value);
-      const cleanName = parseText(row.getCell(3).value);
-      const mrp = parseNumeric(row.getCell(4).value);
-      const saleRate = parseNumeric(row.getCell(5).value);
+        const rawName = parseText(row.getCell(2).value);
+        const cleanName = parseText(row.getCell(3).value);
+        const mrp = parseNumeric(row.getCell(4).value);
+        const saleRate = parseNumeric(row.getCell(5).value);
+        const pack = parseInt(parseText(row.getCell(8).value), 10) || 1;
+        const unit = parseText(row.getCell(9).value) || 'PCS';
+        const imagePath = parseText(row.getCell(10).value);
+        const mfrName = parseText(row.getCell(7).value) || ws.name;
 
-      if (!rawName && !cleanName) return;
+        if (itemsMap.has(itcode)) {
+          const existing = itemsMap.get(itcode);
+          if (existing.mrp !== mrp || existing.saleRate !== saleRate || (cleanName && existing.name !== cleanName)) {
+            log(`   ✏️ Override from sheet "${ws.name}": [${itcode}] "${rawName}" -> MRP: ₹${existing.mrp} -> ₹${mrp}, Rate: ₹${existing.saleRate} -> ₹${saleRate}`);
+            existing.mrp = mrp;
+            existing.saleRate = saleRate;
+            if (cleanName) existing.name = cleanName;
+            existing.pack = pack || existing.pack;
+            existing.unit = unit || existing.unit;
+            if (imagePath) existing.imagePath = imagePath;
+            overridesCount++;
+          }
+        } else {
+          itemsMap.set(itcode, {
+            itcode,
+            mfr: mfrName,
+            rawName: rawName || cleanName,
+            name: cleanName || rawName,
+            pack,
+            unit,
+            mrp,
+            saleRate,
+            imagePath,
+          });
+        }
+      });
+    });
 
-      const itcodeVal = parseText(row.getCell(6).value);
-      const itcode = itcodeVal ? parseInt(itcodeVal, 10) : rowNumber;
-      const mfrName = parseText(row.getCell(7).value) || 'FMCG';
-      const pack = parseInt(parseText(row.getCell(8).value), 10) || 1;
-      const unit = parseText(row.getCell(9).value) || 'PCS';
-      let imagePath = parseText(row.getCell(10).value);
+    if (overridesCount > 0) {
+      log(`🎯 Successfully merged ${overridesCount} user edits from brand worksheets!`);
+    }
 
+    // 3. Resolve images and compile items list
+    for (const item of itemsMap.values()) {
       let imageBuf = null;
 
       // 1. Custom user photo
-      const customImg = findCustomImage(CONFIG.customImagesDir, itcode);
+      const customImg = findCustomImage(CONFIG.customImagesDir, item.itcode);
       if (customImg && customImg.buffer) {
         imageBuf = customImg.buffer;
       }
       // 2. Explicit image path from Excel
-      else if (imagePath && fs.existsSync(imagePath)) {
-        try { imageBuf = fs.readFileSync(imagePath); } catch (e) {}
+      else if (item.imagePath && fs.existsSync(item.imagePath)) {
+        try { imageBuf = fs.readFileSync(item.imagePath); } catch (e) {}
       }
       // 3. Fallback search by itcode in product_images
       if (!imageBuf) {
-        const found = findCachedImageByItcode(itcode, mfrName);
+        const found = findCachedImageByItcode(item.itcode, item.mfr);
         if (found && fs.existsSync(found)) {
           try { imageBuf = fs.readFileSync(found); } catch (e) {}
         }
       }
 
       items.push({
-        itcode,
-        mfr: mfrName,
-        rawName: rawName || cleanName,
-        name: cleanName || rawName,
-        pack,
-        unit,
-        mrp,
-        saleRate,
+        itcode: item.itcode,
+        mfr: item.mfr,
+        rawName: item.rawName,
+        name: item.name,
+        pack: item.pack,
+        unit: item.unit,
+        mrp: item.mrp,
+        saleRate: item.saleRate,
         rawImageBuffer: imageBuf,
       });
-    });
+    }
   } else {
     // Fallback to products.json if Excel not generated yet
     const fallbackJsonPath = path.join(CONFIG.outputDir, 'products.json');

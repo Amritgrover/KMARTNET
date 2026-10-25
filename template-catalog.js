@@ -1582,8 +1582,10 @@ function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
           throw new Error('Invalid catalog payload received from cloud.');
         }
 
-        if (data.version && data.version !== activeVersion) {
-          // Newer version detected! Update persistent storage and active state
+        const shouldUpdate = isManual || (data.version && data.version !== activeVersion);
+
+        if (shouldUpdate) {
+          // Update persistent storage and active state
           localStorage.setItem('KMART_CATALOG_SYNC_DATA', JSON.stringify({
             version: data.version,
             timestamp: data.timestamp,
@@ -1593,6 +1595,20 @@ function buildCatalogHtml(webProducts, catalogVersion, catalogTimestamp) {
           products = data.products;
           activeVersion = data.version;
           activeTimestamp = data.timestamp;
+
+          // Sync updated rates into any existing cart items
+          if (cart && typeof cart === 'object') {
+            Object.keys(cart).forEach(itcode => {
+              const numCode = parseInt(itcode, 10);
+              const p = products.find(x => x.itcode === numCode);
+              if (p && cart[itcode]) {
+                cart[itcode].rate = p.saleRate;
+                cart[itcode].name = p.cleanName || p.name || cart[itcode].name;
+                cart[itcode].pack = p.pack || cart[itcode].pack;
+              }
+            });
+            saveCart();
+          }
 
           updateCategoryCounts();
           renderProducts();
